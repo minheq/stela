@@ -1,10 +1,9 @@
 import 'package:inday/stela/interfaces/node.dart';
-import 'package:inday/stela/interfaces/range.dart';
 
 /// `Text` objects represent the nodes that contain the actual text content of a
 /// document along with any formatting properties. They are always leaf
 /// nodes in the document tree as they cannot contain any children.
-class Text extends Node {
+class Text implements Descendant {
   Text(this.text);
 
   String text;

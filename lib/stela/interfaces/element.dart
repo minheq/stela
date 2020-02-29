@@ -4,7 +4,7 @@ import 'package:inday/stela/interfaces/path.dart';
 /// `Element` objects are a type of node that contain other
 /// element nodes or text nodes. They can be either "blocks" or "inlines"
 /// depending on the editor's configuration.
-class Element extends Node {
+class Element implements Ancestor, Descendant {
   Element({this.children = const <Node>[]});
 
   final List<Node> children;
