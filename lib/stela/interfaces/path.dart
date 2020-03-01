@@ -25,7 +25,7 @@ class Path implements Location {
       return Path(path.sublist(start, path.length + end));
     }
 
-    if (end > path.length) {
+    if (end != null && end > path.length) {
       return Path(path.sublist(start));
     }
 
@@ -260,4 +260,123 @@ class Path implements Location {
 
     return path.slice(ancestor.length);
   }
+
+  // /**
+  //  * Transform a path by an operation.
+  //  */
+
+  // transform(
+  //   path: Path,
+  //   operation: Operation,
+  //   options: { affinity?: 'forward' | 'backward' | null } = {}
+  // ): Path | null {
+  //   return produce(path, p => {
+  //     const { affinity = 'forward' } = options
+
+  //     // PERF: Exit early if the operation is guaranteed not to have an effect.
+  //     if (path.length === 0) {
+  //       return
+  //     }
+
+  //     switch (operation.type) {
+  //       case 'insert_node': {
+  //         const { path: op } = operation
+
+  //         if (
+  //           Path.equals(op, p) ||
+  //           Path.endsBefore(op, p) ||
+  //           Path.isAncestor(op, p)
+  //         ) {
+  //           p[op.length - 1] += 1
+  //         }
+
+  //         break
+  //       }
+
+  //       case 'remove_node': {
+  //         const { path: op } = operation
+
+  //         if (Path.equals(op, p) || Path.isAncestor(op, p)) {
+  //           return null
+  //         } else if (Path.endsBefore(op, p)) {
+  //           p[op.length - 1] -= 1
+  //         }
+
+  //         break
+  //       }
+
+  //       case 'merge_node': {
+  //         const { path: op, position } = operation
+
+  //         if (Path.equals(op, p) || Path.endsBefore(op, p)) {
+  //           p[op.length - 1] -= 1
+  //         } else if (Path.isAncestor(op, p)) {
+  //           p[op.length - 1] -= 1
+  //           p[op.length] += position
+  //         }
+
+  //         break
+  //       }
+
+  //       case 'split_node': {
+  //         const { path: op, position } = operation
+
+  //         if (Path.equals(op, p)) {
+  //           if (affinity === 'forward') {
+  //             p[p.length - 1] += 1
+  //           } else if (affinity === 'backward') {
+  //             // Nothing, because it still refers to the right path.
+  //           } else {
+  //             return null
+  //           }
+  //         } else if (Path.endsBefore(op, p)) {
+  //           p[op.length - 1] += 1
+  //         } else if (Path.isAncestor(op, p) && path[op.length] >= position) {
+  //           p[op.length - 1] += 1
+  //           p[op.length] -= position
+  //         }
+
+  //         break
+  //       }
+
+  //       case 'move_node': {
+  //         const { path: op, newPath: onp } = operation
+
+  //         // If the old and new path are the same, it's a no-op.
+  //         if (Path.equals(op, onp)) {
+  //           return
+  //         }
+
+  //         if (Path.isAncestor(op, p) || Path.equals(op, p)) {
+  //           const copy = onp.slice()
+
+  //           if (Path.endsBefore(op, onp) && op.length < onp.length) {
+  //             const i = Math.min(onp.length, op.length) - 1
+  //             copy[i] -= 1
+  //           }
+
+  //           return copy.concat(p.slice(op.length))
+  //         } else if (
+  //           Path.endsBefore(onp, p) ||
+  //           Path.equals(onp, p) ||
+  //           Path.isAncestor(onp, p)
+  //         ) {
+  //           if (Path.endsBefore(op, p)) {
+  //             p[op.length - 1] -= 1
+  //           }
+
+  //           p[onp.length - 1] += 1
+  //         } else if (Path.endsBefore(op, p)) {
+  //           if (Path.equals(onp, p)) {
+  //             p[onp.length - 1] += 1
+  //           }
+
+  //           p[op.length - 1] -= 1
+  //         }
+
+  //         break
+  //       }
+  //     }
+  //   })
+  // },
 }
