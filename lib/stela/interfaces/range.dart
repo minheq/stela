@@ -13,7 +13,6 @@ class Range implements Location {
 
   /// Get the start and end points of a range, in the order in which they appear
   /// in the document.
-
   static List<Point> edges(Range range, {bool reverse = false}) {
     Point anchor = range.anchor;
     Point focus = range.focus;
