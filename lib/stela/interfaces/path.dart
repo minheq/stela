@@ -16,20 +16,30 @@ class Path implements Location {
   }
 
   /// Returns a `Path` containing the elements between [start] and [end].
+  ///
+  /// When [end] is a negative number, the list will be subtracted by that amount.
+  ///
+  /// When [end] is greater than the length of `Path`, it defaults to length of the `Path`.
   Path slice(int start, [int end]) {
     if (end != null && end < 0) {
-      List<int> sliced = path.sublist(start, path.length + end);
-
-      return Path(sliced);
+      return Path(path.sublist(start, path.length + end));
     }
 
-    List<int> sliced = path.sublist(start, end);
+    if (end > path.length) {
+      return Path(path.sublist(start));
+    }
 
-    return Path(sliced);
+    return Path(path.sublist(start, end));
   }
 
   /// Returns position at [index].
+  ///
+  /// Returns -1 if the [index] is out of bound
   int at(int index) {
+    if (index >= path.length) {
+      return -1;
+    }
+
     return path[index];
   }
 

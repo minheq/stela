@@ -51,46 +51,366 @@ void main() {
   });
 
   group("compare", () {
-    test('should return 0 when other path is above', () {
+    test('above', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0]);
 
       expect(Path.compare(path, another), 0);
     });
 
-    test('should return 1 when path is after the other path', () {
+    test('after', () {
       Path path = Path([1, 1, 2]);
       Path another = Path([0]);
 
       expect(Path.compare(path, another), 1);
     });
 
-    test('should return -1 when path is before the other path', () {
+    test('before', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([1]);
 
       expect(Path.compare(path, another), -1);
     });
 
-    test('should return 0 when other path is below', () {
+    test('below', () {
       Path path = Path([0]);
       Path another = Path([0, 1]);
 
       expect(Path.compare(path, another), 0);
     });
 
-    test('should return 0 when both paths are equal', () {
+    test('equal', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0, 1, 2]);
 
       expect(Path.compare(path, another), 0);
     });
 
-    test('should return 0 when other path is root', () {
+    test('root', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([]);
 
       expect(Path.compare(path, another), 0);
+    });
+  });
+
+  group("endsAfter", () {
+    test('above', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+
+    test('after', () {
+      Path path = Path([1, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+
+    test('before', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([1]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+
+    test('below', () {
+      Path path = Path([0]);
+      Path another = Path([0, 1]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+
+    test('ends after', () {
+      Path path = Path([1]);
+      Path another = Path([0, 2]);
+
+      expect(Path.endsAfter(path, another), true);
+    });
+
+    test('ends at', () {
+      Path path = Path([0]);
+      Path another = Path([0, 2]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+
+    test('ends before', () {
+      Path path = Path([0]);
+      Path another = Path([1, 2]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+
+    test('equal', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0, 1, 2]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+
+    test('root', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+  });
+
+  group("endsAt", () {
+    test('above', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.endsAt(path, another), false);
+    });
+
+    test('after', () {
+      Path path = Path([1, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.endsAt(path, another), false);
+    });
+
+    test('before', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([1]);
+
+      expect(Path.endsAt(path, another), false);
+    });
+
+    test('ends after', () {
+      Path path = Path([1]);
+      Path another = Path([0, 2]);
+
+      expect(Path.endsAt(path, another), false);
+    });
+
+    test('ends at', () {
+      Path path = Path([0]);
+      Path another = Path([0, 2]);
+
+      expect(Path.endsAt(path, another), true);
+    });
+
+    test('ends before', () {
+      Path path = Path([0]);
+      Path another = Path([1, 2]);
+
+      expect(Path.endsAt(path, another), false);
+    });
+
+    test('equal', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0, 1, 2]);
+
+      expect(Path.endsAt(path, another), true);
+    });
+
+    test('root', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([]);
+
+      expect(Path.endsAt(path, another), false);
+    });
+  });
+
+  group("endsBefore", () {
+    test('above', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.endsBefore(path, another), false);
+    });
+
+    test('after', () {
+      Path path = Path([1, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.endsBefore(path, another), false);
+    });
+
+    test('before', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([1]);
+
+      expect(Path.endsBefore(path, another), false);
+    });
+
+    test('below', () {
+      Path path = Path([0]);
+      Path another = Path([0, 1]);
+
+      expect(Path.endsAfter(path, another), false);
+    });
+
+    test('ends after', () {
+      Path path = Path([1]);
+      Path another = Path([0, 2]);
+
+      expect(Path.endsBefore(path, another), false);
+    });
+
+    test('ends at', () {
+      Path path = Path([0]);
+      Path another = Path([0, 2]);
+
+      expect(Path.endsBefore(path, another), false);
+    });
+
+    test('ends before', () {
+      Path path = Path([0]);
+      Path another = Path([1, 2]);
+
+      expect(Path.endsBefore(path, another), true);
+    });
+
+    test('equal', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0, 1, 2]);
+
+      expect(Path.endsBefore(path, another), false);
+    });
+
+    test('root', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([]);
+
+      expect(Path.endsBefore(path, another), false);
+    });
+  });
+
+  group("equals", () {
+    test('above', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.equals(path, another), false);
+    });
+
+    test('after', () {
+      Path path = Path([1, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.equals(path, another), false);
+    });
+
+    test('before', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([1]);
+
+      expect(Path.equals(path, another), false);
+    });
+
+    test('below', () {
+      Path path = Path([0]);
+      Path another = Path([0, 1]);
+
+      expect(Path.equals(path, another), false);
+    });
+
+    test('equal', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0, 1, 2]);
+
+      expect(Path.equals(path, another), true);
+    });
+
+    test('root', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([]);
+
+      expect(Path.equals(path, another), false);
+    });
+  });
+
+  group("isAfter", () {
+    test('above', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.isAfter(path, another), false);
+    });
+
+    test('after', () {
+      Path path = Path([1, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.isAfter(path, another), true);
+    });
+
+    test('before', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([1]);
+
+      expect(Path.isAfter(path, another), false);
+    });
+
+    test('below', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.isAfter(path, another), false);
+    });
+
+    test('equal', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0, 1, 2]);
+
+      expect(Path.isAfter(path, another), false);
+    });
+
+    test('root', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([]);
+
+      expect(Path.isAfter(path, another), false);
+    });
+  });
+
+  group("isAncestor", () {
+    test('above grandparent', () {
+      Path path = Path([]);
+      Path another = Path([0, 1]);
+
+      expect(Path.isAncestor(path, another), true);
+    });
+
+    test('above parent', () {
+      Path path = Path([]);
+      Path another = Path([0, 1]);
+
+      expect(Path.isAncestor(path, another), true);
+    });
+
+    test('after', () {
+      Path path = Path([1, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.isAncestor(path, another), false);
+    });
+
+    test('before', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([1]);
+
+      expect(Path.isAncestor(path, another), false);
+    });
+
+    test('below', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0]);
+
+      expect(Path.isAncestor(path, another), false);
+    });
+
+    test('equal', () {
+      Path path = Path([0, 1, 2]);
+      Path another = Path([0, 1, 2]);
+
+      expect(Path.isAncestor(path, another), false);
     });
   });
 
