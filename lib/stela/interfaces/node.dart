@@ -8,7 +8,7 @@ class Node {
   static Node ancestor(Node root, Path path) {
     Node node = Node.get(root, path);
 
-    if (Text.isText(node)) {
+    if (node is Text) {
       throw Exception(
           "Cannot get the ancestor node at path [$path] because it refers to a text node instead: $node");
     }
@@ -19,7 +19,7 @@ class Node {
   static Node get(Node root, Path path) {
     Node node = root;
 
-    if (Text.isText(node)) {
+    if (node is Text) {
       throw Exception(
           "Cannot find a descendant at path [$path] because it refers to a text node instead: $root");
     }

@@ -25,6 +25,13 @@ class Point implements Location {
     return result;
   }
 
+  /// Check if a point is exactly equal to another.
+  static bool equals(Point point, Point another) {
+    // PERF: ensure the offsets are equal first since they are cheaper to check.
+    return (point.offset == another.offset &&
+        Path.equals(point.path, another.path));
+  }
+
   /// Check if a point is after another.
   static bool isAfter(Point point, Point another) {
     return Point.compare(point, another) == 1;
@@ -33,13 +40,6 @@ class Point implements Location {
   /// Check if a point is before another.
   static bool isBefore(Point point, Point another) {
     return Point.compare(point, another) == -1;
-  }
-
-  /// Check if a point is exactly equal to another.
-  static bool equals(Point point, Point another) {
-    // PERF: ensure the offsets are equal first since they are cheaper to check.
-    return (point.offset == another.offset &&
-        Path.equals(point.path, another.path));
   }
 
   // /**

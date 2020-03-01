@@ -13,15 +13,10 @@ class Text implements Descendant {
     return text.text == another.text;
   }
 
-  /// Check if the node is `Text` node
-  static bool isText(Node node) {
-    return node is Text;
-  }
-
   /// Check if list of nodes consist of only `Text` nodes.
   static bool isTextList(List<Node> nodes) {
     for (Node node in nodes) {
-      if (Text.isText(node) == false) {
+      if (!(node is Text)) {
         return false;
       }
     }

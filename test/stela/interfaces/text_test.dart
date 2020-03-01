@@ -3,26 +3,6 @@ import 'package:inday/stela/interfaces/element.dart';
 import 'package:inday/stela/interfaces/text.dart';
 
 void main() {
-  group("isText", () {
-    test('should succeed with valid text node', () {
-      Text text = Text("string");
-
-      expect(Text.isText(text), true);
-    });
-
-    test('should succeed with empty text node', () {
-      Text text = Text("");
-
-      expect(Text.isText(text), true);
-    });
-
-    test('should fail with element node', () {
-      Element element = Element(children: []);
-
-      expect(Text.isText(element), false);
-    });
-  });
-
   group("isTextList", () {
     test('should succeed with valid text node list', () {
       Text text = Text("string");
