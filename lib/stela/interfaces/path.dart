@@ -7,7 +7,7 @@ import 'package:inday/stela/interfaces/location.dart';
 /// a Slate node tree. Although they are usually relative to the root `Editor`
 /// object, they can be relative to any `Node` object.
 class Path implements Location {
-  Path(this.path);
+  const Path(this.path);
 
   final List<int> path;
 
@@ -20,7 +20,7 @@ class Path implements Location {
   /// When [end] is a negative number, the list will be subtracted by that amount.
   ///
   /// When [end] is greater than the length of `Path`, it defaults to length of the `Path`.
-  Path slice(int start, [int end]) {
+  Path slice([int start = 0, int end]) {
     if (end != null && end < 0) {
       return Path(path.sublist(start, path.length + end));
     }
@@ -30,6 +30,15 @@ class Path implements Location {
     }
 
     return Path(path.sublist(start, end));
+  }
+
+  /// Returns a new `Path` with addition of the [position]
+  Path concat(int position) {
+    List<int> newPath = List.from(path);
+
+    newPath.add(position);
+
+    return Path(newPath);
   }
 
   /// Returns position at [index].

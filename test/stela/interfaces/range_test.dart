@@ -10,9 +10,9 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      List<Point> points = Range.edges(range);
-      Point start = points[0];
-      Point end = points[1];
+      List<Point> edges = Range.edges(range);
+      Point start = edges[0];
+      Point end = edges[1];
 
       expect(Point.equals(focus, start), true);
       expect(Point.equals(anchor, end), true);
@@ -23,9 +23,9 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      List<Point> points = Range.edges(range);
-      Point start = points[0];
-      Point end = points[1];
+      List<Point> edges = Range.edges(range);
+      Point start = edges[0];
+      Point end = edges[1];
 
       expect(Point.equals(anchor, start), true);
       expect(Point.equals(focus, end), true);
@@ -36,9 +36,9 @@ void main() {
       Point focus = Point(Path([3]), 0);
       Range range = Range(anchor, focus);
 
-      List<Point> points = Range.edges(range);
-      Point start = points[0];
-      Point end = points[1];
+      List<Point> edges = Range.edges(range);
+      Point start = edges[0];
+      Point end = edges[1];
 
       expect(Point.equals(anchor, start), true);
       expect(Point.equals(focus, end), true);

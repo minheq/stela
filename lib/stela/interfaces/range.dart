@@ -24,8 +24,8 @@ class Range implements Location {
 
   /// Get the end point of a range.
   static Point end(Range range) {
-    List<Point> points = Range.edges(range);
-    Point end = points[1];
+    List<Point> edges = Range.edges(range);
+    Point end = edges[1];
 
     return end;
   }
@@ -44,20 +44,20 @@ class Range implements Location {
         return true;
       }
 
-      List<Point> points = Range.edges(range);
-      Point rs = points[0];
-      Point re = points[1];
+      List<Point> edges = Range.edges(range);
+      Point rs = edges[0];
+      Point re = edges[1];
 
-      List<Point> targetPoints = Range.edges(target);
-      Point ts = targetPoints[0];
-      Point te = targetPoints[1];
+      List<Point> targetEdges = Range.edges(target);
+      Point ts = targetEdges[0];
+      Point te = targetEdges[1];
 
       return Point.isBefore(rs, ts) && Point.isAfter(re, te);
     }
 
-    List<Point> points = Range.edges(range);
-    Point start = points[0];
-    Point end = points[1];
+    List<Point> edges = Range.edges(range);
+    Point start = edges[0];
+    Point end = edges[1];
 
     bool isAfterStart = false;
     bool isBeforeEnd = false;
@@ -75,13 +75,13 @@ class Range implements Location {
 
   /// Get the intersection of a range with another.
   static Range intersection(Range range, Range another) {
-    List<Point> points = Range.edges(range);
-    Point s1 = points[0];
-    Point e1 = points[1];
+    List<Point> edges = Range.edges(range);
+    Point s1 = edges[0];
+    Point e1 = edges[1];
 
-    List<Point> anotherPoints = Range.edges(another);
-    Point s2 = anotherPoints[0];
-    Point e2 = anotherPoints[1];
+    List<Point> anotherEdges = Range.edges(another);
+    Point s2 = anotherEdges[0];
+    Point e2 = anotherEdges[1];
 
     Point start = Point.isBefore(s1, s2) ? s2 : s1;
     Point end = Point.isBefore(e1, e2) ? e1 : e2;
@@ -125,17 +125,15 @@ class Range implements Location {
   }
 
   /// Iterate through all of the point entries in a range.
-  static List<PointEntry> points(Range range) {
-    return [
-      PointEntry(range.anchor, PointType.anchor),
-      PointEntry(range.focus, PointType.focus)
-    ];
+  static Iterable<PointEntry> points(Range range) sync* {
+    yield PointEntry(range.anchor, PointType.anchor);
+    yield PointEntry(range.focus, PointType.focus);
   }
 
   /// Get the start point of a range.
   static Point start(Range range) {
-    List<Point> points = Range.edges(range);
-    Point start = points[0];
+    List<Point> edges = Range.edges(range);
+    Point start = edges[0];
 
     return start;
   }

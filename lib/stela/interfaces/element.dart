@@ -7,7 +7,7 @@ import 'package:inday/stela/interfaces/path.dart';
 class Element implements Ancestor, Descendant {
   Element({this.children = const <Node>[]});
 
-  final List<Node> children;
+  List<Node> children;
 
   /// Check if the node is `Element` node
   static bool isElement(Node node) {

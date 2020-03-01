@@ -1,4 +1,8 @@
+import 'package:inday/stela/interfaces/editor.dart';
+import 'package:inday/stela/interfaces/element.dart';
 import 'package:inday/stela/interfaces/path.dart';
+import 'package:inday/stela/interfaces/point.dart';
+import 'package:inday/stela/interfaces/range.dart';
 import 'package:inday/stela/interfaces/text.dart';
 
 /// The `Node` represents all of the different types of nodes that
@@ -16,29 +20,402 @@ class Node {
     return node;
   }
 
+  /// Return an iterable of all the ancestor nodes above a specific path.
+  ///
+  /// By default the order is bottom-up, from lowest to highest ancestor in
+  /// the tree, but you can pass the `reverse: true` option to go top-down.
+  static Iterable<NodeEntry<Ancestor>> ancestors(Node root, Path path,
+      {bool reverse}) sync* {
+    for (Path p in Path.ancestors(path, reverse: reverse)) {
+      Ancestor n = Node.ancestor(root, p);
+      NodeEntry<Ancestor> entry = NodeEntry(n, p);
+
+      yield entry;
+    }
+  }
+
+  /// Get the child of a node at a specific index.
+  static Descendant child(Node root, int index) {
+    if (root is Text) {
+      throw Exception(
+          "Cannot get the child of a text node: ${root.toString()}");
+    }
+
+    Descendant c = (root as Ancestor).children[index];
+
+    if (c == null) {
+      throw Exception(
+          "Cannot get child at index $index in node: ${root.toString()}");
+    }
+
+    return c;
+  }
+
+  /// Iterate over the children of a node at a specific path.
+
+  static Iterable<NodeEntry<Descendant>> children(Node root, Path path,
+      {bool reverse = false}) sync* {
+    Ancestor ancestor = Node.ancestor(root, path);
+    int index = reverse ? ancestor.children.length - 1 : 0;
+
+    while (reverse ? index >= 0 : index < ancestor.children.length) {
+      Descendant child = Node.child(ancestor, index);
+      Path childPath = path.concat(index);
+
+      yield NodeEntry<Descendant>(child, childPath);
+
+      index = reverse ? index - 1 : index + 1;
+    }
+  }
+
+  /// Get an entry for the common ancestor node of two paths.
+  static NodeEntry common(Node root, Path path, Path another) {
+    Path p = Path.common(path, another);
+    Node n = Node.get(root, p);
+
+    return NodeEntry(n, p);
+  }
+
+  /// Get the node at a specific path, asserting that it's a descendant node.
+  static Descendant descendant(Node root, Path path) {
+    Node node = Node.get(root, path);
+
+    if (node is Editor) {
+      throw Exception(
+          "Cannot get the descendant node at path [$path] because it refers to the root editor node instead: $node");
+    }
+
+    return node;
+  }
+
+  /// Return an iterable of all the descendant node entries inside a root node.
+  static Iterable<NodeEntry<Descendant>> descendants(Node root,
+      {Path from,
+      Path to,
+      bool reverse,
+      bool Function(NodeEntry entry) pass}) sync* {
+    for (NodeEntry entry
+        in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
+      if (entry.path.length != 0) {
+        // NOTE: we have to coerce here because checking the path's length does
+        // guarantee that `node` is not a `Editor`, but TypeScript doesn't know.
+        yield entry;
+      }
+    }
+  }
+
+  /// Return an iterable of all the element nodes inside a root node. Each iteration
+  /// will return an `ElementEntry` tuple consisting of `[Element, Path]`. If the
+  /// root node is an element it will be included in the iteration as well.
+  static Iterable<ElementEntry> elements(Node root,
+      {Path from,
+      Path to,
+      bool reverse,
+      bool Function(NodeEntry entry) pass}) sync* {
+    for (NodeEntry entry
+        in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
+      if (entry.node is Element) {
+        ElementEntry elemEntry = ElementEntry(entry.node, entry.path);
+
+        yield elemEntry;
+      }
+    }
+  }
+
+  /// Get the first node entry in a root node from a path.
+  static NodeEntry first(Node root, Path path) {
+    Path p = path.slice();
+    Node n = Node.get(root, p);
+
+    while (n != null) {
+      if (n is Text) {
+        break;
+      }
+
+      if ((n as Ancestor).children.length == 0) {
+        break;
+      }
+
+      n = (n as Ancestor).children[0];
+      p.add(0);
+    }
+
+    return NodeEntry(n, p);
+  }
+
+  /// Returns a new instance of the node
+  static Node copy(Node root) {
+    if (root is Text) {
+      return Text(root.text);
+    }
+
+    List<Node> copiedChildren = [];
+
+    for (Node node in (root as Ancestor).children) {
+      copiedChildren.add(Node.copy(node));
+    }
+
+    if (root is Element) {
+      return Element(children: copiedChildren);
+    }
+
+    if (root is Editor) {
+      return Editor(children: copiedChildren);
+    }
+
+    throw Exception("Unrecognized node type ${root.toString()}");
+  }
+
+  /// Get the sliced fragment represented by a range inside a root node.
+  static List<Descendant> fragment(Node root, Range range) {
+    if (root is Text) {
+      throw Exception(
+          "Cannot get a fragment starting from a root text node: ${root.toString()}");
+    }
+
+    Ancestor newRoot = Node.copy(root);
+
+    List<Point> edges = Range.edges(range);
+    Point start = edges[0];
+    Point end = edges[1];
+
+    Iterable<NodeEntry<Node>> nodes =
+        Node.nodes(newRoot, reverse: true, pass: (entry) {
+      return !Range.includes(range, entry.path);
+    });
+
+    for (NodeEntry<Node> entry in nodes) {
+      Path path = entry.path;
+
+      if (!Range.includes(range, path)) {
+        Ancestor parent = Node.parent(newRoot, path);
+        int index = path.at(path.length - 1);
+        parent.children = parent.children.sublist(index, 1);
+      }
+
+      if (Path.equals(path, end.path)) {
+        Text leaf = Node.leaf(newRoot, path);
+        leaf.text = leaf.text.substring(0, end.offset);
+      }
+
+      if (Path.equals(path, start.path)) {
+        Text leaf = Node.leaf(newRoot, path);
+        leaf.text = leaf.text.substring(start.offset);
+      }
+    }
+
+    if (newRoot is Editor) {
+      newRoot.selection = null;
+    }
+
+    return newRoot.children;
+  }
+
+  /// Get the descendant node referred to by a specific path. If the path is an
+  /// empty array, it refers to the root node itself.
   static Node get(Node root, Path path) {
     Node node = root;
-
-    if (node is Text) {
-      throw Exception(
-          "Cannot find a descendant at path [$path] because it refers to a text node instead: $root");
-    }
 
     // Traverse the nodes tree with the given path
     for (int i = 0; i < path.length; i++) {
       int p = path.at(i);
 
-      Ancestor ancestor = node;
+      if (node is Text) {
+        throw Exception(
+            "Cannot find a descendant at path [$path] because it refers to a text node instead: ${node.toString()}");
+      }
 
-      if (ancestor.children[p] == null) {
+      if ((node as Ancestor).children[p] == null) {
         throw Exception(
             "Cannot find a descendant at path [$path] in node: ${root.toString()}");
       }
 
-      node = ancestor.children[p];
+      node = (node as Ancestor).children[p];
     }
 
     return node;
+  }
+
+  /// Check if a descendant node exists at a specific path.
+
+  static bool has(Node root, Path path) {
+    Node node = root;
+
+    for (int i = 0; i < path.length; i++) {
+      int p = path.at(i);
+
+      if (node is Text) {
+        return false;
+      }
+
+      if ((node as Ancestor).children[p] == null) {
+        return false;
+      }
+
+      node = (node as Ancestor).children[p];
+    }
+
+    return true;
+  }
+
+  /// Get the lash node entry in a root node from a path.
+  static NodeEntry last(Node root, Path path) {
+    Path p = path.slice();
+    Node n = Node.get(root, p);
+
+    while (n != null) {
+      if (n is Text) {
+        break;
+      }
+
+      if ((n as Ancestor).children.length == 0) {
+        break;
+      }
+
+      int i = (n as Ancestor).children.length - 1;
+      n = (n as Ancestor).children[i];
+      p.add(i);
+    }
+
+    return NodeEntry(n, p);
+  }
+
+  /// Get the node at a specific path, ensuring it's a leaf text node.
+  static Text leaf(Node root, Path path) {
+    Node node = Node.get(root, path);
+
+    if (!(node is Text)) {
+      throw Exception(
+          "Cannot get the leaf node at path [$path] because it refers to a non-leaf node: ${node.toString()}");
+    }
+
+    return node;
+  }
+
+  /// Return an iterable of the in a branch of the tree, from a specific path.
+  ///
+  /// By default the order is top-down, from lowest to highest node in the tree,
+  /// but you can pass the `reverse: true` option to go bottom-up.
+  static Iterable<NodeEntry> levels(Node root, Path path,
+      {bool reverse}) sync* {
+    for (Path p in Path.levels(path, reverse: reverse)) {
+      Node n = Node.get(root, p);
+      yield NodeEntry(n, p);
+    }
+  }
+
+  /// Return an iterable of all the node entries of a root node. Each entry is
+  /// returned as a `[Node, Path]` tuple, with the path referring to the node's
+  /// position inside the root node.
+  ///
+  /// Optional predicate [pass] whether to "pass" on a node entry.
+  /// Returning true it will exclude the node entry
+  static Iterable<NodeEntry> nodes(Node root,
+      {Path from = const Path([]),
+      Path to,
+      bool reverse = false,
+      bool Function(NodeEntry entry) pass}) sync* {
+    Set<Node> visited = Set();
+    Path p = Path([]);
+    Node n = root;
+
+    while (true) {
+      if (to != null &&
+          (reverse ? Path.isBefore(p, to) : Path.isAfter(p, to))) {
+        break;
+      }
+
+      if (!visited.contains(n)) {
+        yield NodeEntry(n, p);
+      }
+
+      // If we're allowed to go downward and we haven't descended yet, do.
+      if (!visited.contains(n) &&
+          !(n is Text) &&
+          (n as Ancestor).children.length != 0 &&
+          (pass == null || pass(NodeEntry(n, p)) == false)) {
+        visited.add(n);
+        int nextIndex = reverse ? (n as Ancestor).children.length - 1 : 0;
+
+        if (Path.isAncestor(p, from)) {
+          nextIndex = from.at(p.length);
+        }
+
+        p = p.concat(nextIndex);
+        n = Node.get(root, p);
+        continue;
+      }
+
+      // If we're at the root and we can't go down, we're done.
+      if (p.length == 0) {
+        break;
+      }
+
+      // If we're going forward...
+      if (!reverse) {
+        Path newPath = Path.next(p);
+
+        if (Node.has(root, newPath)) {
+          p = newPath;
+          n = Node.get(root, p);
+          continue;
+        }
+      }
+
+      // If we're going backward...
+      if (reverse && p.at(p.length - 1) != 0) {
+        Path newPath = Path.previous(p);
+        p = newPath;
+        n = Node.get(root, p);
+        continue;
+      }
+
+      // Otherwise we're going upward...
+      p = Path.parent(p);
+      n = Node.get(root, p);
+      visited.add(n);
+    }
+  }
+
+  /// Get the parent of a node at a specific path.
+  static Ancestor parent(Node root, Path path) {
+    Path parentPath = Path.parent(path);
+    Node p = Node.get(root, parentPath);
+
+    if (p is Text) {
+      throw Exception(
+          "Cannot get the parent of path [$path] because it does not exist in the root.");
+    }
+
+    return p;
+  }
+
+  /// Get the concatenated text string of a node's content.
+  ///
+  /// Note that this will not include spaces or line breaks between block nodes.
+  /// It is not a user-facing string, but a string for performing offset-related
+  /// computations for a node.
+  static String string(Node node) {
+    if (node is Text) {
+      return node.text;
+    } else {
+      Ancestor n = node;
+      return n.children.map(Node.string).join('');
+    }
+  }
+
+  /// Return an iterable of all leaf text nodes in a root node.
+  static Iterable<NodeEntry<Text>> texts(Node root,
+      {Path from,
+      Path to,
+      bool reverse,
+      bool Function(NodeEntry entry) pass}) sync* {
+    for (NodeEntry entry
+        in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
+      if (entry.node is Text) {
+        yield entry;
+      }
+    }
   }
 }
 
@@ -53,15 +430,15 @@ class Descendant implements Node {}
 class Ancestor implements Node {
   Ancestor({this.children = const <Node>[]});
 
-  final List<Node> children;
+  List<Node> children;
 }
 
 /// `NodeEntry` objects are returned when iterating over the nodes in a Slate
 /// document tree. They consist of the node and its `Path` relative to the root
 /// node in the document.
-class NodeEntry {
+class NodeEntry<T extends Node> {
   NodeEntry(this.node, this.path);
 
-  final Node node;
+  final T node;
   final Path path;
 }
