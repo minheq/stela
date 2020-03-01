@@ -236,4 +236,66 @@ void main() {
       expect(Range.isCollapsed(range), false);
     });
   });
+
+  group("isExpanded", () {
+    test('collapsed', () {
+      Point anchor = Point(Path([0]), 0);
+      Point focus = Point(Path([0]), 0);
+      Range range = Range(anchor, focus);
+
+      expect(Range.isCollapsed(range), false);
+    });
+
+    test('expanded', () {
+      Point anchor = Point(Path([0]), 0);
+      Point focus = Point(Path([3]), 0);
+      Range range = Range(anchor, focus);
+
+      expect(Range.isCollapsed(range), true);
+    });
+  });
+
+  group("isForward", () {
+    test('backward', () {
+      Point anchor = Point(Path([3]), 0);
+      Point focus = Point(Path([0]), 0);
+      Range range = Range(anchor, focus);
+
+      expect(Range.isForward(range), false);
+    });
+
+    test('collapsed', () {
+      Point anchor = Point(Path([0]), 0);
+      Point focus = Point(Path([0]), 0);
+      Range range = Range(anchor, focus);
+
+      expect(Range.isForward(range), true);
+    });
+
+    test('collapsed', () {
+      Point anchor = Point(Path([0]), 0);
+      Point focus = Point(Path([3]), 0);
+      Range range = Range(anchor, focus);
+
+      expect(Range.isForward(range), true);
+    });
+  });
+
+  group("points", () {
+    test('full selection', () {
+      Point anchor = Point(Path([3]), 0);
+      Point focus = Point(Path([0]), 0);
+      Range range = Range(anchor, focus);
+
+      List<PointEntry> pointEntries = Range.points(range);
+      PointEntry p1 = pointEntries[0];
+      PointEntry p2 = pointEntries[1];
+
+      expect(p1.point == anchor, true);
+      expect(p1.type == PointType.anchor, true);
+
+      expect(p2.point == focus, true);
+      expect(p2.type == PointType.focus, true);
+    });
+  });
 }
