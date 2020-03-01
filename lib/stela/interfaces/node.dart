@@ -26,7 +26,7 @@ class Node {
 
     // Traverse the nodes tree with the given path
     for (int i = 0; i < path.length; i++) {
-      int p = path.position(i);
+      int p = path.at(i);
 
       Ancestor ancestor = node;
 
