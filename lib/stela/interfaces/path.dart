@@ -7,7 +7,7 @@ import 'package:inday/stela/interfaces/location.dart';
 /// a Slate node tree. Although they are usually relative to the root `Editor`
 /// object, they can be relative to any `Node` object.
 class Path implements Location {
-  Path([List<int> path]) : path = path ?? [];
+  Path(this.path);
 
   final List<int> path;
 
@@ -66,7 +66,7 @@ class Path implements Location {
 
   /// Get the common ancestor path of two paths.
   static Path common(Path path, Path another) {
-    Path common = Path();
+    Path common = Path([]);
 
     for (int i = 0; i < path.length && i < another.length; i++) {
       int av = path.at(i);
