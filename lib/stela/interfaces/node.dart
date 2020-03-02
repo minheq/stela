@@ -9,8 +9,8 @@ import 'package:inday/stela/interfaces/text.dart';
 /// occur in a document tree.
 class Node {
   /// Get the node at a specific path, asserting that it's an ancestor node.
-  static Node ancestor(Node root, Path path) {
-    Node node = Node.get(root, path);
+  static Ancestor ancestor(Node root, Path path) {
+    Ancestor node = Node.get(root, path);
 
     if (node is Text) {
       throw Exception(
@@ -114,14 +114,15 @@ class Node {
   static Iterable<NodeEntry<Descendant>> descendants(Node root,
       {Path from,
       Path to,
-      bool reverse,
+      bool reverse = false,
       bool Function(NodeEntry entry) pass}) sync* {
-    for (NodeEntry entry
+    for (NodeEntry node
         in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
-      if (entry.path.length != 0) {
+      if (node.path.length != 0) {
+        node = NodeEntry<Descendant>(node.node, node.path);
         // NOTE: we have to coerce here because checking the path's length does
         // guarantee that `node` is not a `Editor`, but TypeScript doesn't know.
-        yield entry;
+        yield node;
       }
     }
   }
@@ -132,7 +133,7 @@ class Node {
   static Iterable<ElementEntry> elements(Node root,
       {Path from,
       Path to,
-      bool reverse,
+      bool reverse = false,
       bool Function(NodeEntry entry) pass}) sync* {
     for (NodeEntry entry
         in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
@@ -236,7 +237,6 @@ class Node {
   }
 
   /// Check if a descendant node exists at a specific path.
-
   static bool has(Node root, Path path) {
     Node node = root;
 
@@ -247,7 +247,9 @@ class Node {
         return false;
       }
 
-      if ((node as Ancestor).children[p] == null) {
+      // Position p (child index) is greater than the node's children length
+      if ((node as Ancestor).children.length - 1 < p ||
+          (node as Ancestor).children[p] == null) {
         return false;
       }
 
@@ -296,7 +298,7 @@ class Node {
   /// By default the order is top-down, from lowest to highest node in the tree,
   /// but you can pass the `reverse: true` option to go bottom-up.
   static Iterable<NodeEntry> levels(Node root, Path path,
-      {bool reverse}) sync* {
+      {bool reverse = false}) sync* {
     for (Path p in Path.levels(path, reverse: reverse)) {
       Node n = Node.get(root, p);
       yield NodeEntry(n, p);
@@ -307,13 +309,15 @@ class Node {
   /// returned as a `[Node, Path]` tuple, with the path referring to the node's
   /// position inside the root node.
   ///
-  /// Optional predicate [pass] whether to "pass" on a node entry.
-  /// Returning true it will exclude the node entry
+  /// Optional predicate [pass] to exclude a node entry.
+  /// Optional path [from] to indicate from which path to take nodes from.
+  /// Note that it will still include root node
   static Iterable<NodeEntry> nodes(Node root,
-      {Path from = const Path([]),
+      {Path from,
       Path to,
       bool reverse = false,
       bool Function(NodeEntry entry) pass}) sync* {
+    from = from ?? Path([]);
     Set<Node> visited = Set();
     Path p = Path([]);
     Node n = root;
@@ -407,7 +411,7 @@ class Node {
   static Iterable<NodeEntry<Text>> texts(Node root,
       {Path from,
       Path to,
-      bool reverse,
+      bool reverse = false,
       bool Function(NodeEntry entry) pass}) sync* {
     for (NodeEntry entry
         in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
