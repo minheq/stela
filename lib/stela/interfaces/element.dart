@@ -9,15 +9,10 @@ class Element implements Ancestor, Descendant {
 
   List<Node> children;
 
-  /// Check if the node is `Element` node
-  static bool isElement(Node node) {
-    return node is Element;
-  }
-
   /// Check if list of nodes consist of only `Element` nodes.
   static bool isElementList(List<Node> nodes) {
     for (Node node in nodes) {
-      if (Element.isElement(node) == false) {
+      if (node is Element == false) {
         return false;
       }
     }

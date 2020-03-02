@@ -25,12 +25,11 @@ class Node {
   /// By default the order is bottom-up, from lowest to highest ancestor in
   /// the tree, but you can pass the `reverse: true` option to go top-down.
   static Iterable<NodeEntry<Ancestor>> ancestors(Node root, Path path,
-      {bool reverse}) sync* {
+      {bool reverse = false}) sync* {
     for (Path p in Path.ancestors(path, reverse: reverse)) {
       Ancestor n = Node.ancestor(root, p);
-      NodeEntry<Ancestor> entry = NodeEntry(n, p);
 
-      yield entry;
+      yield NodeEntry(n, p);
     }
   }
 
