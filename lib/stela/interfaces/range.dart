@@ -185,3 +185,11 @@ class Range implements Location {
   //   })
   // }
 }
+
+class Decoration extends Range {
+  Decoration(Point anchor, Point focus, {props})
+      : props = props ?? {},
+        super(anchor, focus);
+
+  Map<String, dynamic> props;
+}

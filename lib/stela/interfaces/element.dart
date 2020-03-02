@@ -19,24 +19,6 @@ class Element implements Ancestor, Descendant {
 
     return true;
   }
-
-  // /// Check if an element matches set of properties.
-  // ///
-  // /// Note: this checks custom properties, and it does not ensure that any
-  // /// children are equivalent.
-  // matches(element: Element, props: Partial<Element>): boolean {
-  //   for (const key in props) {
-  //     if (key === 'children') {
-  //       continue
-  //     }
-
-  //     if (element[key] !== props[key]) {
-  //       return false
-  //     }
-  //   }
-
-  //   return true
-  // }
 }
 
 /// `ElementEntry` objects refer to an `Element` and the `Path` where it can be

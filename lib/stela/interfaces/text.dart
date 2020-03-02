@@ -1,12 +1,27 @@
 import 'package:inday/stela/interfaces/node.dart';
+import 'package:inday/stela/interfaces/point.dart';
+import 'package:inday/stela/interfaces/range.dart';
 
 /// `Text` objects represent the nodes that contain the actual text content of a
 /// document along with any formatting properties. They are always leaf
 /// nodes in the document tree as they cannot contain any children.
 class Text implements Descendant {
-  Text(this.text);
+  Text(this.text, {props}) : _props = props ?? {};
 
+  /// Text content
   String text;
+
+  /// Custom properties that can extend the `Text` behavior
+  Map<String, dynamic> _props;
+
+  get props {
+    return _props;
+  }
+
+  /// Add custom properties to the `Text`
+  void addProps(Map<String, dynamic> props) {
+    _props.addAll(props);
+  }
 
   /// Check if two `Text` nodes are equal.
   static bool equals(Text text, Text another) {
@@ -24,91 +39,75 @@ class Text implements Descendant {
     return true;
   }
 
-  // /// Check if an `Text` matches set of properties.
-  // ///
-  // /// Note: this is for matching custom properties, and it does not ensure that
-  // /// the `text` property are two nodes equal.
-  // static bool matches(Text text, Object props) {
-  //   for (var key in props) {
-  //     if (key == 'text') {
-  //       continue;
-  //     }
+  /// Get the leaves for a text node given decorations.
+  static List<Text> decorations(Text text, List<Decoration> decorations) {
+    List<Text> leaves = [text];
 
-  //     // if (text[key] != props[key]) {
-  //     //   return false;
-  //     // }
-  //   }
+    for (Decoration dec in decorations) {
+      List<Point> edges = Range.edges(dec);
+      Point start = edges[0];
+      Point end = edges[1];
 
-  //   return true;
-  // }
+      List<Text> next = [];
+      int o = 0;
 
-  // /// Get the leaves for a text node given decorations.
-  // static List<Text> decorations(Text text, List<Range> decorations) {
-  //   List<Text> leaves = [text];
+      for (Text leaf in leaves) {
+        int length = leaf.text.length;
+        int offset = o;
+        o += length;
 
-  //   for (Range decoration in decorations) {
-  //     const { anchor, focus, ...rest } = decoration;
-  //     const [start, end] = Range.edges(dec)
-  //     const next = []
-  //     let o = 0
+        // If the range encompases the entire leaf, add the range.
+        if (start.offset <= offset && end.offset >= offset + length) {
+          leaf.addProps(dec.props);
+          next.add(leaf);
+          continue;
+        }
 
-  //     for (const leaf of leaves) {
-  //       const { length } = leaf.text
-  //       const offset = o
-  //       o += length
+        // If the range starts after the leaf, or ends before it, continue.
+        if (start.offset > offset + length ||
+            end.offset < offset ||
+            (end.offset == offset && offset != 0)) {
+          next.add(leaf);
+          continue;
+        }
 
-  //       // If the range encompases the entire leaf, add the range.
-  //       if (start.offset <= offset && end.offset >= offset + length) {
-  //         Object.assign(leaf, rest)
-  //         next.push(leaf)
-  //         continue
-  //       }
+        // Otherwise we need to split the leaf, at the start, end, or both,
+        // and add the range to the middle intersecting section. Do the end
+        // split first since we don't need to update the offset that way.
+        Text middle = leaf;
+        Text before;
+        Text after;
 
-  //       // If the range starts after the leaf, or ends before it, continue.
-  //       if (
-  //         start.offset > offset + length ||
-  //         end.offset < offset ||
-  //         (end.offset === offset && offset !== 0)
-  //       ) {
-  //         next.push(leaf)
-  //         continue
-  //       }
+        if (end.offset < offset + length) {
+          int off = end.offset - offset;
 
-  //       // Otherwise we need to split the leaf, at the start, end, or both,
-  //       // and add the range to the middle intersecting section. Do the end
-  //       // split first since we don't need to update the offset that way.
-  //       let middle = leaf
-  //       let before
-  //       let after
+          after = Text(middle.text.substring(off), props: middle.props);
+          middle = Text(middle.text.substring(0, off), props: middle.props);
+        }
 
-  //       if (end.offset < offset + length) {
-  //         const off = end.offset - offset
-  //         after = { ...middle, text: middle.text.slice(off) }
-  //         middle = { ...middle, text: middle.text.slice(0, off) }
-  //       }
+        if (start.offset > offset) {
+          int off = start.offset - offset;
 
-  //       if (start.offset > offset) {
-  //         const off = start.offset - offset
-  //         before = { ...middle, text: middle.text.slice(0, off) }
-  //         middle = { ...middle, text: middle.text.slice(off) }
-  //       }
+          before = Text(middle.text.substring(0, off), props: middle.props);
+          middle = Text(middle.text.substring(off), props: middle.props);
+        }
 
-  //       Object.assign(middle, rest)
+        middle.addProps(dec.props);
 
-  //       if (before) {
-  //         next.push(before)
-  //       }
+        if (before != null) {
+          next.add(before);
+        }
 
-  //       next.push(middle)
+        next.add(middle);
 
-  //       if (after) {
-  //         next.push(after)
-  //       }
-  //     }
+        if (after != null) {
+          next.add(after);
+        }
+      }
 
-  //     leaves = next
-  //   }
+      leaves = next;
+    }
 
-  //   return leaves
-  // }
+    return leaves;
+  }
 }
