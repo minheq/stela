@@ -76,6 +76,29 @@ class Node {
     return NodeEntry(n, p);
   }
 
+  /// Returns a new instance of the node
+  static Node copy(Node root) {
+    if (root is Text) {
+      return Text(root.text);
+    }
+
+    List<Node> copiedChildren = [];
+
+    for (Node node in (root as Ancestor).children) {
+      copiedChildren.add(Node.copy(node));
+    }
+
+    if (root is Element) {
+      return Element(children: copiedChildren);
+    }
+
+    if (root is Editor) {
+      return Editor(children: copiedChildren);
+    }
+
+    throw Exception("Unrecognized node type ${root.toString()}");
+  }
+
   /// Get the node at a specific path, asserting that it's a descendant node.
   static Descendant descendant(Node root, Path path) {
     Node node = Node.get(root, path);
@@ -141,29 +164,6 @@ class Node {
     }
 
     return NodeEntry(n, p);
-  }
-
-  /// Returns a new instance of the node
-  static Node copy(Node root) {
-    if (root is Text) {
-      return Text(root.text);
-    }
-
-    List<Node> copiedChildren = [];
-
-    for (Node node in (root as Ancestor).children) {
-      copiedChildren.add(Node.copy(node));
-    }
-
-    if (root is Element) {
-      return Element(children: copiedChildren);
-    }
-
-    if (root is Editor) {
-      return Editor(children: copiedChildren);
-    }
-
-    throw Exception("Unrecognized node type ${root.toString()}");
   }
 
   /// Get the sliced fragment represented by a range inside a root node.
