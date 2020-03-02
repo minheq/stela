@@ -1,4 +1,7 @@
+import 'dart:math';
+
 import 'package:inday/stela/interfaces/location.dart';
+import 'package:inday/stela/interfaces/operation.dart';
 import 'package:inday/stela/interfaces/path.dart';
 
 /// `Point` objects refer to a specific location in a text node in a Slate
@@ -42,84 +45,72 @@ class Point implements Location {
     return Point.compare(point, another) == -1;
   }
 
-  // /**
-  //  * Transform a point by an operation.
-  //  */
+  /// Transform a point by an operation.
+  static Point transform(Point point, Operation op,
+      {Affinity affinity = Affinity.forward}) {
+    Point p = Point(point.path, point.offset);
+    Path path = p.path;
+    int offset = p.offset;
 
-  // transform(
-  //   point: Point,
-  //   op: Operation,
-  //   options: { affinity?: 'forward' | 'backward' | null } = {}
-  // ): Point | null {
-  //   return produce(point, p => {
-  //     const { affinity = 'forward' } = options
-  //     const { path, offset } = p
+    if (op is InsertNodeOperation || op is MoveNodeOperation) {
+      p.path = Path.transform(path, op, affinity: affinity);
+      return p;
+    }
 
-  //     switch (op.type) {
-  //       case 'insert_node':
-  //       case 'move_node': {
-  //         p.path = Path.transform(path, op, options)!
-  //         break
-  //       }
+    if (op is InsertTextOperation) {
+      if (Path.equals(op.path, path) && op.offset <= offset) {
+        p.offset += op.text.length;
+      }
+      return p;
+    }
 
-  //       case 'insert_text': {
-  //         if (Path.equals(op.path, path) && op.offset <= offset) {
-  //           p.offset += op.text.length
-  //         }
+    if (op is MergeNodeOperation) {
+      if (Path.equals(op.path, path)) {
+        p.offset += op.position;
+      }
 
-  //         break
-  //       }
+      p.path = Path.transform(path, op, affinity: affinity);
 
-  //       case 'merge_node': {
-  //         if (Path.equals(op.path, path)) {
-  //           p.offset += op.position
-  //         }
+      return p;
+    }
 
-  //         p.path = Path.transform(path, op, options)!
-  //         break
-  //       }
+    if (op is RemoveTextOperation) {
+      if (Path.equals(op.path, path) && op.offset <= offset) {
+        p.offset -= min(offset - op.offset, op.text.length);
+      }
 
-  //       case 'remove_text': {
-  //         if (Path.equals(op.path, path) && op.offset <= offset) {
-  //           p.offset -= Math.min(offset - op.offset, op.text.length)
-  //         }
+      return p;
+    }
 
-  //         break
-  //       }
+    if (op is RemoveNodeOperation) {
+      if (Path.equals(op.path, path) || Path.isAncestor(op.path, path)) {
+        return null;
+      }
 
-  //       case 'remove_node': {
-  //         if (Path.equals(op.path, path) || Path.isAncestor(op.path, path)) {
-  //           return null
-  //         }
+      p.path = Path.transform(path, op, affinity: affinity);
 
-  //         p.path = Path.transform(path, op, options)!
-  //         break
-  //       }
+      return p;
+    }
 
-  //       case 'split_node': {
-  //         if (Path.equals(op.path, path)) {
-  //           if (op.position == offset && affinity == null) {
-  //             return null
-  //           } else if (
-  //             op.position < offset ||
-  //             (op.position == offset && affinity == 'forward')
-  //           ) {
-  //             p.offset -= op.position
+    if (op is SplitNodeOperation) {
+      if (Path.equals(op.path, path)) {
+        if (op.position == offset && affinity == null) {
+          return null;
+        } else if (op.position < offset ||
+            (op.position == offset && affinity == Affinity.forward)) {
+          p.offset -= op.position;
 
-  //             p.path = Path.transform(path, op, {
-  //               ...options,
-  //               affinity: 'forward',
-  //             })!
-  //           }
-  //         } else {
-  //           p.path = Path.transform(path, op, options)!
-  //         }
+          p.path = Path.transform(path, op, affinity: Affinity.forward);
+        }
+      } else {
+        p.path = Path.transform(path, op, affinity: affinity);
+      }
 
-  //         break
-  //       }
-  //     }
-  //   })
-  // }
+      return p;
+    }
+
+    return null;
+  }
 }
 
 enum PointType { anchor, focus }

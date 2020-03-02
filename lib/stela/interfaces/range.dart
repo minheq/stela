@@ -1,4 +1,5 @@
 import 'package:inday/stela/interfaces/location.dart';
+import 'package:inday/stela/interfaces/operation.dart';
 import 'package:inday/stela/interfaces/path.dart';
 import 'package:inday/stela/interfaces/point.dart';
 
@@ -138,52 +139,47 @@ class Range implements Location {
     return start;
   }
 
-  // /**
-  //  * Transform a range by an operation.
-  //  */
+  /// Transform a range by an operation.
+  static Range transform(Range range, Operation op,
+      {Affinity affinity = Affinity.inward}) {
+    Affinity affinityAnchor;
+    Affinity affinityFocus;
 
-  // transform(
-  //   range: Range,
-  //   op: Operation,
-  //   options: { affinity: 'forward' | 'backward' | 'outward' | 'inward' | null }
-  // ): Range | null {
-  //   const { affinity = 'inward' } = options
-  //   let affinityAnchor: 'forward' | 'backward' | null
-  //   let affinityFocus: 'forward' | 'backward' | null
+    if (affinity == Affinity.inward) {
+      if (Range.isForward(range)) {
+        affinityAnchor = Affinity.forward;
+        affinityFocus = Affinity.backward;
+      } else {
+        affinityAnchor = Affinity.backward;
+        affinityFocus = Affinity.forward;
+      }
+    } else if (affinity == Affinity.outward) {
+      if (Range.isForward(range)) {
+        affinityAnchor = Affinity.backward;
+        affinityFocus = Affinity.forward;
+      } else {
+        affinityAnchor = Affinity.forward;
+        affinityFocus = Affinity.backward;
+      }
+    } else {
+      affinityAnchor = affinity;
+      affinityFocus = affinity;
+    }
 
-  //   if (affinity == 'inward') {
-  //     if (Range.isForward(range)) {
-  //       affinityAnchor = 'forward'
-  //       affinityFocus = 'backward'
-  //     } else {
-  //       affinityAnchor = 'backward'
-  //       affinityFocus = 'forward'
-  //     }
-  //   } else if (affinity == 'outward') {
-  //     if (Range.isForward(range)) {
-  //       affinityAnchor = 'backward'
-  //       affinityFocus = 'forward'
-  //     } else {
-  //       affinityAnchor = 'forward'
-  //       affinityFocus = 'backward'
-  //     }
-  //   } else {
-  //     affinityAnchor = affinity
-  //     affinityFocus = affinity
-  //   }
+    Range r = Range(range.anchor, range.focus);
 
-  //   return produce(range, r => {
-  //     const anchor = Point.transform(r.anchor, op, { affinity: affinityAnchor })
-  //     const focus = Point.transform(r.focus, op, { affinity: affinityFocus })
+    Point anchor = Point.transform(r.anchor, op, affinity: affinityAnchor);
+    Point focus = Point.transform(r.focus, op, affinity: affinityFocus);
 
-  //     if (!anchor || !focus) {
-  //       return null
-  //     }
+    if (anchor == null || focus == null) {
+      return null;
+    }
 
-  //     r.anchor = anchor
-  //     r.focus = focus
-  //   })
-  // }
+    r.anchor = anchor;
+    r.focus = focus;
+
+    return r;
+  }
 }
 
 class Decoration extends Range {

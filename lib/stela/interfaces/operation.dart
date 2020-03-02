@@ -81,3 +81,10 @@ class RemoveTextOperation implements TextOperation {
   final int offset;
   final String text;
 }
+
+enum Affinity {
+  forward,
+  backward,
+  outward,
+  inward,
+}

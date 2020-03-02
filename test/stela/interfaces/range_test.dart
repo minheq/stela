@@ -243,7 +243,7 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isCollapsed(range), false);
+      expect(Range.isExpanded(range), false);
     });
 
     test('expanded', () {
@@ -251,7 +251,7 @@ void main() {
       Point focus = Point(Path([3]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isCollapsed(range), true);
+      expect(Range.isExpanded(range), true);
     });
   });
 
@@ -287,7 +287,8 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      List<PointEntry> pointEntries = Range.points(range);
+      List<PointEntry> pointEntries =
+          List<PointEntry>.from(Range.points(range));
       PointEntry p1 = pointEntries[0];
       PointEntry p2 = pointEntries[1];
 

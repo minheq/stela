@@ -59,7 +59,9 @@ class Node {
 
     while (reverse ? index >= 0 : index < ancestor.children.length) {
       Descendant child = Node.child(ancestor, index);
-      Path childPath = path.concat(index);
+      List<int> newPositions = List.from(path.path);
+      newPositions.add(index);
+      Path childPath = Path(newPositions);
 
       yield NodeEntry<Descendant>(child, childPath);
 
@@ -160,7 +162,7 @@ class Node {
       }
 
       n = (n as Ancestor).children[0];
-      p.add(0);
+      p.path.add(0);
     }
 
     return NodeEntry(n, p);
@@ -275,7 +277,7 @@ class Node {
 
       int i = (n as Ancestor).children.length - 1;
       n = (n as Ancestor).children[i];
-      p.add(i);
+      p.path.add(i);
     }
 
     return NodeEntry(n, p);
@@ -343,8 +345,9 @@ class Node {
         if (Path.isAncestor(p, from)) {
           nextIndex = from.at(p.length);
         }
-
-        p = p.concat(nextIndex);
+        List<int> newPositions = List.from(p.path);
+        newPositions.add(nextIndex);
+        p = Path(newPositions);
         n = Node.get(root, p);
         continue;
       }
