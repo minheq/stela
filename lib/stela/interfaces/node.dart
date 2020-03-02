@@ -402,8 +402,7 @@ class Node {
     if (node is Text) {
       return node.text;
     } else {
-      Ancestor n = node;
-      return n.children.map(Node.string).join('');
+      return (node as Ancestor).children.map(Node.string).join('');
     }
   }
 
@@ -413,10 +412,11 @@ class Node {
       Path to,
       bool reverse = false,
       bool Function(NodeEntry entry) pass}) sync* {
-    for (NodeEntry entry
+    for (NodeEntry node
         in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
-      if (entry.node is Text) {
-        yield entry;
+      if (node.node is Text) {
+        node = NodeEntry<Text>(node.node, node.path);
+        yield node;
       }
     }
   }
