@@ -7,10 +7,36 @@ import 'package:inday/stela/interfaces/text.dart';
 
 /// The `Node` represents all of the different types of nodes that
 /// occur in a document tree.
-class Node {
+class Node {}
+
+/// The `Descendant` represents nodes that are descendants in the
+/// tree. It is returned as a convenience in certain cases to narrow a value
+/// further than the more generic `Node` union.
+class Descendant implements Node {}
+
+/// The `Ancestor` represents nodes that are ancestors in the tree.
+/// It is returned as a convenience in certain cases to narrow a value further
+/// than the more generic `Node` union.
+class Ancestor implements Node {
+  Ancestor({this.children = const <Node>[]});
+
+  List<Node> children;
+}
+
+/// `NodeEntry` objects are returned when iterating over the nodes in a Slate
+/// document tree. They consist of the node and its `Path` relative to the root
+/// node in the document.
+class NodeEntry<T extends Node> {
+  NodeEntry(this.node, this.path);
+
+  final T node;
+  final Path path;
+}
+
+class NodeUtils {
   /// Get the node at a specific path, asserting that it's an ancestor node.
   static Ancestor ancestor(Node root, Path path) {
-    Ancestor node = Node.get(root, path);
+    Ancestor node = NodeUtils.get(root, path);
 
     if (node is Text) {
       throw Exception(
@@ -27,7 +53,7 @@ class Node {
   static Iterable<NodeEntry<Ancestor>> ancestors(Node root, Path path,
       {bool reverse = false}) sync* {
     for (Path p in PathUtils.ancestors(path, reverse: reverse)) {
-      Ancestor n = Node.ancestor(root, p);
+      Ancestor n = NodeUtils.ancestor(root, p);
 
       yield NodeEntry(n, p);
     }
@@ -54,11 +80,11 @@ class Node {
 
   static Iterable<NodeEntry<Descendant>> children(Node root, Path path,
       {bool reverse = false}) sync* {
-    Ancestor ancestor = Node.ancestor(root, path);
+    Ancestor ancestor = NodeUtils.ancestor(root, path);
     int index = reverse ? ancestor.children.length - 1 : 0;
 
     while (reverse ? index >= 0 : index < ancestor.children.length) {
-      Descendant child = Node.child(ancestor, index);
+      Descendant child = NodeUtils.child(ancestor, index);
       List<int> newPositions = List.from(path.path);
       newPositions.add(index);
       Path childPath = Path(newPositions);
@@ -72,7 +98,7 @@ class Node {
   /// Get an entry for the common ancestor node of two paths.
   static NodeEntry common(Node root, Path path, Path another) {
     Path p = PathUtils.common(path, another);
-    Node n = Node.get(root, p);
+    Node n = NodeUtils.get(root, p);
 
     return NodeEntry(n, p);
   }
@@ -86,7 +112,7 @@ class Node {
     List<Node> copiedChildren = [];
 
     for (Node node in (root as Ancestor).children) {
-      copiedChildren.add(Node.copy(node));
+      copiedChildren.add(NodeUtils.copy(node));
     }
 
     if (root is Element) {
@@ -102,7 +128,7 @@ class Node {
 
   /// Get the node at a specific path, asserting that it's a descendant node.
   static Descendant descendant(Node root, Path path) {
-    Node node = Node.get(root, path);
+    Node node = NodeUtils.get(root, path);
 
     if (node is Editor) {
       throw Exception(
@@ -118,8 +144,8 @@ class Node {
       Path to,
       bool reverse = false,
       bool Function(NodeEntry entry) pass}) sync* {
-    for (NodeEntry node
-        in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
+    for (NodeEntry node in NodeUtils.nodes(root,
+        from: from, to: to, reverse: reverse, pass: pass)) {
       if (node.path.length != 0) {
         node = NodeEntry<Descendant>(node.node, node.path);
         // NOTE: we have to coerce here because checking the path's length does
@@ -137,8 +163,8 @@ class Node {
       Path to,
       bool reverse = false,
       bool Function(NodeEntry entry) pass}) sync* {
-    for (NodeEntry entry
-        in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
+    for (NodeEntry entry in NodeUtils.nodes(root,
+        from: from, to: to, reverse: reverse, pass: pass)) {
       if (entry.node is Element) {
         ElementEntry elemEntry = ElementEntry(entry.node, entry.path);
 
@@ -150,7 +176,7 @@ class Node {
   /// Get the first node entry in a root node from a path.
   static NodeEntry first(Node root, Path path) {
     Path p = path.slice();
-    Node n = Node.get(root, p);
+    Node n = NodeUtils.get(root, p);
 
     while (n != null) {
       if (n is Text) {
@@ -175,14 +201,14 @@ class Node {
           "Cannot get a fragment starting from a root text node: ${root.toString()}");
     }
 
-    Ancestor newRoot = Node.copy(root);
+    Ancestor newRoot = NodeUtils.copy(root);
 
     Edges edges = RangeUtils.edges(range);
     Point start = edges.start;
     Point end = edges.end;
 
     Iterable<NodeEntry<Node>> nodes =
-        Node.nodes(newRoot, reverse: true, pass: (entry) {
+        NodeUtils.nodes(newRoot, reverse: true, pass: (entry) {
       return !RangeUtils.includes(range, entry.path);
     });
 
@@ -190,18 +216,18 @@ class Node {
       Path path = entry.path;
 
       if (!RangeUtils.includes(range, path)) {
-        Ancestor parent = Node.parent(newRoot, path);
+        Ancestor parent = NodeUtils.parent(newRoot, path);
         int index = path.path[path.length - 1];
         parent.children = parent.children.sublist(index, 1);
       }
 
       if (PathUtils.equals(path, end.path)) {
-        Text leaf = Node.leaf(newRoot, path);
+        Text leaf = NodeUtils.leaf(newRoot, path);
         leaf.text = leaf.text.substring(0, end.offset);
       }
 
       if (PathUtils.equals(path, start.path)) {
-        Text leaf = Node.leaf(newRoot, path);
+        Text leaf = NodeUtils.leaf(newRoot, path);
         leaf.text = leaf.text.substring(start.offset);
       }
     }
@@ -264,7 +290,7 @@ class Node {
   /// Get the lash node entry in a root node from a path.
   static NodeEntry last(Node root, Path path) {
     Path p = path.slice();
-    Node n = Node.get(root, p);
+    Node n = NodeUtils.get(root, p);
 
     while (n != null) {
       if (n is Text) {
@@ -285,7 +311,7 @@ class Node {
 
   /// Get the node at a specific path, ensuring it's a leaf text node.
   static Text leaf(Node root, Path path) {
-    Node node = Node.get(root, path);
+    Node node = NodeUtils.get(root, path);
 
     if (!(node is Text)) {
       throw Exception(
@@ -302,7 +328,7 @@ class Node {
   static Iterable<NodeEntry> levels(Node root, Path path,
       {bool reverse = false}) sync* {
     for (Path p in PathUtils.levels(path, reverse: reverse)) {
-      Node n = Node.get(root, p);
+      Node n = NodeUtils.get(root, p);
       yield NodeEntry(n, p);
     }
   }
@@ -348,7 +374,7 @@ class Node {
         List<int> newPositions = List.from(p.path);
         newPositions.add(nextIndex);
         p = Path(newPositions);
-        n = Node.get(root, p);
+        n = NodeUtils.get(root, p);
         continue;
       }
 
@@ -361,9 +387,9 @@ class Node {
       if (!reverse) {
         Path newPath = PathUtils.next(p);
 
-        if (Node.has(root, newPath)) {
+        if (NodeUtils.has(root, newPath)) {
           p = newPath;
-          n = Node.get(root, p);
+          n = NodeUtils.get(root, p);
           continue;
         }
       }
@@ -372,13 +398,13 @@ class Node {
       if (reverse && p.path[p.length - 1] != 0) {
         Path newPath = PathUtils.previous(p);
         p = newPath;
-        n = Node.get(root, p);
+        n = NodeUtils.get(root, p);
         continue;
       }
 
       // Otherwise we're going upward...
       p = PathUtils.parent(p);
-      n = Node.get(root, p);
+      n = NodeUtils.get(root, p);
       visited.add(n);
     }
   }
@@ -386,7 +412,7 @@ class Node {
   /// Get the parent of a node at a specific path.
   static Ancestor parent(Node root, Path path) {
     Path parentPath = PathUtils.parent(path);
-    Node p = Node.get(root, parentPath);
+    Node p = NodeUtils.get(root, parentPath);
 
     if (p is Text) {
       throw Exception(
@@ -405,7 +431,7 @@ class Node {
     if (node is Text) {
       return node.text;
     } else {
-      return (node as Ancestor).children.map(Node.string).join('');
+      return (node as Ancestor).children.map(NodeUtils.string).join('');
     }
   }
 
@@ -415,36 +441,12 @@ class Node {
       Path to,
       bool reverse = false,
       bool Function(NodeEntry entry) pass}) sync* {
-    for (NodeEntry node
-        in Node.nodes(root, from: from, to: to, reverse: reverse, pass: pass)) {
+    for (NodeEntry node in NodeUtils.nodes(root,
+        from: from, to: to, reverse: reverse, pass: pass)) {
       if (node.node is Text) {
         node = NodeEntry<Text>(node.node, node.path);
         yield node;
       }
     }
   }
-}
-
-/// The `Descendant` represents nodes that are descendants in the
-/// tree. It is returned as a convenience in certain cases to narrow a value
-/// further than the more generic `Node` union.
-class Descendant implements Node {}
-
-/// The `Ancestor` represents nodes that are ancestors in the tree.
-/// It is returned as a convenience in certain cases to narrow a value further
-/// than the more generic `Node` union.
-class Ancestor implements Node {
-  Ancestor({this.children = const <Node>[]});
-
-  List<Node> children;
-}
-
-/// `NodeEntry` objects are returned when iterating over the nodes in a Slate
-/// document tree. They consist of the node and its `Path` relative to the root
-/// node in the document.
-class NodeEntry<T extends Node> {
-  NodeEntry(this.node, this.path);
-
-  final T node;
-  final Path path;
 }
