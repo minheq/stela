@@ -10,12 +10,12 @@ import 'package:inday/stela/interfaces/range.dart';
 import 'package:inday/stela/interfaces/range_ref.dart';
 import 'package:inday/stela/interfaces/text.dart';
 
-Expando<List<Path>> DIRTY_PATHS = Expando();
-Expando<bool> FLUSHING = Expando();
-Expando<bool> NORMALIZING = Expando();
-Expando<Set<PathRef>> PATH_REFS = Expando();
-Expando<Set<PointRef>> POINT_REFS = Expando();
-Expando<Set<RangeRef>> RANGE_REFS = Expando();
+Expando<List<Path>> dirtyPaths = Expando();
+// Expando<bool> _flushing = Expando();
+Expando<bool> _normalizing = Expando();
+Expando<Set<PathRef>> _pathRefs = Expando();
+Expando<Set<PointRef>> _pointRefs = Expando();
+Expando<Set<RangeRef>> _rangeRefs = Expando();
 
 /// The `Editor` interface stores all the state of a Stela editor. It is extended
 /// by plugins that wish to add their own helpers and implement new behaviors.
@@ -302,9 +302,9 @@ class EditorUtils {
     return (node is Element) && editor.isInline(node);
   }
 
-  /// Check if the editor is currently normalizing after each operation.
+  /// Check if the editor is currently _normalizing after each operation.
   static bool isNormalizing(Editor editor) {
-    bool isNormalizing = NORMALIZING[editor];
+    bool isNormalizing = _normalizing[editor];
 
     return isNormalizing == null ? true : isNormalizing;
   }
@@ -615,7 +615,7 @@ class EditorUtils {
   /// Normalize any dirty objects in the editor.
   static normalize(Editor editor, {bool force = false}) {
     List<Path> Function(Editor editor) getDirtyPaths = (Editor editor) {
-      return DIRTY_PATHS[editor] ?? [];
+      return dirtyPaths[editor] ?? [];
     };
 
     if (!EditorUtils.isNormalizing(editor)) {
@@ -628,7 +628,7 @@ class EditorUtils {
       for (NodeEntry node in nodes) {
         allPaths.add(node.path);
       }
-      DIRTY_PATHS[editor] = allPaths;
+      dirtyPaths[editor] = allPaths;
     }
 
     if (getDirtyPaths(editor).length == 0) {
@@ -732,11 +732,11 @@ class EditorUtils {
 
   /// Get the set of currently tracked path refs of the editor.
   static Set<PathRef> pathRefs(Editor editor) {
-    Set<PathRef> refs = PATH_REFS[editor];
+    Set<PathRef> refs = _pathRefs[editor];
 
     if (refs == null) {
       refs = Set();
-      PATH_REFS[editor] = refs;
+      _pathRefs[editor] = refs;
     }
 
     return refs;
@@ -799,11 +799,11 @@ class EditorUtils {
 
   /// Get the set of currently tracked point refs of the editor.
   static Set<PointRef> pointRefs(Editor editor) {
-    Set<PointRef> refs = POINT_REFS[editor];
+    Set<PointRef> refs = _pointRefs[editor];
 
     if (refs == null) {
       refs = Set();
-      POINT_REFS[editor] = refs;
+      _pointRefs[editor] = refs;
     }
 
     return refs;
@@ -1023,11 +1023,11 @@ class EditorUtils {
 
   /// Get the set of currently tracked range refs of the editor.
   static Set<RangeRef> rangeRefs(Editor editor) {
-    Set<RangeRef> refs = RANGE_REFS[editor];
+    Set<RangeRef> refs = _rangeRefs[editor];
 
     if (refs == null) {
       refs = Set();
-      RANGE_REFS[editor] = refs;
+      _rangeRefs[editor] = refs;
     }
 
     return refs;
@@ -1413,9 +1413,9 @@ class EditorUtils {
   /// Call a function, deferring normalization until after it completes.
   static void withoutNormalizing(Editor editor, void Function() fn) {
     bool value = EditorUtils.isNormalizing(editor);
-    NORMALIZING[editor] = false;
+    _normalizing[editor] = false;
     fn();
-    NORMALIZING[editor] = value;
+    _normalizing[editor] = value;
     EditorUtils.normalize(editor);
   }
 }
