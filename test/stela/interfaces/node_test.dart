@@ -26,10 +26,10 @@ void main() {
           Node.ancestors(editor, Path([0, 0]), reverse: true));
 
       expect(nodes[0].node, editor.children[0]);
-      expect(Path.equals(nodes[0].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([0])), true);
 
       expect(nodes[1].node, editor);
-      expect(Path.equals(nodes[1].path, Path([])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([])), true);
     });
 
     test('success', () {
@@ -41,10 +41,10 @@ void main() {
           List<NodeEntry<Ancestor>>.from(Node.ancestors(editor, Path([0, 0])));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       expect(nodes[1].node, editor.children[0]);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
     });
   });
 
@@ -67,11 +67,11 @@ void main() {
       List<NodeEntry<Descendant>> children =
           List<NodeEntry<Descendant>>.from(Node.children(editor, Path([0])));
 
-      expect(Text.equals(children[0].node, Text("a")), true);
-      expect(Path.equals(children[0].path, Path([0, 0])), true);
+      expect(TextUtils.equals(children[0].node, Text("a")), true);
+      expect(PathUtils.equals(children[0].path, Path([0, 0])), true);
 
-      expect(Text.equals(children[1].node, Text("b")), true);
-      expect(Path.equals(children[1].path, Path([0, 1])), true);
+      expect(TextUtils.equals(children[1].node, Text("b")), true);
+      expect(PathUtils.equals(children[1].path, Path([0, 1])), true);
     });
 
     test('reverse', () {
@@ -82,11 +82,11 @@ void main() {
       List<NodeEntry<Descendant>> nodes = List<NodeEntry<Descendant>>.from(
           Node.children(editor, Path([0]), reverse: true));
 
-      expect(Text.equals(nodes[0].node, Text("b")), true);
-      expect(Path.equals(nodes[0].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[0].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[0].path, Path([0, 1])), true);
 
-      expect(Text.equals(nodes[1].node, Text("a")), true);
-      expect(Path.equals(nodes[1].path, Path([0, 0])), true);
+      expect(TextUtils.equals(nodes[1].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0, 0])), true);
     });
   });
 
@@ -110,13 +110,13 @@ void main() {
           List<NodeEntry<Descendant>>.from(Node.descendants(editor));
 
       expect(nodes[0].node, editor.children[0]);
-      expect(Path.equals(nodes[0].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([0])), true);
 
-      expect(Text.equals(nodes[1].node, Text("a")), true);
-      expect(Path.equals(nodes[1].path, Path([0, 0])), true);
+      expect(TextUtils.equals(nodes[1].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0, 0])), true);
 
-      expect(Text.equals(nodes[2].node, Text("b")), true);
-      expect(Path.equals(nodes[2].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 1])), true);
     });
 
     test('from', () {
@@ -128,10 +128,10 @@ void main() {
           Node.descendants(editor, from: Path([0, 1])));
 
       expect(nodes[0].node, editor.children[0]);
-      expect(Path.equals(nodes[0].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([0])), true);
 
-      expect(Text.equals(nodes[1].node, Text("b")), true);
-      expect(Path.equals(nodes[1].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[1].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0, 1])), true);
     });
 
     test('reverse', () {
@@ -143,13 +143,13 @@ void main() {
           Node.descendants(editor, reverse: true));
 
       expect(nodes[0].node, editor.children[0]);
-      expect(Path.equals(nodes[0].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([0])), true);
 
-      expect(Text.equals(nodes[1].node, Text("b")), true);
-      expect(Path.equals(nodes[1].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[1].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0, 1])), true);
 
-      expect(Text.equals(nodes[2].node, Text("a")), true);
-      expect(Path.equals(nodes[2].path, Path([0, 0])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 0])), true);
     });
 
     test('to', () {
@@ -161,13 +161,13 @@ void main() {
           Node.descendants(editor, from: Path([0, 1]), to: Path([0, 2])));
 
       expect(nodes[0].node, editor.children[0]);
-      expect(Path.equals(nodes[0].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([0])), true);
 
-      expect(Text.equals(nodes[1].node, Text("b")), true);
-      expect(Path.equals(nodes[1].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[1].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0, 1])), true);
 
-      expect(Text.equals(nodes[2].node, Text("c")), true);
-      expect(Path.equals(nodes[2].path, Path([0, 2])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("c")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 2])), true);
     });
   });
 
@@ -181,7 +181,7 @@ void main() {
           List<ElementEntry>.from(Node.elements(editor));
 
       expect(elements[0].element, editor.children[0]);
-      expect(Path.equals(elements[0].path, Path([0])), true);
+      expect(PathUtils.equals(elements[0].path, Path([0])), true);
     });
 
     test('reverse', () {
@@ -193,7 +193,7 @@ void main() {
           List<ElementEntry>.from(Node.elements(editor, reverse: true));
 
       expect(elements[0].element, editor.children[0]);
-      expect(Path.equals(elements[0].path, Path([0])), true);
+      expect(PathUtils.equals(elements[0].path, Path([0])), true);
     });
   });
 
@@ -245,7 +245,7 @@ void main() {
 
       Text leaf = Node.leaf(editor, Path([0, 0]));
 
-      expect(Text.equals(leaf, Text("a")), true);
+      expect(TextUtils.equals(leaf, Text("a")), true);
     });
   });
 
@@ -258,14 +258,14 @@ void main() {
       List<NodeEntry<Node>> nodes = List<NodeEntry<Node>>.from(
           Node.levels(editor, Path([0, 0]), reverse: true));
 
-      expect(Text.equals(nodes[0].node, Text("a")), true);
-      expect(Path.equals(nodes[0].path, Path([0, 0])), true);
+      expect(TextUtils.equals(nodes[0].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[0].path, Path([0, 0])), true);
 
       expect(nodes[1].node, editor.children[0]);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
 
       expect(nodes[2].node, editor);
-      expect(Path.equals(nodes[2].path, Path([])), true);
+      expect(PathUtils.equals(nodes[2].path, Path([])), true);
     });
 
     test('success', () {
@@ -277,13 +277,13 @@ void main() {
           List<NodeEntry<Node>>.from(Node.levels(editor, Path([0, 0])));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       expect(nodes[1].node, editor.children[0]);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
 
-      expect(Text.equals(nodes[2].node, Text("a")), true);
-      expect(Path.equals(nodes[2].path, Path([0, 0])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 0])), true);
     });
   });
 
@@ -297,16 +297,16 @@ void main() {
           List<NodeEntry<Node>>.from(Node.nodes(editor));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       expect(nodes[1].node, editor.children[0]);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
 
-      expect(Text.equals(nodes[2].node, Text("a")), true);
-      expect(Path.equals(nodes[2].path, Path([0, 0])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 0])), true);
 
-      expect(Text.equals(nodes[3].node, Text("b")), true);
-      expect(Path.equals(nodes[3].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[3].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[3].path, Path([0, 1])), true);
     });
 
     test('from', () {
@@ -319,22 +319,22 @@ void main() {
           List<NodeEntry<Node>>.from(Node.nodes(editor, from: Path([0, 1])));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       expect(nodes[1].node, editor.children[0]);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
 
-      expect(Text.equals(nodes[2].node, Text("b")), true);
-      expect(Path.equals(nodes[2].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 1])), true);
 
       expect(nodes[3].node, editor.children[1]);
-      expect(Path.equals(nodes[3].path, Path([1])), true);
+      expect(PathUtils.equals(nodes[3].path, Path([1])), true);
 
-      expect(Text.equals(nodes[4].node, Text("c")), true);
-      expect(Path.equals(nodes[4].path, Path([1, 0])), true);
+      expect(TextUtils.equals(nodes[4].node, Text("c")), true);
+      expect(PathUtils.equals(nodes[4].path, Path([1, 0])), true);
 
-      expect(Text.equals(nodes[5].node, Text("d")), true);
-      expect(Path.equals(nodes[5].path, Path([1, 1])), true);
+      expect(TextUtils.equals(nodes[5].node, Text("d")), true);
+      expect(PathUtils.equals(nodes[5].path, Path([1, 1])), true);
     });
 
     test('multiple elements', () {
@@ -347,19 +347,19 @@ void main() {
           List<NodeEntry<Node>>.from(Node.nodes(editor));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       expect(nodes[1].node, editor.children[0]);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
 
-      expect(Text.equals(nodes[2].node, Text("a")), true);
-      expect(Path.equals(nodes[2].path, Path([0, 0])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 0])), true);
 
       expect(nodes[3].node, editor.children[1]);
-      expect(Path.equals(nodes[3].path, Path([1])), true);
+      expect(PathUtils.equals(nodes[3].path, Path([1])), true);
 
-      expect(Text.equals(nodes[4].node, Text("b")), true);
-      expect(Path.equals(nodes[4].path, Path([1, 0])), true);
+      expect(TextUtils.equals(nodes[4].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[4].path, Path([1, 0])), true);
     });
 
     test('nested elements', () {
@@ -373,20 +373,20 @@ void main() {
           List<NodeEntry<Node>>.from(Node.nodes(editor));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       Ancestor firstElement = editor.children[0];
 
       expect(nodes[1].node, firstElement);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
 
       Ancestor secondElement = firstElement.children[0];
 
       expect(nodes[2].node, secondElement);
-      expect(Path.equals(nodes[2].path, Path([0, 0])), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 0])), true);
 
-      expect(Text.equals(nodes[3].node, Text("a")), true);
-      expect(Path.equals(nodes[3].path, Path([0, 0, 0])), true);
+      expect(TextUtils.equals(nodes[3].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[3].path, Path([0, 0, 0])), true);
     });
 
     test('pass', () {
@@ -402,17 +402,17 @@ void main() {
       }));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       Ancestor firstElement = editor.children[0];
 
       expect(nodes[1].node, firstElement);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
 
       Ancestor secondElement = firstElement.children[0];
 
       expect(nodes[2].node, secondElement);
-      expect(Path.equals(nodes[2].path, Path([0, 0])), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 0])), true);
 
       expect(nodes.length, 3);
     });
@@ -427,25 +427,25 @@ void main() {
           List<NodeEntry<Node>>.from(Node.nodes(editor, reverse: true));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       expect(nodes[1].node, editor.children[1]);
-      expect(Path.equals(nodes[1].path, Path([1])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([1])), true);
 
-      expect(Text.equals(nodes[2].node, Text("d")), true);
-      expect(Path.equals(nodes[2].path, Path([1, 1])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("d")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([1, 1])), true);
 
-      expect(Text.equals(nodes[3].node, Text("c")), true);
-      expect(Path.equals(nodes[3].path, Path([1, 0])), true);
+      expect(TextUtils.equals(nodes[3].node, Text("c")), true);
+      expect(PathUtils.equals(nodes[3].path, Path([1, 0])), true);
 
       expect(nodes[4].node, editor.children[0]);
-      expect(Path.equals(nodes[4].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[4].path, Path([0])), true);
 
-      expect(Text.equals(nodes[5].node, Text("b")), true);
-      expect(Path.equals(nodes[5].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[5].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[5].path, Path([0, 1])), true);
 
-      expect(Text.equals(nodes[6].node, Text("a")), true);
-      expect(Path.equals(nodes[6].path, Path([0, 0])), true);
+      expect(TextUtils.equals(nodes[6].node, Text("a")), true);
+      expect(PathUtils.equals(nodes[6].path, Path([0, 0])), true);
     });
 
     test('to', () {
@@ -457,16 +457,16 @@ void main() {
           Node.nodes(editor, from: Path([0, 1]), to: Path([0, 2])));
 
       expect(nodes[0].node, editor);
-      expect(Path.equals(nodes[0].path, Path([])), true);
+      expect(PathUtils.equals(nodes[0].path, Path([])), true);
 
       expect(nodes[1].node, editor.children[0]);
-      expect(Path.equals(nodes[1].path, Path([0])), true);
+      expect(PathUtils.equals(nodes[1].path, Path([0])), true);
 
-      expect(Text.equals(nodes[2].node, Text("b")), true);
-      expect(Path.equals(nodes[2].path, Path([0, 1])), true);
+      expect(TextUtils.equals(nodes[2].node, Text("b")), true);
+      expect(PathUtils.equals(nodes[2].path, Path([0, 1])), true);
 
-      expect(Text.equals(nodes[3].node, Text("c")), true);
-      expect(Path.equals(nodes[3].path, Path([0, 2])), true);
+      expect(TextUtils.equals(nodes[3].node, Text("c")), true);
+      expect(PathUtils.equals(nodes[3].path, Path([0, 2])), true);
     });
   });
 
@@ -514,11 +514,11 @@ void main() {
       List<NodeEntry<Text>> texts =
           List<NodeEntry<Text>>.from(Node.texts(editor));
 
-      expect(Text.equals(texts[0].node, Text("a")), true);
-      expect(Path.equals(texts[0].path, Path([0, 0])), true);
+      expect(TextUtils.equals(texts[0].node, Text("a")), true);
+      expect(PathUtils.equals(texts[0].path, Path([0, 0])), true);
 
-      expect(Text.equals(texts[1].node, Text("b")), true);
-      expect(Path.equals(texts[1].path, Path([0, 1])), true);
+      expect(TextUtils.equals(texts[1].node, Text("b")), true);
+      expect(PathUtils.equals(texts[1].path, Path([0, 1])), true);
     });
 
     test('from', () {
@@ -529,8 +529,8 @@ void main() {
       List<NodeEntry<Text>> texts =
           List<NodeEntry<Text>>.from(Node.texts(editor, from: Path([0, 1])));
 
-      expect(Text.equals(texts[0].node, Text("b")), true);
-      expect(Path.equals(texts[0].path, Path([0, 1])), true);
+      expect(TextUtils.equals(texts[0].node, Text("b")), true);
+      expect(PathUtils.equals(texts[0].path, Path([0, 1])), true);
     });
 
     test('multiple elements', () {
@@ -542,11 +542,11 @@ void main() {
       List<NodeEntry<Text>> texts =
           List<NodeEntry<Text>>.from(Node.texts(editor));
 
-      expect(Text.equals(texts[0].node, Text("a")), true);
-      expect(Path.equals(texts[0].path, Path([0, 0])), true);
+      expect(TextUtils.equals(texts[0].node, Text("a")), true);
+      expect(PathUtils.equals(texts[0].path, Path([0, 0])), true);
 
-      expect(Text.equals(texts[1].node, Text("b")), true);
-      expect(Path.equals(texts[1].path, Path([1, 0])), true);
+      expect(TextUtils.equals(texts[1].node, Text("b")), true);
+      expect(PathUtils.equals(texts[1].path, Path([1, 0])), true);
     });
 
     test('reverse', () {
@@ -557,11 +557,11 @@ void main() {
       List<NodeEntry<Text>> texts =
           List<NodeEntry<Text>>.from(Node.texts(editor, reverse: true));
 
-      expect(Text.equals(texts[0].node, Text("b")), true);
-      expect(Path.equals(texts[0].path, Path([0, 1])), true);
+      expect(TextUtils.equals(texts[0].node, Text("b")), true);
+      expect(PathUtils.equals(texts[0].path, Path([0, 1])), true);
 
-      expect(Text.equals(texts[1].node, Text("a")), true);
-      expect(Path.equals(texts[1].path, Path([0, 0])), true);
+      expect(TextUtils.equals(texts[1].node, Text("a")), true);
+      expect(PathUtils.equals(texts[1].path, Path([0, 0])), true);
     });
 
     test('to', () {
@@ -572,11 +572,11 @@ void main() {
       List<NodeEntry<Text>> texts = List<NodeEntry<Text>>.from(
           Node.texts(editor, from: Path([0, 1]), to: Path([0, 2])));
 
-      expect(Text.equals(texts[0].node, Text("b")), true);
-      expect(Path.equals(texts[0].path, Path([0, 1])), true);
+      expect(TextUtils.equals(texts[0].node, Text("b")), true);
+      expect(PathUtils.equals(texts[0].path, Path([0, 1])), true);
 
-      expect(Text.equals(texts[1].node, Text("c")), true);
-      expect(Path.equals(texts[1].path, Path([0, 2])), true);
+      expect(TextUtils.equals(texts[1].node, Text("c")), true);
+      expect(PathUtils.equals(texts[1].path, Path([0, 2])), true);
     });
   });
 }

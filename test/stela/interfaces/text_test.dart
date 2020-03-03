@@ -13,7 +13,7 @@ void main() {
           props: {'decoration': "decoration"});
 
       Text text = Text("abc", props: {'mark': 'mark'});
-      List<Text> leaves = Text.decorations(text, [decoration]);
+      List<Text> leaves = TextUtils.decorations(text, [decoration]);
 
       expect(leaves[0].text, 'ab');
       expect(leaves[0].props['mark'], 'mark');
@@ -29,7 +29,7 @@ void main() {
           props: {'decoration': "decoration"});
 
       Text text = Text("abc", props: {'mark': 'mark'});
-      List<Text> leaves = Text.decorations(text, [decoration]);
+      List<Text> leaves = TextUtils.decorations(text, [decoration]);
 
       expect(leaves[0].text, 'a');
       expect(leaves[0].props['mark'], 'mark');
@@ -52,7 +52,8 @@ void main() {
           props: {'decoration2': "decoration2"});
 
       Text text = Text("abc", props: {'mark': 'mark'});
-      List<Text> leaves = Text.decorations(text, [decoration1, decoration2]);
+      List<Text> leaves =
+          TextUtils.decorations(text, [decoration1, decoration2]);
 
       expect(leaves[0].text, 'a');
       expect(leaves[0].props['mark'], 'mark');
@@ -74,7 +75,7 @@ void main() {
           props: {'decoration': "decoration"});
 
       Text text = Text("abc", props: {'mark': 'mark'});
-      List<Text> leaves = Text.decorations(text, [decoration]);
+      List<Text> leaves = TextUtils.decorations(text, [decoration]);
 
       expect(leaves[0].text, 'a');
       expect(leaves[0].props['mark'], 'mark');
@@ -89,14 +90,14 @@ void main() {
     test('should succeed with valid text node list', () {
       Text text = Text("string");
 
-      expect(Text.isTextList([text]), true);
+      expect(TextUtils.isTextList([text]), true);
     });
 
     test('should fail with an element in node list', () {
       Text text = Text("string");
       Element element = Element(children: []);
 
-      expect(Text.isTextList([text, element]), false);
+      expect(TextUtils.isTextList([text, element]), false);
     });
   });
 
@@ -105,14 +106,14 @@ void main() {
       Text text = Text("string");
       Text another = Text("string");
 
-      expect(Text.equals(text, another), true);
+      expect(TextUtils.equals(text, another), true);
     });
 
     test('should fail when text nodes have different texts', () {
       Text text = Text("string");
       Text another = Text("number");
 
-      expect(Text.equals(text, another), false);
+      expect(TextUtils.equals(text, another), false);
     });
   });
 }

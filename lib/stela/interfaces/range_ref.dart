@@ -17,7 +17,7 @@ class RangeRef {
       return null;
     }
 
-    Range range = Range.transform(ref.current, op, affinity: ref.affinity);
+    Range range = RangeUtils.transform(ref.current, op, affinity: ref.affinity);
     ref.current = range;
 
     if (range == null) {

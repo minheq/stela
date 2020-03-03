@@ -10,12 +10,12 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      List<Point> edges = Range.edges(range);
-      Point start = edges[0];
-      Point end = edges[1];
+      Edges edges = RangeUtils.edges(range);
+      Point start = edges.start;
+      Point end = edges.end;
 
-      expect(Point.equals(focus, start), true);
-      expect(Point.equals(anchor, end), true);
+      expect(PointUtils.equals(focus, start), true);
+      expect(PointUtils.equals(anchor, end), true);
     });
 
     test('collapsed', () {
@@ -23,12 +23,12 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      List<Point> edges = Range.edges(range);
-      Point start = edges[0];
-      Point end = edges[1];
+      Edges edges = RangeUtils.edges(range);
+      Point start = edges.start;
+      Point end = edges.end;
 
-      expect(Point.equals(anchor, start), true);
-      expect(Point.equals(focus, end), true);
+      expect(PointUtils.equals(anchor, start), true);
+      expect(PointUtils.equals(focus, end), true);
     });
 
     test('forward', () {
@@ -36,12 +36,12 @@ void main() {
       Point focus = Point(Path([3]), 0);
       Range range = Range(anchor, focus);
 
-      List<Point> edges = Range.edges(range);
-      Point start = edges[0];
-      Point end = edges[1];
+      Edges edges = RangeUtils.edges(range);
+      Point start = edges.start;
+      Point end = edges.end;
 
-      expect(Point.equals(anchor, start), true);
-      expect(Point.equals(focus, end), true);
+      expect(PointUtils.equals(anchor, start), true);
+      expect(PointUtils.equals(focus, end), true);
     });
   });
 
@@ -55,7 +55,7 @@ void main() {
       Point anotherFocus = Point(Path([0, 1]), 0);
       Range another = Range(anotherAnchor, anotherFocus);
 
-      expect(Range.equals(range, another), true);
+      expect(RangeUtils.equals(range, another), true);
     });
 
     test('not equal', () {
@@ -67,7 +67,7 @@ void main() {
       Point anotherFocus = Point(Path([0, 1]), 0);
       Range another = Range(anotherAnchor, anotherFocus);
 
-      expect(Range.equals(range, another), false);
+      expect(RangeUtils.equals(range, another), false);
     });
   });
 
@@ -79,7 +79,7 @@ void main() {
 
       Path path = Path([4]);
 
-      expect(Range.includes(range, path), false);
+      expect(RangeUtils.includes(range, path), false);
     });
 
     test('path before', () {
@@ -89,7 +89,7 @@ void main() {
 
       Path target = Path([0]);
 
-      expect(Range.includes(range, target), false);
+      expect(RangeUtils.includes(range, target), false);
     });
 
     test('path end', () {
@@ -99,7 +99,7 @@ void main() {
 
       Path target = Path([3]);
 
-      expect(Range.includes(range, target), true);
+      expect(RangeUtils.includes(range, target), true);
     });
 
     test('path inside', () {
@@ -109,7 +109,7 @@ void main() {
 
       Path target = Path([2]);
 
-      expect(Range.includes(range, target), true);
+      expect(RangeUtils.includes(range, target), true);
     });
 
     test('path inside', () {
@@ -119,7 +119,7 @@ void main() {
 
       Path target = Path([1]);
 
-      expect(Range.includes(range, target), true);
+      expect(RangeUtils.includes(range, target), true);
     });
 
     test('point end', () {
@@ -129,7 +129,7 @@ void main() {
 
       Point target = Point(Path([3]), 0);
 
-      expect(Range.includes(range, target), true);
+      expect(RangeUtils.includes(range, target), true);
     });
 
     test('point inside', () {
@@ -139,7 +139,7 @@ void main() {
 
       Point target = Point(Path([2]), 0);
 
-      expect(Range.includes(range, target), true);
+      expect(RangeUtils.includes(range, target), true);
     });
 
     test('point offset after', () {
@@ -149,7 +149,7 @@ void main() {
 
       Point target = Point(Path([3]), 3);
 
-      expect(Range.includes(range, target), false);
+      expect(RangeUtils.includes(range, target), false);
     });
 
     test('point offset after', () {
@@ -159,7 +159,7 @@ void main() {
 
       Point target = Point(Path([1]), 0);
 
-      expect(Range.includes(range, target), false);
+      expect(RangeUtils.includes(range, target), false);
     });
 
     test('point path after', () {
@@ -169,7 +169,7 @@ void main() {
 
       Point target = Point(Path([4]), 0);
 
-      expect(Range.includes(range, target), false);
+      expect(RangeUtils.includes(range, target), false);
     });
 
     test('point path before', () {
@@ -179,7 +179,7 @@ void main() {
 
       Point target = Point(Path([0]), 0);
 
-      expect(Range.includes(range, target), false);
+      expect(RangeUtils.includes(range, target), false);
     });
 
     test('point start', () {
@@ -189,7 +189,7 @@ void main() {
 
       Point target = Point(Path([1]), 0);
 
-      expect(Range.includes(range, target), true);
+      expect(RangeUtils.includes(range, target), true);
     });
   });
 
@@ -199,7 +199,7 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isBackward(range), true);
+      expect(RangeUtils.isBackward(range), true);
     });
 
     test('collapsed', () {
@@ -207,7 +207,7 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isBackward(range), false);
+      expect(RangeUtils.isBackward(range), false);
     });
 
     test('collapsed', () {
@@ -215,7 +215,7 @@ void main() {
       Point focus = Point(Path([3]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isBackward(range), false);
+      expect(RangeUtils.isBackward(range), false);
     });
   });
 
@@ -225,7 +225,7 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isCollapsed(range), true);
+      expect(RangeUtils.isCollapsed(range), true);
     });
 
     test('expanded', () {
@@ -233,7 +233,7 @@ void main() {
       Point focus = Point(Path([3]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isCollapsed(range), false);
+      expect(RangeUtils.isCollapsed(range), false);
     });
   });
 
@@ -243,7 +243,7 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isExpanded(range), false);
+      expect(RangeUtils.isExpanded(range), false);
     });
 
     test('expanded', () {
@@ -251,7 +251,7 @@ void main() {
       Point focus = Point(Path([3]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isExpanded(range), true);
+      expect(RangeUtils.isExpanded(range), true);
     });
   });
 
@@ -261,7 +261,7 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isForward(range), false);
+      expect(RangeUtils.isForward(range), false);
     });
 
     test('collapsed', () {
@@ -269,7 +269,7 @@ void main() {
       Point focus = Point(Path([0]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isForward(range), true);
+      expect(RangeUtils.isForward(range), true);
     });
 
     test('collapsed', () {
@@ -277,7 +277,7 @@ void main() {
       Point focus = Point(Path([3]), 0);
       Range range = Range(anchor, focus);
 
-      expect(Range.isForward(range), true);
+      expect(RangeUtils.isForward(range), true);
     });
   });
 
@@ -288,7 +288,7 @@ void main() {
       Range range = Range(anchor, focus);
 
       List<PointEntry> pointEntries =
-          List<PointEntry>.from(Range.points(range));
+          List<PointEntry>.from(RangeUtils.points(range));
       PointEntry p1 = pointEntries[0];
       PointEntry p2 = pointEntries[1];
 

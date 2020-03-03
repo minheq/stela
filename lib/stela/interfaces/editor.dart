@@ -84,7 +84,7 @@ class EditorUtils {
       match,
       reverse,
     })) {
-      if (!Text.isText(n) && !Path.equals(path, p)) {
+      if (!Text.isText(n) && !PathUtils.equals(path, p)) {
         return [n, p]
       }
     }
@@ -116,19 +116,19 @@ class EditorUtils {
     let d = 0
     let target
 
-    for (const p of Editor.positions(editor, { ...options, at: range })) {
+    for (const p of EditorUtils.positions(editor, { ...options, at: range })) {
       if (d > distance) {
         break
       }
 
-      if (d !== 0) {
+      if (d != 0) {
         target = p
       }
 
       d++
     }
 
-    return target
+    return target;
   }
 
   /**
@@ -155,7 +155,7 @@ class EditorUtils {
         break;
       }
 
-      if (d !== 0) {
+      if (d != 0) {
         target = p;
       }
 
@@ -199,8 +199,8 @@ class EditorUtils {
    * Get the start and end points of a location.
    */
 
-  static List<Point> edges(Editor editor, Location at) {
-    return [Editor.start(editor, at), Editor.end(editor, at)];
+  static Edges edges(Editor editor, Location at) {
+    return Edges(Editor.start(editor, at), Editor.end(editor, at));
   }
 
   /**
@@ -208,7 +208,7 @@ class EditorUtils {
    */
 
   static Point end(Editor editor, Location at) {
-    return Editor.point(editor, at, { edge: Edge.end });
+    return Editor.point(editor, at, edge: Edge.end);
   }
 
   /**
@@ -359,7 +359,7 @@ class EditorUtils {
 
   static bool isStart(Editor editor, Point point, Location at) {
     // PERF: If the offset isn't `0` we know it's not the start.
-    if (point.offset !== 0) {
+    if (point.offset != 0) {
       return false;
     }
 
@@ -487,7 +487,7 @@ class EditorUtils {
         const [prevNode, prevPath] = prev
         const [, blockPath] = block
 
-        if (Path.isAncestor(blockPath, prevPath)) {
+        if (PathUtils.isAncestor(blockPath, prevPath)) {
           node = prevNode as Text
         }
       }
@@ -520,12 +520,12 @@ class EditorUtils {
     const [, to] = Editor.last(editor, [])
     const span: Span = [from, to]
 
-    if (Path.isPath(at) && at.length == 0) {
+    if (PathUtils.isPath(at) && at.length == 0) {
       throw new Error(`Cannot get the next node from the root node!`)
     }
 
     if (match == null) {
-      if (Path.isPath(at)) {
+      if (PathUtils.isPath(at)) {
         const [parent] = Editor.parent(editor, at)
         match = n => parent.children.includes(n)
       } else {
@@ -594,8 +594,8 @@ class EditorUtils {
       from = at[0]
       to = at[1]
     } else {
-      const first = EditorUtils.path(editor, at, { edge: 'start' })
-      const last = EditorUtils.path(editor, at, { edge: 'end' })
+      const first = EditorUtils.path(editor, at, edge: Edge.start);
+      const last = EditorUtils.path(editor, at, edge: Edge.end);
       from = reverse ? last : first
       to = reverse ? first : last
     }
@@ -611,7 +611,7 @@ class EditorUtils {
     let hit: NodeEntry<T> | undefined
 
     for (const [node, path] of iterable) {
-      const isLower = hit && Path.compare(path, hit[1]) == 0
+      const isLower = hit && PathUtils.compare(path, hit[1]) == 0
 
       // In highest mode any node lower than the last hit is not a match.
       if (mode == 'highest' && isLower) {
@@ -725,7 +725,7 @@ class EditorUtils {
     }
   ) {
     Path path = EditorUtils.path(editor, at, edge: edge, depth: depth);
-    Path parentPath = Path.parent(path);
+    Path parentPath = PathUtils.parent(path);
     Node entry = EditorUtils.node(editor, parentPath)
     return entry as NodeEntry<Ancestor>
   }
@@ -758,7 +758,7 @@ class EditorUtils {
       } else if (edge == Edge.end) {
         at = Range.end(at);
       } else {
-        at = Path.common(at.anchor.path, at.focus.path)
+        at = PathUtils.common(at.anchor.path, at.focus.path)
       }
     }
 
@@ -828,7 +828,7 @@ class EditorUtils {
       Edge edge = Edge.start
     }
   ) {
-    if (Path.isPath(at)) {
+    if (PathUtils.isPath(at)) {
       let path
 
       if (edge == Edge.end) {
@@ -975,10 +975,10 @@ class EditorUtils {
         }
 
         if (Editor.hasInlines(editor, node)) {
-          const e = Path.isAncestor(path, end.path)
+          const e = PathUtils.isAncestor(path, end.path)
             ? end
             : Editor.end(editor, path)
-          const s = Path.isAncestor(path, start.path)
+          const s = PathUtils.isAncestor(path, start.path)
             ? start
             : Editor.start(editor, path)
 
@@ -989,7 +989,7 @@ class EditorUtils {
       }
 
       if (Text.isText(node)) {
-        const isFirst = Path.equals(path, first.path)
+        const isFirst = PathUtils.equals(path, first.path)
         available = node.text.length
         offset = reverse ? available : 0
 
@@ -1047,12 +1047,12 @@ class EditorUtils {
     const [, to] = Editor.first(editor, [])
     const span: Span = [from, to]
 
-    if (Path.isPath(at) && at.length == 0) {
+    if (PathUtils.isPath(at) && at.length == 0) {
       throw new Error(`Cannot get the previous node from the root node!`)
     }
 
     if (match == null) {
-      if (Path.isPath(at)) {
+      if (PathUtils.isPath(at)) {
         const [parent] = Editor.parent(editor, at)
         match = n => parent.children.includes(n)
       } else {
@@ -1167,11 +1167,11 @@ class EditorUtils {
     })) {
       String t = node.text;
 
-      if (Path.equals(path, end.path)) {
+      if (PathUtils.equals(path, end.path)) {
         t = t.slice(0, end.offset)
       }
 
-      if (Path.equals(path, start.path)) {
+      if (PathUtils.equals(path, start.path)) {
         t = t.slice(start.offset)
       }
 
@@ -1224,7 +1224,7 @@ class EditorUtils {
       case 'merge_node': {
         const { path } = op
         Node node = Node.get(editor, path)
-        const prevPath = Path.previous(path)
+        const prevPath = PathUtils.previous(path)
         const prev = Node.get(editor, prevPath)
         const parent = Node.parent(editor, path)
         const index = path[path.length - 1]
@@ -1253,7 +1253,7 @@ class EditorUtils {
       case 'move_node': {
         const { path, newPath } = op
 
-        if (Path.isAncestor(path, newPath)) {
+        if (PathUtils.isAncestor(path, newPath)) {
           throw new Error(
             `Cannot move a path [${path}] to new path [${newPath}] because the destination is inside itself.`
           )
@@ -1270,9 +1270,9 @@ class EditorUtils {
         // transform `op.path` to ascertain what the `newPath` would be after
         // the operation was applied.
         parent.children.splice(index, 1)
-        const truePath = Path.transform(path, op)!
-        const newParent = Node.get(editor, Path.parent(truePath))
-        const newIndex = truePath[truePath.length - 1]
+        const truePath = PathUtils.transform(path, op)!
+        const newParent = Node.get(editor, PathUtils.parent(truePath))
+        const newIndex = truePath[truePathUtils.length - 1]
 
         newParent.children.splice(newIndex, 0, node)
 
@@ -1304,7 +1304,7 @@ class EditorUtils {
               let next: NodeEntry<Text> | undefined
 
               for (const [n, p] of Node.texts(editor)) {
-                if (Path.compare(p, path) == -1) {
+                if (PathUtils.compare(p, path) == -1) {
                   prev = [n, p]
                 } else {
                   next = [n, p]
@@ -1464,7 +1464,7 @@ class EditorUtils {
     let [start, end] = Range.edges(range)
 
     // PERF: exit early if we can guarantee that the range isn't hanging.
-    if (start.offset !== 0 || end.offset !== 0 || Range.isCollapsed(range)) {
+    if (start.offset != 0 || end.offset != 0 || Range.isCollapsed(range)) {
       return range
     }
 
@@ -1488,7 +1488,7 @@ class EditorUtils {
         continue
       }
 
-      if (node.text !== '' || Path.isBefore(path, blockPath)) {
+      if (node.text != '' || PathUtils.isBefore(path, blockPath)) {
         end = { path, offset: node.text.length }
         break
       }

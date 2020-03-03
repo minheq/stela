@@ -17,7 +17,7 @@ class PointRef {
       return null;
     }
 
-    Point point = Point.transform(ref.current, op, affinity: ref.affinity);
+    Point point = PointUtils.transform(ref.current, op, affinity: ref.affinity);
     ref.current = point;
 
     if (point == null) {

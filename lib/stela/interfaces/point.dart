@@ -13,11 +13,24 @@ class Point implements Location {
 
   Path path;
   int offset;
+}
 
+enum PointType { anchor, focus }
+
+/// `PointEntry` objects are returned when iterating over `Point` objects that
+/// belong to a range.
+class PointEntry {
+  PointEntry(this.point, this.type);
+
+  final Point point;
+  final PointType type;
+}
+
+class PointUtils {
   /// Compare a point to another, returning an integer indicating whether the
   /// point was before (-1), at (0), or after (1) the other.
   static int compare(Point point, Point another) {
-    int result = Path.compare(point.path, another.path);
+    int result = PathUtils.compare(point.path, another.path);
 
     if (result == 0) {
       if (point.offset < another.offset) return -1;
@@ -32,17 +45,17 @@ class Point implements Location {
   static bool equals(Point point, Point another) {
     // PERF: ensure the offsets are equal first since they are cheaper to check.
     return (point.offset == another.offset &&
-        Path.equals(point.path, another.path));
+        PathUtils.equals(point.path, another.path));
   }
 
   /// Check if a point is after another.
   static bool isAfter(Point point, Point another) {
-    return Point.compare(point, another) == 1;
+    return PointUtils.compare(point, another) == 1;
   }
 
   /// Check if a point is before another.
   static bool isBefore(Point point, Point another) {
-    return Point.compare(point, another) == -1;
+    return PointUtils.compare(point, another) == -1;
   }
 
   /// Transform a point by an operation.
@@ -53,29 +66,29 @@ class Point implements Location {
     int offset = p.offset;
 
     if (op is InsertNodeOperation || op is MoveNodeOperation) {
-      p.path = Path.transform(path, op, affinity: affinity);
+      p.path = PathUtils.transform(path, op, affinity: affinity);
       return p;
     }
 
     if (op is InsertTextOperation) {
-      if (Path.equals(op.path, path) && op.offset <= offset) {
+      if (PathUtils.equals(op.path, path) && op.offset <= offset) {
         p.offset += op.text.length;
       }
       return p;
     }
 
     if (op is MergeNodeOperation) {
-      if (Path.equals(op.path, path)) {
+      if (PathUtils.equals(op.path, path)) {
         p.offset += op.position;
       }
 
-      p.path = Path.transform(path, op, affinity: affinity);
+      p.path = PathUtils.transform(path, op, affinity: affinity);
 
       return p;
     }
 
     if (op is RemoveTextOperation) {
-      if (Path.equals(op.path, path) && op.offset <= offset) {
+      if (PathUtils.equals(op.path, path) && op.offset <= offset) {
         p.offset -= min(offset - op.offset, op.text.length);
       }
 
@@ -83,27 +96,28 @@ class Point implements Location {
     }
 
     if (op is RemoveNodeOperation) {
-      if (Path.equals(op.path, path) || Path.isAncestor(op.path, path)) {
+      if (PathUtils.equals(op.path, path) ||
+          PathUtils.isAncestor(op.path, path)) {
         return null;
       }
 
-      p.path = Path.transform(path, op, affinity: affinity);
+      p.path = PathUtils.transform(path, op, affinity: affinity);
 
       return p;
     }
 
     if (op is SplitNodeOperation) {
-      if (Path.equals(op.path, path)) {
+      if (PathUtils.equals(op.path, path)) {
         if (op.position == offset && affinity == null) {
           return null;
         } else if (op.position < offset ||
             (op.position == offset && affinity == Affinity.forward)) {
           p.offset -= op.position;
 
-          p.path = Path.transform(path, op, affinity: Affinity.forward);
+          p.path = PathUtils.transform(path, op, affinity: Affinity.forward);
         }
       } else {
-        p.path = Path.transform(path, op, affinity: affinity);
+        p.path = PathUtils.transform(path, op, affinity: affinity);
       }
 
       return p;
@@ -111,15 +125,4 @@ class Point implements Location {
 
     return null;
   }
-}
-
-enum PointType { anchor, focus }
-
-/// `PointEntry` objects are returned when iterating over `Point` objects that
-/// belong to a range.
-class PointEntry {
-  PointEntry(this.point, this.type);
-
-  final Point point;
-  final PointType type;
 }

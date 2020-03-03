@@ -17,7 +17,7 @@ class PathRef {
       return null;
     }
 
-    Path path = Path.transform(ref.current, op, affinity: ref.affinity);
+    Path path = PathUtils.transform(ref.current, op, affinity: ref.affinity);
     ref.current = path;
 
     if (path == null) {

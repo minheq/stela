@@ -32,24 +32,15 @@ class Path implements Location {
 
     return Path(path.sublist(start, end));
   }
+}
 
-  /// Returns position at [index].
-  ///
-  /// Returns -1 if the [index] is out of bound
-  int at(int index) {
-    if (index >= path.length) {
-      return -1;
-    }
-
-    return path[index];
-  }
-
+class PathUtils {
   /// Get a list of ancestor paths for a given path.
   ///
   /// The paths are sorted from nearest to furthest ancestor. However, if the
   /// `reverse: true` option is passed, they are reversed.
   static List<Path> ancestors(Path path, {bool reverse = false}) {
-    List<Path> paths = Path.levels(path, reverse: reverse);
+    List<Path> paths = PathUtils.levels(path, reverse: reverse);
 
     if (reverse) {
       paths = paths.sublist(1);
@@ -65,8 +56,8 @@ class Path implements Location {
     Path common = Path([]);
 
     for (int i = 0; i < path.length && i < another.length; i++) {
-      int av = path.at(i);
-      int bv = another.at(i);
+      int av = path.path[i];
+      int bv = another.path[i];
 
       if (av != bv) {
         break;
@@ -83,13 +74,13 @@ class Path implements Location {
   ///
   /// Note: Two paths of unequal length can still receive a `0` result if one is
   /// directly above or below the other. If you want exact matching, use
-  /// [[Path.equals]] instead.
+  /// [[PathUtils.equals]] instead.
   static int compare(Path path, Path another) {
     int smaller = min(path.length, another.length);
 
     for (int i = 0; i < smaller; i++) {
-      if (path.at(i) < another.at(i)) return -1;
-      if (path.at(i) > another.at(i)) return 1;
+      if (path.path[i] < another.path[i]) return -1;
+      if (path.path[i] > another.path[i]) return 1;
     }
 
     return 0;
@@ -100,10 +91,10 @@ class Path implements Location {
     int i = path.length - 1;
     Path as = path.slice(0, i);
     Path bs = another.slice(0, i);
-    int av = path.at(i);
-    int bv = another.at(i);
+    int av = path.path[i];
+    int bv = another.path[i];
 
-    return Path.equals(as, bs) && av > bv;
+    return PathUtils.equals(as, bs) && av > bv;
   }
 
   /// Check if a path ends at one of the indexes in another.
@@ -112,7 +103,7 @@ class Path implements Location {
     Path as = path.slice(0, i);
     Path bs = another.slice(0, i);
 
-    return Path.equals(as, bs);
+    return PathUtils.equals(as, bs);
   }
 
   /// Check if a path ends before one of the indexes in another.
@@ -120,10 +111,10 @@ class Path implements Location {
     int i = path.length - 1;
     Path as = path.slice(0, i);
     Path bs = another.slice(0, i);
-    int av = path.at(i);
-    int bv = another.at(i);
+    int av = path.path[i];
+    int bv = another.path[i];
 
-    return Path.equals(as, bs) && av < bv;
+    return PathUtils.equals(as, bs) && av < bv;
   }
 
   /// Check if two `Path` nodes are equal.
@@ -133,39 +124,42 @@ class Path implements Location {
 
   /// Check if a path is after another.
   static bool isAfter(Path path, Path another) {
-    return Path.compare(path, another) == 1;
+    return PathUtils.compare(path, another) == 1;
   }
 
   /// Check if a path is an ancestor of another.
   static bool isAncestor(Path path, Path another) {
-    return path.length < another.length && Path.compare(path, another) == 0;
+    return path.length < another.length &&
+        PathUtils.compare(path, another) == 0;
   }
 
   /// Check if a path is before another.
   static bool isBefore(Path path, Path another) {
-    return Path.compare(path, another) == -1;
+    return PathUtils.compare(path, another) == -1;
   }
 
   /// Check if a path is a child of another.
   static bool isChild(Path path, Path another) {
     return (path.length == another.length + 1 &&
-        Path.compare(path, another) == 0);
+        PathUtils.compare(path, another) == 0);
   }
 
   /// Check if a path is equal to or an ancestor of another.
   static bool isCommon(Path path, Path another) {
-    return path.length <= another.length && Path.compare(path, another) == 0;
+    return path.length <= another.length &&
+        PathUtils.compare(path, another) == 0;
   }
 
   /// Check if a path is a descendant of another.
   static bool isDescendant(Path path, Path another) {
-    return path.length > another.length && Path.compare(path, another) == 0;
+    return path.length > another.length &&
+        PathUtils.compare(path, another) == 0;
   }
 
   /// Check if a path is the parent of another.
   static bool isParent(Path path, Path another) {
     return (path.length + 1 == another.length &&
-        Path.compare(path, another) == 0);
+        PathUtils.compare(path, another) == 0);
   }
 
   /// Check if a path is a sibling of another.
@@ -176,14 +170,14 @@ class Path implements Location {
 
     Path as = path.slice(0, -1);
     Path bs = another.slice(0, -1);
-    int al = path.at(path.length - 1);
-    int bl = another.at(another.length - 1);
+    int al = path.path[path.length - 1];
+    int bl = another.path[another.length - 1];
 
-    return al != bl && Path.equals(as, bs);
+    return al != bl && PathUtils.equals(as, bs);
   }
 
   /// Get a list of paths at every level down to a path. Note: this is the same
-  /// as `Path.ancestors`, but including the path itself.
+  /// as `PathUtils.ancestors`, but including the path itself.
   ///
   /// The paths are sorted from shallowest to deepest. However, if the `reverse:
   /// true` option is passed, they are reversed.
@@ -208,7 +202,7 @@ class Path implements Location {
           "Cannot get the next path of a root path [$path], because it has no next index.");
     }
 
-    int last = path.at(path.length - 1);
+    int last = path.path[path.length - 1];
 
     Path next = path.slice(0, -1);
 
@@ -233,7 +227,7 @@ class Path implements Location {
           "Cannot get the previous path of a root path [$path], because it has no previous index.");
     }
 
-    int last = path.at(path.length - 1);
+    int last = path.path[path.length - 1];
 
     if (last <= 0) {
       throw Exception(
@@ -249,7 +243,8 @@ class Path implements Location {
 
   /// Get a path relative to an ancestor.
   static Path relative(Path path, Path ancestor) {
-    if (!Path.isAncestor(ancestor, path) && !Path.equals(path, ancestor)) {
+    if (!PathUtils.isAncestor(ancestor, path) &&
+        !PathUtils.equals(path, ancestor)) {
       throw Exception(
           "Cannot get the relative path of [$path] inside ancestor [$ancestor], because it is not above or equal to the path.");
     }
@@ -270,9 +265,9 @@ class Path implements Location {
     if (operation is InsertNodeOperation) {
       Path op = operation.path;
 
-      if (Path.equals(op, p) ||
-          Path.endsBefore(op, p) ||
-          Path.isAncestor(op, p)) {
+      if (PathUtils.equals(op, p) ||
+          PathUtils.endsBefore(op, p) ||
+          PathUtils.isAncestor(op, p)) {
         p.path[op.length - 1] += 1;
 
         return p;
@@ -282,9 +277,9 @@ class Path implements Location {
     if (operation is RemoveNodeOperation) {
       Path op = operation.path;
 
-      if (Path.equals(op, p) || Path.isAncestor(op, p)) {
+      if (PathUtils.equals(op, p) || PathUtils.isAncestor(op, p)) {
         return null;
-      } else if (Path.endsBefore(op, p)) {
+      } else if (PathUtils.endsBefore(op, p)) {
         p.path[op.length - 1] -= 1;
       }
 
@@ -295,9 +290,9 @@ class Path implements Location {
       Path op = operation.path;
       int position = operation.position;
 
-      if (Path.equals(op, p) || Path.endsBefore(op, p)) {
+      if (PathUtils.equals(op, p) || PathUtils.endsBefore(op, p)) {
         p.path[op.length - 1] -= 1;
-      } else if (Path.isAncestor(op, p)) {
+      } else if (PathUtils.isAncestor(op, p)) {
         p.path[op.length - 1] -= 1;
         p.path[op.length] += position;
       }
@@ -309,7 +304,7 @@ class Path implements Location {
       Path op = operation.path;
       int position = operation.position;
 
-      if (Path.equals(op, p)) {
+      if (PathUtils.equals(op, p)) {
         if (affinity == Affinity.forward) {
           p.path[p.length - 1] += 1;
         } else if (affinity == Affinity.backward) {
@@ -317,9 +312,10 @@ class Path implements Location {
         } else {
           return null;
         }
-      } else if (Path.endsBefore(op, p)) {
+      } else if (PathUtils.endsBefore(op, p)) {
         p.path[op.length - 1] += 1;
-      } else if (Path.isAncestor(op, p) && path.path[op.length] >= position) {
+      } else if (PathUtils.isAncestor(op, p) &&
+          path.path[op.length] >= position) {
         p.path[op.length - 1] += 1;
         p.path[op.length] -= position;
       }
@@ -332,14 +328,14 @@ class Path implements Location {
       Path onp = operation.newPath;
 
       // If the old and new path are the same, it's a no-op.
-      if (Path.equals(op, onp)) {
+      if (PathUtils.equals(op, onp)) {
         return null;
       }
 
-      if (Path.isAncestor(op, p) || Path.equals(op, p)) {
+      if (PathUtils.isAncestor(op, p) || PathUtils.equals(op, p)) {
         Path copy = onp.slice();
 
-        if (Path.endsBefore(op, onp) && op.length < onp.length) {
+        if (PathUtils.endsBefore(op, onp) && op.length < onp.length) {
           int i = min(onp.length, op.length) - 1;
           copy.path[i] -= 1;
         }
@@ -347,16 +343,16 @@ class Path implements Location {
         copy.path.addAll(p.slice(op.length).path);
 
         return copy;
-      } else if (Path.endsBefore(onp, p) ||
-          Path.equals(onp, p) ||
-          Path.isAncestor(onp, p)) {
-        if (Path.endsBefore(op, p)) {
+      } else if (PathUtils.endsBefore(onp, p) ||
+          PathUtils.equals(onp, p) ||
+          PathUtils.isAncestor(onp, p)) {
+        if (PathUtils.endsBefore(op, p)) {
           p.path[op.length - 1] -= 1;
         }
 
         p.path[onp.length - 1] += 1;
-      } else if (Path.endsBefore(op, p)) {
-        if (Path.equals(onp, p)) {
+      } else if (PathUtils.endsBefore(op, p)) {
+        if (PathUtils.equals(onp, p)) {
           p.path[onp.length - 1] += 1;
         }
 

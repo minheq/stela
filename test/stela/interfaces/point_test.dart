@@ -8,63 +8,63 @@ void main() {
       Point point = Point(Path([0, 4]), 7);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.compare(point, another), 1);
+      expect(PointUtils.compare(point, another), 1);
     });
 
     test('path after offset before', () {
       Point point = Point(Path([0, 4]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.compare(point, another), 1);
+      expect(PointUtils.compare(point, another), 1);
     });
 
     test('path after offset equal', () {
       Point point = Point(Path([0, 4]), 3);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.compare(point, another), 1);
+      expect(PointUtils.compare(point, another), 1);
     });
 
     test('path before offset after', () {
       Point point = Point(Path([0, 0]), 4);
       Point another = Point(Path([0, 1]), 0);
 
-      expect(Point.compare(point, another), -1);
+      expect(PointUtils.compare(point, another), -1);
     });
 
     test('path before offset before', () {
       Point point = Point(Path([0, 0]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.compare(point, another), -1);
+      expect(PointUtils.compare(point, another), -1);
     });
 
     test('path before offset equal', () {
       Point point = Point(Path([0, 0]), 0);
       Point another = Point(Path([0, 1]), 0);
 
-      expect(Point.compare(point, another), -1);
+      expect(PointUtils.compare(point, another), -1);
     });
 
     test('path equal offset after', () {
       Point point = Point(Path([0, 1]), 7);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.compare(point, another), 1);
+      expect(PointUtils.compare(point, another), 1);
     });
 
     test('path equal offset before', () {
       Point point = Point(Path([0, 1]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.compare(point, another), -1);
+      expect(PointUtils.compare(point, another), -1);
     });
 
     test('path equal offset equal', () {
       Point point = Point(Path([0, 1]), 7);
       Point another = Point(Path([0, 1]), 7);
 
-      expect(Point.compare(point, another), 0);
+      expect(PointUtils.compare(point, another), 0);
     });
   });
 
@@ -73,63 +73,63 @@ void main() {
       Point point = Point(Path([0, 4]), 7);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.equals(point, another), false);
+      expect(PointUtils.equals(point, another), false);
     });
 
     test('path after offset before', () {
       Point point = Point(Path([0, 4]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.equals(point, another), false);
+      expect(PointUtils.equals(point, another), false);
     });
 
     test('path after offset equal', () {
       Point point = Point(Path([0, 4]), 3);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.equals(point, another), false);
+      expect(PointUtils.equals(point, another), false);
     });
 
     test('path before offset after', () {
       Point point = Point(Path([0, 0]), 4);
       Point another = Point(Path([0, 1]), 0);
 
-      expect(Point.equals(point, another), false);
+      expect(PointUtils.equals(point, another), false);
     });
 
     test('path before offset before', () {
       Point point = Point(Path([0, 0]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.equals(point, another), false);
+      expect(PointUtils.equals(point, another), false);
     });
 
     test('path before offset equal', () {
       Point point = Point(Path([0, 0]), 0);
       Point another = Point(Path([0, 1]), 0);
 
-      expect(Point.equals(point, another), false);
+      expect(PointUtils.equals(point, another), false);
     });
 
     test('path equal offset after', () {
       Point point = Point(Path([0, 1]), 7);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.equals(point, another), false);
+      expect(PointUtils.equals(point, another), false);
     });
 
     test('path equal offset before', () {
       Point point = Point(Path([0, 1]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.equals(point, another), false);
+      expect(PointUtils.equals(point, another), false);
     });
 
     test('path equal offset equal', () {
       Point point = Point(Path([0, 1]), 7);
       Point another = Point(Path([0, 1]), 7);
 
-      expect(Point.equals(point, another), true);
+      expect(PointUtils.equals(point, another), true);
     });
   });
 
@@ -138,63 +138,63 @@ void main() {
       Point point = Point(Path([0, 4]), 7);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isAfter(point, another), true);
+      expect(PointUtils.isAfter(point, another), true);
     });
 
     test('path after offset before', () {
       Point point = Point(Path([0, 4]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isAfter(point, another), true);
+      expect(PointUtils.isAfter(point, another), true);
     });
 
     test('path after offset equal', () {
       Point point = Point(Path([0, 4]), 3);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isAfter(point, another), true);
+      expect(PointUtils.isAfter(point, another), true);
     });
 
     test('path before offset after', () {
       Point point = Point(Path([0, 0]), 4);
       Point another = Point(Path([0, 1]), 0);
 
-      expect(Point.isAfter(point, another), false);
+      expect(PointUtils.isAfter(point, another), false);
     });
 
     test('path before offset before', () {
       Point point = Point(Path([0, 0]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isAfter(point, another), false);
+      expect(PointUtils.isAfter(point, another), false);
     });
 
     test('path before offset equal', () {
       Point point = Point(Path([0, 0]), 0);
       Point another = Point(Path([0, 1]), 0);
 
-      expect(Point.isAfter(point, another), false);
+      expect(PointUtils.isAfter(point, another), false);
     });
 
     test('path equal offset after', () {
       Point point = Point(Path([0, 1]), 7);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isAfter(point, another), true);
+      expect(PointUtils.isAfter(point, another), true);
     });
 
     test('path equal offset before', () {
       Point point = Point(Path([0, 1]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isAfter(point, another), false);
+      expect(PointUtils.isAfter(point, another), false);
     });
 
     test('path equal offset equal', () {
       Point point = Point(Path([0, 1]), 7);
       Point another = Point(Path([0, 1]), 7);
 
-      expect(Point.isAfter(point, another), false);
+      expect(PointUtils.isAfter(point, another), false);
     });
   });
 
@@ -203,63 +203,63 @@ void main() {
       Point point = Point(Path([0, 4]), 7);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isBefore(point, another), false);
+      expect(PointUtils.isBefore(point, another), false);
     });
 
     test('path after offset before', () {
       Point point = Point(Path([0, 4]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isBefore(point, another), false);
+      expect(PointUtils.isBefore(point, another), false);
     });
 
     test('path after offset equal', () {
       Point point = Point(Path([0, 4]), 3);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isBefore(point, another), false);
+      expect(PointUtils.isBefore(point, another), false);
     });
 
     test('path before offset after', () {
       Point point = Point(Path([0, 0]), 4);
       Point another = Point(Path([0, 1]), 0);
 
-      expect(Point.isBefore(point, another), true);
+      expect(PointUtils.isBefore(point, another), true);
     });
 
     test('path before offset before', () {
       Point point = Point(Path([0, 0]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isBefore(point, another), true);
+      expect(PointUtils.isBefore(point, another), true);
     });
 
     test('path before offset equal', () {
       Point point = Point(Path([0, 0]), 0);
       Point another = Point(Path([0, 1]), 0);
 
-      expect(Point.isBefore(point, another), true);
+      expect(PointUtils.isBefore(point, another), true);
     });
 
     test('path equal offset after', () {
       Point point = Point(Path([0, 1]), 7);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isBefore(point, another), false);
+      expect(PointUtils.isBefore(point, another), false);
     });
 
     test('path equal offset before', () {
       Point point = Point(Path([0, 1]), 0);
       Point another = Point(Path([0, 1]), 3);
 
-      expect(Point.isBefore(point, another), true);
+      expect(PointUtils.isBefore(point, another), true);
     });
 
     test('path equal offset equal', () {
       Point point = Point(Path([0, 1]), 7);
       Point another = Point(Path([0, 1]), 7);
 
-      expect(Point.isBefore(point, another), false);
+      expect(PointUtils.isBefore(point, another), false);
     });
   });
 }

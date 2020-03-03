@@ -22,7 +22,9 @@ class Text implements Descendant {
   void addProps(Map<String, dynamic> props) {
     _props.addAll(props);
   }
+}
 
+class TextUtils {
   /// Check if two `Text` nodes are equal.
   static bool equals(Text text, Text another) {
     return text.text == another.text;
@@ -44,9 +46,9 @@ class Text implements Descendant {
     List<Text> leaves = [text];
 
     for (Decoration dec in decorations) {
-      List<Point> edges = Range.edges(dec);
-      Point start = edges[0];
-      Point end = edges[1];
+      Edges edges = RangeUtils.edges(dec);
+      Point start = edges.start;
+      Point end = edges.end;
 
       List<Text> next = [];
       int o = 0;
