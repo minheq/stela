@@ -24,4 +24,8 @@ class PathRef {
       ref.unref();
     }
   }
+
+  void setUnref(Path Function() newUnref) {
+    unref = newUnref;
+  }
 }

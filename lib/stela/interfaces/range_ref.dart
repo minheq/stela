@@ -24,4 +24,8 @@ class RangeRef {
       ref.unref();
     }
   }
+
+  void setUnref(Range Function() newUnref) {
+    unref = newUnref;
+  }
 }

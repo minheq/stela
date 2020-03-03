@@ -24,4 +24,8 @@ class PointRef {
       ref.unref();
     }
   }
+
+  void setUnref(Point Function() newUnref) {
+    unref = newUnref;
+  }
 }

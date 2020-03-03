@@ -282,20 +282,19 @@ class EditorUtils {
 
   /// Check if a point is an edge of a location.
   static bool isEdge(Editor editor, Point point, Location at) {
-    return EditorUtils.isStart(editor, point, at) || EditorUtils.isEnd(editor, point, at);
+    return EditorUtils.isStart(editor, point, at) ||
+        EditorUtils.isEnd(editor, point, at);
   }
 
   /// Check if an element is empty, accounting for void nodes.
   static bool isEmpty(Editor editor, Element element) {
     List<Node> children = element.children;
     Node first = children[0];
-    return (
-      children.length == 0 ||
-      (children.length == 1 &&
-        (first is Text) &&
-        first.text == '' &&
-        !editor.isVoid(element))
-    );
+    return (children.length == 0 ||
+        (children.length == 1 &&
+            (first is Text) &&
+            first.text == '' &&
+            !editor.isVoid(element)));
   }
 
   /// Check if a value is an inline `Element` object.
@@ -337,12 +336,10 @@ class EditorUtils {
   /// Get the leaf text node at a location.
   static NodeEntry<Text> leaf(
     Editor editor,
-    Location at,
-    {
-      int depth,
-      Edge edge,
-    }
-  ) {
+    Location at, {
+    int depth,
+    Edge edge,
+  }) {
     Path path = EditorUtils.path(editor, at, depth: depth, edge: edge);
     Node node = NodeUtils.leaf(editor, path);
 
@@ -409,13 +406,16 @@ class EditorUtils {
     }
 
     if (RangeUtils.isExpanded(selection)) {
-      List<NodeEntry> nodes = List.from(EditorUtils.nodes(editor, match: (node) { return (node is Text); }));
+      List<NodeEntry> nodes =
+          List.from(EditorUtils.nodes(editor, match: (node) {
+        return (node is Text);
+      }));
       NodeEntry match = nodes[0];
 
       if (match != null) {
         Text node = match.node;
-        const { text, ...rest } = node
-        return rest;
+
+        return node.props;
       } else {
         return {};
       }
@@ -425,11 +425,15 @@ class EditorUtils {
     Path path = anchor.path;
 
     NodeEntry entry = EditorUtils.leaf(editor, path);
-    Node node = entry.node;
+    Text node = entry.node;
 
     if (anchor.offset == 0) {
-      NodeEntry prev = EditorUtils.previous(editor, at: path, match: (node) { return (node is Text); });
-      NodeEntry block = EditorUtils.above(editor, match: (node) { return EditorUtils.isBlock(editor, node); });
+      NodeEntry prev = EditorUtils.previous(editor, at: path, match: (node) {
+        return (node is Text);
+      });
+      NodeEntry block = EditorUtils.above(editor, match: (node) {
+        return EditorUtils.isBlock(editor, node);
+      });
 
       if (prev != null && block != null) {
         Node prevNode = prev.node;
@@ -437,25 +441,20 @@ class EditorUtils {
         Path blockPath = block.path;
 
         if (PathUtils.isAncestor(blockPath, prevPath)) {
-          node = prevNode as Text;
+          node = prevNode;
         }
       }
     }
 
-    const { text, ...rest } = node
-    return rest;
+    return node.props;
   }
 
   /// Get the matching node in the branch of the document after a location.
-  static NodeEntry<T> next<T extends Node>(
-    Editor editor,
-    {
-      Location at,
+  static NodeEntry<T> next<T extends Node>(Editor editor,
+      {Location at,
       NodeMatch<T> match,
       Mode mode = Mode.lowest,
-      bool voids = false
-    }
-  ) {
+      bool voids = false}) {
     at = at ?? editor.selection;
 
     if (at == null) {
@@ -479,13 +478,18 @@ class EditorUtils {
         NodeEntry<Ancestor> entry = EditorUtils.parent(editor, at);
         Ancestor parent = entry.node;
 
-        match = (node) { return parent.children.contains(node); };
+        match = (node) {
+          return parent.children.contains(node);
+        };
       } else {
-        match = (node) { return true; };
+        match = (node) {
+          return true;
+        };
       }
     }
 
-    List<NodeEntry> nodes = List.from(EditorUtils.nodes(editor, at: span, match: match, mode: mode, voids: voids));
+    List<NodeEntry> nodes = List.from(EditorUtils.nodes(editor,
+        at: span, match: match, mode: mode, voids: voids));
     NodeEntry next = nodes[1];
 
     return next;
@@ -494,12 +498,10 @@ class EditorUtils {
   /// Get the node at a location.
   static NodeEntry node(
     Editor editor,
-    Location at,
-    {
-      int depth,
-      Edge edge,
-    }
-  ) {
+    Location at, {
+    int depth,
+    Edge edge,
+  }) {
     Path path = EditorUtils.path(editor, at, edge: edge, depth: depth);
     Node node = NodeUtils.get(editor, path);
 
@@ -508,16 +510,14 @@ class EditorUtils {
 
   /// Iterate through all of the nodes in the Editor.
   static Iterable<NodeEntry<T>> nodes<T extends Node>(
-    Editor editor,
-    {
-      Location at,
-      NodeMatch<T> match,
-      Mode mode = Mode.all,
-      bool universal = false,
-      bool reverse = false,
-      bool voids = false,
-    }
-  ) sync* {
+    Editor editor, {
+    Location at,
+    NodeMatch<T> match,
+    Mode mode = Mode.all,
+    bool universal = false,
+    bool reverse = false,
+    bool voids = false,
+  }) sync* {
     at = at ?? editor.selection;
 
     if (match == null) {
@@ -543,15 +543,11 @@ class EditorUtils {
       to = reverse ? first : last;
     }
 
-    Iterable<NodeEntry<Node>> iterable = NodeUtils.nodes(editor, 
-      reverse: reverse,
-      from: from,
-      to: to,
-      pass: (entry) {
-        Node node = entry.node;
-        return (voids ? false : EditorUtils.isVoid(editor, node));
-      }
-    );
+    Iterable<NodeEntry<Node>> iterable = NodeUtils.nodes(editor,
+        reverse: reverse, from: from, to: to, pass: (entry) {
+      Node node = entry.node;
+      return (voids ? false : EditorUtils.isVoid(editor, node));
+    });
 
     List<NodeEntry<T>> matches = [];
     NodeEntry<T> hit;
@@ -563,7 +559,7 @@ class EditorUtils {
       bool isLower = hit != null && PathUtils.compare(path, hit.path) == 0;
 
       // In highest mode any node lower than the last hit is not a match.
-      if (mode == Mode.highest&& isLower) {
+      if (mode == Mode.highest && isLower) {
         continue;
       }
 
@@ -585,8 +581,7 @@ class EditorUtils {
       }
 
       // In lowest mode we emit the last hit, once it's guaranteed lowest.
-      NodeEntry<T> emit =
-        mode == Mode.lowest ? hit : NodeEntry(node, path);
+      NodeEntry<T> emit = mode == Mode.lowest ? hit : NodeEntry(node, path);
 
       if (emit != null) {
         if (universal) {
@@ -618,15 +613,10 @@ class EditorUtils {
   }
 
   /// Normalize any dirty objects in the editor.
-  static normalize(
-    Editor editor,
-    {
-      bool force = false
-    }
-  ) {
-    const getDirtyPaths = List<Path> (Editor editor) {
-      return DIRTY_PATHS[editor] != null || [];
-    }
+  static normalize(Editor editor, {bool force = false}) {
+    List<Path> Function(Editor editor) getDirtyPaths = (Editor editor) {
+      return DIRTY_PATHS[editor] ?? [];
+    };
 
     if (!EditorUtils.isNormalizing(editor)) {
       return null;
@@ -645,22 +635,21 @@ class EditorUtils {
       return null;
     }
 
-    EditorUtils.withoutNormalizing(editor, () => {
+    EditorUtils.withoutNormalizing(editor, () {
       // HACK: better way?
       int max = getDirtyPaths(editor).length * 42;
-      let m = 0
+      int m = 0;
 
       while (getDirtyPaths(editor).length != 0) {
         if (m > max) {
-          throw Exception(`
-            Could not completely normalize the editor after ${max} iterations! This is usually due to incorrect normalization logic that leaves a node in an invalid state.
-          `)
+          throw Exception(
+              "Could not completely normalize the editor after $max iterations! This is usually due to incorrect normalization logic that leaves a node in an invalid state.");
         }
 
-        Path path = getDirtyPaths(editor).pop()!
-        const entry = EditorUtils.node(editor, path)
-        editor.normalizeNode(entry)
-        m++
+        Path path = getDirtyPaths(editor).removeLast();
+        NodeEntry entry = EditorUtils.node(editor, path);
+        editor.normalizeNode(entry);
+        m++;
       }
     });
   }
@@ -668,12 +657,10 @@ class EditorUtils {
   /// Get the parent node of a location.
   static NodeEntry<Ancestor> parent(
     Editor editor,
-    Location at,
-    {
-      int depth,
-      Edge edge,
-    }
-  ) {
+    Location at, {
+    int depth,
+    Edge edge,
+  }) {
     Path path = EditorUtils.path(editor, at, edge: edge, depth: depth);
     Path parentPath = PathUtils.parent(path);
     NodeEntry<Ancestor> entry = EditorUtils.node(editor, parentPath);
@@ -721,24 +708,22 @@ class EditorUtils {
 
   /// Create a mutable ref for a `Path` object, which will stay in sync as new
   /// operations are applied to the editor.
-  static PathRef pathRef(
-    Editor editor,
-    Path path,
-    {
-      Affinity affinity = Affinity.forward
-    }
-  ) {
+  static PathRef pathRef(Editor editor, Path path,
+      {Affinity affinity = Affinity.forward}) {
     PathRef ref = PathRef(
       current: path,
       affinity: affinity,
-      unref: () {
-        const { current } = ref
-        Path pathRefs = EditorUtils.pathRefs(editor)
-        pathRefs.delete(ref)
-        ref.current = null
-        return current
-      }
     );
+
+    Path Function() unref = () {
+      Path current = ref.current;
+      Set<PathRef> pathRefs = EditorUtils.pathRefs(editor);
+      pathRefs.remove(ref);
+      ref.current = null;
+      return current;
+    };
+
+    ref.setUnref(unref);
 
     Set<PathRef> refs = EditorUtils.pathRefs(editor);
     refs.add(ref);
@@ -790,24 +775,22 @@ class EditorUtils {
 
   /// Create a mutable ref for a `Point` object, which will stay in sync as new
   /// operations are applied to the editor.
-  PointRef pointRef(
-    Editor editor,
-    Point point,
-    {
-      Affinity affinity = Affinity.forward
-    }
-  ) {
+  PointRef pointRef(Editor editor, Point point,
+      {Affinity affinity = Affinity.forward}) {
     PointRef ref = PointRef(
       current: point,
       affinity: affinity,
-      unref: () {
-        Point current = ref;
-        Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-        pointRefs.remove(ref);
-        ref.current = null;
-        return current;
-      }
     );
+
+    Point Function() unref = () {
+      Point current = ref.current;
+      Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
+      pointRefs.remove(ref);
+      ref.current = null;
+      return current;
+    };
+
+    ref.setUnref(unref);
 
     Set<PointRef> refs = EditorUtils.pointRefs(editor);
     refs.add(ref);
@@ -836,13 +819,11 @@ class EditorUtils {
   /// Note: void nodes are treated as a single point, and iteration will not
   /// happen inside their content.
   static Iterable<Point> positions(
-    Editor editor,
-    {
-      Location at,
-      Unit unit = Unit.offset,
-      bool reverse = false,
-    }
-  ) sync* {
+    Editor editor, {
+    Location at,
+    Unit unit = Unit.offset,
+    bool reverse = false,
+  }) sync* {
     at = at ?? editor.selection;
 
     if (at == null) {
@@ -860,16 +841,16 @@ class EditorUtils {
     int distance;
     bool isNewBlock = false;
 
-    const advance = () => {
+    Null Function() advance = () {
       if (distance == null) {
-        if (unit == 'character') {
-          distance = getCharacterDistance(string)
-        } else if (unit == 'word') {
-          distance = getWordDistance(string)
-        } else if (unit == 'line' || unit == 'block') {
-          distance = string.length
+        if (unit == Unit.character) {
+          distance = getCharacterDistance(string);
+        } else if (unit == Unit.word) {
+          distance = getWordDistance(string);
+        } else if (unit == Unit.line || unit == Unit.block) {
+          distance = string.length;
         } else {
-          distance = 1
+          distance = 1;
         }
 
         string = string.slice(distance);
@@ -878,13 +859,14 @@ class EditorUtils {
       // Add or subtract the offset.
       offset = reverse ? offset - distance : offset + distance;
       // Subtract the distance traveled from the available text.
-      available = available - distance!
+      available = available - distance;
       // If the available had room to spare, reset the distance so that it will
       // advance again next time. Otherwise, set it to the overflow amount.
-      distance = available >= 0 ? null : 0 - available
+      distance = available >= 0 ? null : 0 - available;
     };
 
-    for (NodeEntry entry in EditorUtils.nodes(editor, at: at, reverse: reverse)) {
+    for (NodeEntry entry
+        in EditorUtils.nodes(editor, at: at, reverse: reverse)) {
       Path path = entry.path;
       Node node = entry.node;
 
@@ -902,11 +884,11 @@ class EditorUtils {
 
         if (EditorUtils.hasInlines(editor, node)) {
           Point e = PathUtils.isAncestor(path, end.path)
-            ? end
-            : EditorUtils.end(editor, path);
+              ? end
+              : EditorUtils.end(editor, path);
           Point s = PathUtils.isAncestor(path, start.path)
-            ? start
-            : EditorUtils.start(editor, path);
+              ? start
+              : EditorUtils.start(editor, path);
 
           String text = EditorUtils.string(editor, Range(s, e));
           string = reverse ? reverseText(text) : text;
@@ -951,15 +933,11 @@ class EditorUtils {
   }
 
   /// Get the matching node in the branch of the document before a location.
-  static NodeEntry<T> previous<T extends Node>(
-    Editor editor,
-    {
-      Location at,
+  static NodeEntry<T> previous<T extends Node>(Editor editor,
+      {Location at,
       NodeMatch<T> match,
       Mode mode = Mode.lowest,
-      bool voids = false
-    }
-  ) {
+      bool voids = false}) {
     at = at ?? editor.selection;
 
     if (at == null) {
@@ -983,13 +961,18 @@ class EditorUtils {
         NodeEntry entry = EditorUtils.parent(editor, at);
         Ancestor parent = entry.node;
 
-        match = (node) { return parent.children.contains(node); };
+        match = (node) {
+          return parent.children.contains(node);
+        };
       } else {
-        match = (node) { return true; };
+        match = (node) {
+          return true;
+        };
       }
     }
 
-    List<NodeEntry> nodes = List.from(EditorUtils.nodes(editor, 
+    List<NodeEntry> nodes = List.from(EditorUtils.nodes(
+      editor,
       reverse: true,
       at: span,
       match: match,
@@ -1016,24 +999,22 @@ class EditorUtils {
 
   /// Create a mutable ref for a `Range` object, which will stay in sync as new
   /// operations are applied to the editor.
-  static RangeRef rangeRef(
-    Editor editor,
-    Range range,
-    {
-      Affinity affinity = Affinity.forward
-    }
-  ) {
+  static RangeRef rangeRef(Editor editor, Range range,
+      {Affinity affinity = Affinity.forward}) {
     RangeRef ref = RangeRef(
       current: range,
       affinity: affinity,
-      unref: () {
-        const { current } = ref
-        const rangeRefs = EditorUtils.rangeRefs(editor)
-        rangeRefs.delete(ref)
-        ref.current = null
-        return current
-      }
     );
+
+    Range Function() unref = () {
+      Range current = ref.current;
+      Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(editor);
+      rangeRefs.remove(ref);
+      ref.current = null;
+      return current;
+    };
+
+    ref.setUnref(unref);
 
     Set<RangeRef> refs = EditorUtils.rangeRefs(editor);
     refs.add(ref);
@@ -1077,7 +1058,9 @@ class EditorUtils {
     Point end = edges.end;
     String text = '';
 
-    for (NodeEntry entry in EditorUtils.nodes(editor, at: range, match: (node) { return node is Text; })) {
+    for (NodeEntry entry in EditorUtils.nodes(editor, at: range, match: (node) {
+      return node is Text;
+    })) {
       Text node = entry.node;
       Path path = entry.path;
       String t = node.text;
@@ -1366,13 +1349,7 @@ class EditorUtils {
   // }
 
   /// Convert a range into a non-hanging one.
-  static Range unhangRange(
-    Editor editor,
-    Range range,
-    {
-      bool voids = false
-    }
-  ) {
+  static Range unhangRange(Editor editor, Range range, {bool voids = false}) {
     Edges edges = RangeUtils.edges(range);
     Point start = edges.start;
     Point end = edges.end;
@@ -1382,9 +1359,12 @@ class EditorUtils {
       return range;
     }
 
-    NodeEntry endBlock = EditorUtils.above(editor, 
+    NodeEntry endBlock = EditorUtils.above(
+      editor,
       at: end,
-      match: (node) { return EditorUtils.isBlock(editor, node); },
+      match: (node) {
+        return EditorUtils.isBlock(editor, node);
+      },
     );
 
     Path blockPath = endBlock != null ? endBlock.path : Path([]);
@@ -1392,9 +1372,12 @@ class EditorUtils {
     Range before = Range(first, end);
     bool skip = true;
 
-    for (NodeEntry entry in EditorUtils.nodes(editor, 
+    for (NodeEntry entry in EditorUtils.nodes(
+      editor,
       at: before,
-      match: (node) { return node is Text; },
+      match: (node) {
+        return node is Text;
+      },
       reverse: true,
       voids: voids,
     )) {
@@ -1417,13 +1400,11 @@ class EditorUtils {
 
   /// Match a void node in the current branch of the editor.
   static NodeEntry<Element> matchVoid(
-    Editor editor,
-    {
-      Location at,
-      Mode mode,
-      bool voids,
-    }
-  ) {
+    Editor editor, {
+    Location at,
+    Mode mode,
+    bool voids,
+  }) {
     return EditorUtils.above(editor, at: at, mode: mode, match: (node) {
       return EditorUtils.isVoid(editor, node);
     });
