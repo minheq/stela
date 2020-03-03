@@ -5,7 +5,7 @@ import 'package:inday/stela/interfaces/path.dart';
 /// operations are applied to the editor. You can access their `current` property
 /// at any time for the up-to-date path value.
 class PathRef {
-  PathRef(this.current, this.affinity, this.unref);
+  PathRef({this.current, this.affinity, this.unref});
 
   Path current;
   Affinity affinity;

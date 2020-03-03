@@ -5,7 +5,7 @@ import 'package:inday/stela/interfaces/range.dart';
 /// operations are applied to the editor. You can access their `current` property
 /// at any time for the up-to-date range value.
 class RangeRef {
-  RangeRef(this.current, this.affinity, this.unref);
+  RangeRef({this.current, this.affinity, this.unref});
 
   Range current;
   Affinity affinity;

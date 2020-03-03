@@ -189,3 +189,10 @@ class Decoration extends Range {
 
   Map<String, dynamic> props;
 }
+
+class Edges {
+  Edges(this.start, this.end);
+
+  final Point start;
+  final Point end;
+}

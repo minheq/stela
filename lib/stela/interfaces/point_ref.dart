@@ -5,7 +5,7 @@ import 'package:inday/stela/interfaces/point.dart';
 /// operations are applied to the editor. You can access their `current` property
 /// at any time for the up-to-date point value.
 class PointRef {
-  PointRef(this.current, this.affinity, this.unref);
+  PointRef({this.current, this.affinity, this.unref});
 
   Point current;
   Affinity affinity;
