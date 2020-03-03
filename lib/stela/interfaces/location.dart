@@ -10,7 +10,7 @@ class Location {}
 
 /// The `Span` interface is a low-level way to refer to locations in nodes
 /// without using `Point` which requires leaf text nodes to be present.
-class Span {
+class Span implements Location {
   Span(this.path0, this.path1);
 
   final Path path0;
