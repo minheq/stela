@@ -844,16 +844,16 @@ class EditorUtils {
     Null Function() advance = () {
       if (distance == null) {
         if (unit == Unit.character) {
-          distance = getCharacterDistance(string);
+          distance = StringUtils.getCharacterDistance(string);
         } else if (unit == Unit.word) {
-          distance = getWordDistance(string);
+          distance = StringUtils.getWordDistance(string);
         } else if (unit == Unit.line || unit == Unit.block) {
           distance = string.length;
         } else {
           distance = 1;
         }
 
-        string = string.slice(distance);
+        string = string.substring(distance);
       }
 
       // Add or subtract the offset.
@@ -891,7 +891,7 @@ class EditorUtils {
               : EditorUtils.start(editor, path);
 
           String text = EditorUtils.string(editor, Range(s, e));
-          string = reverse ? reverseText(text) : text;
+          string = reverse ? StringUtils.reverseText(text) : text;
           isNewBlock = true;
         }
       }
@@ -918,7 +918,7 @@ class EditorUtils {
             advance();
           }
 
-          // If the available space hasn't overflow, we have another point to
+          // If the available _space hasn't overflow, we have another point to
           // yield in the current text node.
           if (available >= 0) {
             yield Point(path, offset);
@@ -1417,5 +1417,210 @@ class EditorUtils {
     fn();
     _normalizing[editor] = value;
     EditorUtils.normalize(editor);
+  }
+}
+
+enum Prev {
+  /// Surrogate pair
+  SURR,
+
+  /// Modifier (technically also surrogate pair)
+  MOD,
+
+  /// Zero width joiner
+  ZWJ,
+
+  /// Variation selector
+  VAR,
+
+  /// Sequenceable character from basic multilingual plane
+  BMP,
+}
+
+class StringUtils {
+  /// Get the distance to the end of the first character in a string of text.
+  static int getCharacterDistance(String text) {
+    int zeroWidthJoiner = 0x200d;
+    int offset = 0;
+    Prev prev;
+    int charCode = text.codeUnitAt(0);
+
+    while (charCode != null) {
+      if (isSurrogate(charCode)) {
+        bool modifier = StringUtils.isModifier(charCode, text, offset);
+
+        // Early returns are the heart of this function, where we decide if previous and current
+        // codepoints should form a single character (in terms of how many of them should selection
+        // jump over).
+        if (prev == Prev.SURR || prev == Prev.BMP) {
+          break;
+        }
+
+        offset += 2;
+        prev = modifier ? Prev.MOD : Prev.SURR;
+        charCode = text.codeUnitAt(offset);
+        // Absolutely fine to `continue` without any checks because if `charCode` is NaN (which
+        // is the case when out of `text` range), next `while` loop won't execute and we're done.
+        continue;
+      }
+
+      if (charCode == zeroWidthJoiner) {
+        offset += 1;
+        prev = Prev.ZWJ;
+        charCode = text.codeUnitAt(offset);
+
+        continue;
+      }
+
+      if (StringUtils.isBMPEmoji(charCode)) {
+        if (prev != null && prev != Prev.ZWJ && prev != Prev.VAR) {
+          break;
+        }
+        offset += 1;
+        prev = Prev.BMP;
+        charCode = text.codeUnitAt(offset);
+
+        continue;
+      }
+
+      if (isVariationSelector(charCode)) {
+        if (prev != null && prev != Prev.ZWJ) {
+          break;
+        }
+        offset += 1;
+        prev = Prev.VAR;
+        charCode = text.codeUnitAt(offset);
+        continue;
+      }
+
+      // Modifier 'groups up' with what ever character is before that (even whitespace), need to
+      // look ahead.
+      if (prev == Prev.MOD) {
+        offset += 1;
+        break;
+      }
+
+      // If while loop ever gets here, we're done (e.g latin chars).
+      break;
+    }
+
+    return offset ?? 1;
+  }
+
+  /// Get the distance to the end of the first word in a string of text.
+  static int getWordDistance(String text) {
+    int length = 0;
+    int i = 0;
+    bool started = false;
+    String char;
+
+    while ((char = text[i]) != null) {
+      int l = getCharacterDistance(char);
+      char = text.substring(i, i + l);
+      String rest = text.substring(i + l);
+
+      if (StringUtils.isWordCharacter(char, rest)) {
+        started = true;
+        length += l;
+      } else if (!started) {
+        length += l;
+      } else {
+        break;
+      }
+
+      i += l;
+    }
+
+    return length;
+  }
+
+  /// Check if a character is a word character. The `remaining` argument is used
+  /// because sometimes you must read subsequent characters to truly determine it.
+  static bool isWordCharacter(String char, String remaining) {
+    RegExp space = RegExp('/\s/');
+    RegExp punctuation = RegExp(
+        '/[\u0021-\u0023\u0025-\u002A\u002C-\u002F\u003A\u003B\u003F\u0040\u005B-\u005D\u005F\u007B\u007D\u00A1\u00A7\u00AB\u00B6\u00B7\u00BB\u00BF\u037E\u0387\u055A-\u055F\u0589\u058A\u05BE\u05C0\u05C3\u05C6\u05F3\u05F4\u0609\u060A\u060C\u060D\u061B\u061E\u061F\u066A-\u066D\u06D4\u0700-\u070D\u07F7-\u07F9\u0830-\u083E\u085E\u0964\u0965\u0970\u0AF0\u0DF4\u0E4F\u0E5A\u0E5B\u0F04-\u0F12\u0F14\u0F3A-\u0F3D\u0F85\u0FD0-\u0FD4\u0FD9\u0FDA\u104A-\u104F\u10FB\u1360-\u1368\u1400\u166D\u166E\u169B\u169C\u16EB-\u16ED\u1735\u1736\u17D4-\u17D6\u17D8-\u17DA\u1800-\u180A\u1944\u1945\u1A1E\u1A1F\u1AA0-\u1AA6\u1AA8-\u1AAD\u1B5A-\u1B60\u1BFC-\u1BFF\u1C3B-\u1C3F\u1C7E\u1C7F\u1CC0-\u1CC7\u1CD3\u2010-\u2027\u2030-\u2043\u2045-\u2051\u2053-\u205E\u207D\u207E\u208D\u208E\u2329\u232A\u2768-\u2775\u27C5\u27C6\u27E6-\u27EF\u2983-\u2998\u29D8-\u29DB\u29FC\u29FD\u2CF9-\u2CFC\u2CFE\u2CFF\u2D70\u2E00-\u2E2E\u2E30-\u2E3B\u3001-\u3003\u3008-\u3011\u3014-\u301F\u3030\u303D\u30A0\u30FB\uA4FE\uA4FF\uA60D-\uA60F\uA673\uA67E\uA6F2-\uA6F7\uA874-\uA877\uA8CE\uA8CF\uA8F8-\uA8FA\uA92E\uA92F\uA95F\uA9C1-\uA9CD\uA9DE\uA9DF\uAA5C-\uAA5F\uAADE\uAADF\uAAF0\uAAF1\uABEB\uFD3E\uFD3F\uFE10-\uFE19\uFE30-\uFE52\uFE54-\uFE61\uFE63\uFE68\uFE6A\uFE6B\uFF01-\uFF03\uFF05-\uFF0A\uFF0C-\uFF0F\uFF1A\uFF1B\uFF1F\uFF20\uFF3B-\uFF3D\uFF3F\uFF5B\uFF5D\uFF5F-\uFF65]/');
+    RegExp chameleon = RegExp("/['\u2018\u2019]/");
+
+    if (space.hasMatch(char)) {
+      return false;
+    }
+
+    // Chameleons count as word characters as long as they're in a word, so
+    // recurse to see if the next one is a word character or not.
+    if (chameleon.hasMatch(char)) {
+      String next = remaining[0];
+      int length = getCharacterDistance(next);
+      next = remaining.substring(0, length);
+      String rest = remaining.substring(length);
+
+      if (isWordCharacter(next, rest)) {
+        return true;
+      }
+    }
+
+    if (punctuation.hasMatch(char)) {
+      return false;
+    }
+
+    return true;
+  }
+
+  /// Determines if `code` is a surrogate
+  static bool isSurrogate(int code) {
+    int surrogateStart = 0xd800;
+    int surrogateEnd = 0xdfff;
+
+    return surrogateStart <= code && code <= surrogateEnd;
+  }
+
+  /// Does `code` form Modifier with next one.
+  ///
+  /// https://emojipedia.org/modifiers/
+  static bool isModifier(int code, String text, int offset) {
+    if (code == 0xd83c) {
+      int next = text.codeUnitAt(offset + 1);
+      return next <= 0xdfff && next >= 0xdffb;
+    }
+
+    return false;
+  }
+
+  /// Is `code` a Variation Selector.
+  ///
+  /// https://codepoints.net/variation_selectors
+  static bool isVariationSelector(int code) {
+    return code <= 0xfe0f && code >= 0xfe00;
+  }
+
+  /// Is `code` one of the BMP codes used in emoji sequences.
+  ///
+  /// https://emojipedia.org/emoji-zwj-sequences/
+  static bool isBMPEmoji(int code) {
+    // This requires tiny bit of maintanance, better ideas?
+    // Fortunately it only happens if new Unicode Standard
+    // is released. Fails gracefully if upkeep lags behind,
+    // same way Slate previously behaved with all emojis.
+    return (code == 0x2764 || // heart (❤)
+            code == 0x2642 || // male (♂)
+            code == 0x2640 || // female (♀)
+            code == 0x2620 || // scull (☠)
+            code == 0x2695 || // medical (⚕)
+            code == 0x2708 || // plane (✈️)
+            code == 0x25ef // large circle (◯)
+        );
+  }
+
+  static String reverseText(String text) {
+    if (text.length == 0) {
+      return '';
+    }
+
+    if (text.length == 1) {
+      return text;
+    }
+
+    return text[text.length - 1] +
+        StringUtils.reverseText(text.substring(0, text.length - 1));
   }
 }
