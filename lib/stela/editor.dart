@@ -9,6 +9,7 @@ import 'package:inday/stela/point_ref.dart';
 import 'package:inday/stela/range.dart';
 import 'package:inday/stela/range_ref.dart';
 import 'package:inday/stela/text.dart';
+import 'package:inday/stela/transforms.dart';
 
 Expando<List<Path>> _dirtyPaths = Expando();
 Expando<bool> _flushing = Expando();
@@ -56,115 +57,130 @@ class Editor implements Ancestor {
   }
 
   void normalizeNode(NodeEntry entry) {
-    // const [node, path] = entry;
+    Node node = entry.node;
+    Path path = entry.path;
 
-    // // There are no core normalizations for text nodes.
-    // if (Text.isText(node)) {
-    //   return
-    // }
+    // There are no core normalizations for text nodes.
+    if (node is Text) {
+      return;
+    }
 
-    // // Ensure that block and inline nodes have at least one text child.
-    // if (Element.isElement(node) && node.children.length === 0) {
-    //   const child = { text: '' }
-    //   Transforms.insertNodes(editor, child, {
-    //     at: path.concat(0),
-    //     voids: true,
-    //   })
-    //   return
-    // }
+    // Ensure that block and inline nodes have at least one text child.
+    if ((node is Element) && node.children.length == 0) {
+      Text child = Text('');
+      Path at = PathUtils.copy(path);
+      at.add(0);
 
-    // // Determine whether the node should have block or inline children.
-    // const shouldHaveInlines = Editor.isEditor(node)
-    //   ? false
-    //   : Element.isElement(node) &&
-    //     (editor.isInline(node) ||
-    //       node.children.length === 0 ||
-    //       Text.isText(node.children[0]) ||
-    //       editor.isInline(node.children[0]))
+      Transforms.insertNodes(
+        this,
+        [child],
+        at: at,
+        voids: true,
+      );
+      return;
+    }
 
-    // // Since we'll be applying operations while iterating, keep track of an
-    // // index that accounts for any added/removed nodes.
-    // let n = 0
+    // Determine whether the node should have block or inline children.
+    bool shouldHaveInlines = node is Editor
+        ? false
+        : (node is Element) &&
+            (isInline(node) ||
+                node.children.length == 0 ||
+                (node.children[0] is Text) ||
+                isInline(node.children[0]));
 
-    // for (let i = 0; i < node.children.length; i++, n++) {
-    //   const child = node.children[i] as Descendant
-    //   const prev = node.children[i - 1] as Descendant
-    //   const isLast = i === node.children.length - 1
-    //   const isInlineOrText =
-    //     Text.isText(child) ||
-    //     (Element.isElement(child) && editor.isInline(child))
+    // Since we'll be applying operations while iterating, keep track of an
+    // index that accounts for any added/removed nodes.
+    int n = 0;
 
-    //   // Only allow block nodes in the top-level children and parent blocks
-    //   // that only contain block nodes. Similarly, only allow inline nodes in
-    //   // other inline nodes, or parent blocks that only contain inlines and
-    //   // text.
-    //   if (isInlineOrText !== shouldHaveInlines) {
-    //     Transforms.removeNodes(editor, { at: path.concat(n), voids: true })
-    //     n--
-    //   } else if (Element.isElement(child)) {
-    //     // Ensure that inline nodes are surrounded by text nodes.
-    //     if (editor.isInline(child)) {
-    //       if (prev == null || !Text.isText(prev)) {
-    //         const newChild = { text: '' }
-    //         Transforms.insertNodes(editor, newChild, {
-    //           at: path.concat(n),
-    //           voids: true,
-    //         })
-    //         n++
-    //       } else if (isLast) {
-    //         const newChild = { text: '' }
-    //         Transforms.insertNodes(editor, newChild, {
-    //           at: path.concat(n + 1),
-    //           voids: true,
-    //         })
-    //         n++
-    //       }
-    //     }
-    //   } else {
-    //     // Merge adjacent text nodes that are empty or match.
-    //     if (prev != null && Text.isText(prev)) {
-    //       if (Text.equals(child, prev, { loose: true })) {
-    //         Transforms.mergeNodes(editor, { at: path.concat(n), voids: true })
-    //         n--
-    //       } else if (prev.text === '') {
-    //         Transforms.removeNodes(editor, {
-    //           at: path.concat(n - 1),
-    //           voids: true,
-    //         })
-    //         n--
-    //       } else if (isLast && child.text === '') {
-    //         Transforms.removeNodes(editor, {
-    //           at: path.concat(n),
-    //           voids: true,
-    //         })
-    //         n--
-    //       }
-    //     }
-    //   }
-    // }
+    for (int i = 0; i < (node as Ancestor).children.length; i++, n++) {
+      Descendant child = (node as Ancestor).children[i];
+      Descendant prev = (node as Ancestor).children[i - 1];
+
+      bool isLast = i == (node as Ancestor).children.length - 1;
+      bool isInlineOrText =
+          child is Text || (child is Element && isInline(child));
+
+      // Only allow block nodes in the top-level children and parent blocks
+      // that only contain block nodes. Similarly, only allow inline nodes in
+      // other inline nodes, or parent blocks that only contain inlines and
+      // text.
+      if (isInlineOrText != shouldHaveInlines) {
+        Path at = PathUtils.copy(path);
+        at.add(n);
+
+        Transforms.removeNodes(this, at: at, voids: true);
+        n--;
+      } else if (child is Element) {
+        // Ensure that inline nodes are surrounded by text nodes.
+        if (isInline(child)) {
+          if (prev == null || !(prev is Text)) {
+            Path at = PathUtils.copy(path);
+            at.add(n);
+            Text newChild = Text('');
+            Transforms.insertNodes(this, [newChild], at: at, voids: true);
+            n++;
+          } else if (isLast) {
+            Path at = PathUtils.copy(path);
+            at.add(n + 1);
+            Text newChild = Text('');
+            Transforms.insertNodes(
+              this,
+              [newChild],
+              at: at,
+              voids: true,
+            );
+            n++;
+          }
+        }
+      } else {
+        // Merge adjacent text nodes that are empty or match.
+        if (prev != null && (prev is Text)) {
+          if (TextUtils.equals(child, prev)) {
+            Path at = PathUtils.copy(path);
+            at.add(n);
+            Transforms.mergeNodes(this, at: at, voids: true);
+            n--;
+          } else if (prev.text == '') {
+            Path at = PathUtils.copy(path);
+            at.add(n - 1);
+            Transforms.removeNodes(
+              this,
+              at: at,
+              voids: true,
+            );
+            n--;
+          } else if (isLast && (child as Text).text == '') {
+            Path at = PathUtils.copy(path);
+            at.add(n);
+            Transforms.removeNodes(
+              this,
+              at: at,
+              voids: true,
+            );
+            n--;
+          }
+        }
+      }
+    }
   }
 
   // Overrideable core actions.
   void addMark(String key, dynamic value) {
-    // const { selection } = editor
+    Map<String, dynamic> props = Map.from({
+      [key]: value
+    });
 
-    // if (selection) {
-    //   if (Range.isExpanded(selection)) {
-    //     Transforms.setNodes(
-    //       editor,
-    //       { [key]: value },
-    //       { match: Text.isText, split: true }
-    //     )
-    //   } else {
-    //     const marks = {
-    //       ...(Editor.marks(editor) || {}),
-    //       [key]: value,
-    //     }
-
-    //     editor.marks = marks
-    //     editor.onChange()
-    //   }
-    // }
+    if (selection != null) {
+      if (RangeUtils.isExpanded(selection)) {
+        Transforms.setNodes(this, props, match: (n) {
+          return n is Text;
+        }, split: true);
+      } else {
+        marks.addAll(props);
+        onChange();
+      }
+    }
   }
 
   void apply(Operation op) {
@@ -232,93 +248,81 @@ class Editor implements Ancestor {
   }
 
   void deleteBackward(Unit unit) {
-    // const { selection } = editor
-
-    // if (selection && Range.isCollapsed(selection)) {
-    //   Transforms.delete(editor, { unit, reverse: true })
-    // }
+    if (selection != null && RangeUtils.isCollapsed(selection)) {
+      Transforms.delete(this, unit: unit, reverse: true);
+    }
   }
 
   void deleteForward(Unit unit) {
-    // const { selection } = editor
-
-    // if (selection && Range.isCollapsed(selection)) {
-    //   Transforms.delete(editor, { unit })
-    // }
+    if (selection != null && RangeUtils.isCollapsed(selection)) {
+      Transforms.delete(this, unit: unit);
+    }
   }
 
   void deleteFragment() {
-    // const { selection } = editor
-
-    // if (selection && Range.isExpanded(selection)) {
-    //   Transforms.delete(editor)
-    // }
+    if (selection != null && RangeUtils.isExpanded(selection)) {
+      Transforms.delete(this);
+    }
   }
 
   void insertBreak() {
-    // Transforms.splitNodes(editor, { always: true })
+    Transforms.splitNodes(this, always: true);
   }
 
   void insertFragment(List<Node> fragment) {
-    // Transforms.insertFragment(editor, fragment)
+    Transforms.insertFragment(this, fragment);
   }
 
   void insertNode(Node node) {
-    // Transforms.insertNodes(editor, node)
+    Transforms.insertNodes(this, [node]);
   }
 
   void insertText(String text) {
-    // const { selection, marks } = editor
+    if (selection != null) {
+      // If the cursor is at the end of an inline, move it outside of
+      // the inline before inserting
+      if (RangeUtils.isCollapsed(selection)) {
+        NodeEntry inline = EditorUtils.above(this, match: (n) {
+          return EditorUtils.isInline(this, n);
+        }, mode: Mode.highest);
 
-    // if (selection) {
-    //   // If the cursor is at the end of an inline, move it outside of
-    //   // the inline before inserting
-    //   if (Range.isCollapsed(selection)) {
-    //     const inline = Editor.above(editor, {
-    //       match: n => Editor.isInline(editor, n),
-    //       mode: 'highest',
-    //     })
+        if (inline != null) {
+          Path inlinePath = inline.path;
 
-    //     if (inline) {
-    //       const [, inlinePath] = inline
+          if (EditorUtils.isEnd(this, selection.anchor, inlinePath)) {
+            Point point = EditorUtils.after(this, inlinePath);
+            Transforms.setSelection(this, Range(point, point));
+          }
+        }
+      }
 
-    //       if (Editor.isEnd(editor, selection.anchor, inlinePath)) {
-    //         const point = Editor.after(editor, inlinePath)!
-    //         Transforms.setSelection(editor, {
-    //           anchor: point,
-    //           focus: point,
-    //         })
-    //       }
-    //     }
-    //   }
+      if (marks != null) {
+        Text node = Text(text, props: marks);
+        Transforms.insertNodes(this, [node]);
+      } else {
+        Transforms.insertText(this, text);
+      }
 
-    //   if (marks) {
-    //     const node = { text, ...marks }
-    //     Transforms.insertNodes(editor, node)
-    //   } else {
-    //     Transforms.insertText(editor, text)
-    //   }
-
-    //   editor.marks = null
-    // }
+      marks = null;
+    }
   }
 
   void removeMark(String key) {
-    // const { selection } = editor
-
-    // if (selection) {
-    //   if (Range.isExpanded(selection)) {
-    //     Transforms.unsetNodes(editor, key, {
-    //       match: Text.isText,
-    //       split: true,
-    //     })
-    //   } else {
-    //     const marks = { ...(Editor.marks(editor) || {}) }
-    //     delete marks[key]
-    //     editor.marks = marks
-    //     editor.onChange()
-    //   }
-    // }
+    if (selection != null) {
+      if (RangeUtils.isExpanded(selection)) {
+        Transforms.unsetNodes(
+          this,
+          [key],
+          match: (n) {
+            return n is Text;
+          },
+          split: true,
+        );
+      } else {
+        marks.remove(key);
+        onChange();
+      }
+    }
   }
 }
 
@@ -362,6 +366,8 @@ class EditorUtils {
         return NodeEntry(n, p);
       }
     }
+
+    return null;
   }
 
   /// Add a custom property to the leaf text nodes in the current selection.
