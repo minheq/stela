@@ -51,8 +51,8 @@ class Operation {
     }
 
     if (op is SetSelectionOperation) {
-      Selection selection = op.selection;
-      Selection newSelection = op.newSelection;
+      Range selection = op.selection;
+      Range newSelection = op.newSelection;
 
       if (selection == null) {
         return SetSelectionOperation(newSelection, null);
@@ -128,8 +128,8 @@ class SelectionOperation implements Operation {}
 class SetSelectionOperation implements SelectionOperation {
   SetSelectionOperation(this.selection, this.newSelection);
 
-  final Selection selection;
-  final Selection newSelection;
+  final Range selection;
+  final Range newSelection;
 }
 
 class TextOperation implements Operation {}

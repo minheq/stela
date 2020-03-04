@@ -8,17 +8,20 @@ import 'package:inday/stela/operation.dart';
 /// a Slate node tree. Although they are usually relative to the root `Editor`
 /// object, they can be relative to any `Node` object.
 class Path implements Location {
-  const Path(List<int> path) : _path = path ?? const [];
+  Path(List<int> path, {this.props}) : _path = path ?? const [];
 
   final List<int> _path;
+
+  /// Custom properties that can extend the `Range` behavior for e.g. decorations or selections
+  Map<String, dynamic> props;
 
   int get length {
     return _path.length;
   }
 
-  /// Returns the object at the given index in the list or throws a RangeError if index is out of bounds.
-  void add(int value) {
-    return _path.add(value);
+  /// Adds [position] to the end of the `Path`, extending the length by one.
+  void add(int position) {
+    return _path.add(position);
   }
 
   /// Appends all objects of [iterable] to the end of this list.

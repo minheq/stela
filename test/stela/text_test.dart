@@ -8,8 +8,7 @@ import 'package:inday/stela/range.dart';
 void main() {
   group("decorations", () {
     test('end', () {
-      Decoration decoration = Decoration(
-          Point(Path([0]), 2), Point(Path([0]), 3),
+      Range decoration = Range(Point(Path([0]), 2), Point(Path([0]), 3),
           props: {'decoration': "decoration"});
 
       Text text = Text("abc", props: {'mark': 'mark'});
@@ -24,8 +23,7 @@ void main() {
     });
 
     test('end', () {
-      Decoration decoration = Decoration(
-          Point(Path([0]), 1), Point(Path([0]), 2),
+      Range decoration = Range(Point(Path([0]), 1), Point(Path([0]), 2),
           props: {'decoration': "decoration"});
 
       Text text = Text("abc", props: {'mark': 'mark'});
@@ -43,12 +41,10 @@ void main() {
     });
 
     test('overlapping', () {
-      Decoration decoration1 = Decoration(
-          Point(Path([0]), 1), Point(Path([0]), 2),
+      Range decoration1 = Range(Point(Path([0]), 1), Point(Path([0]), 2),
           props: {'decoration1': "decoration1"});
 
-      Decoration decoration2 = Decoration(
-          Point(Path([0]), 0), Point(Path([0]), 3),
+      Range decoration2 = Range(Point(Path([0]), 0), Point(Path([0]), 3),
           props: {'decoration2': "decoration2"});
 
       Text text = Text("abc", props: {'mark': 'mark'});
@@ -70,8 +66,7 @@ void main() {
     });
 
     test('start', () {
-      Decoration decoration = Decoration(
-          Point(Path([0]), 0), Point(Path([0]), 1),
+      Range decoration = Range(Point(Path([0]), 0), Point(Path([0]), 1),
           props: {'decoration': "decoration"});
 
       Text text = Text("abc", props: {'mark': 'mark'});

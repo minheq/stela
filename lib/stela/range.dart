@@ -7,25 +7,12 @@ import 'package:inday/stela/point.dart';
 /// document. They can define a span inside a single node or a can span across
 /// multiple nodes.
 class Range implements Location {
-  Range(this.anchor, this.focus);
+  Range(this.anchor, this.focus, {this.props = const {}});
 
   Point anchor;
   Point focus;
-}
 
-class Decoration extends Range {
-  Decoration(Point anchor, Point focus, {props})
-      : props = props ?? {},
-        super(anchor, focus);
-
-  Map<String, dynamic> props;
-}
-
-class Selection extends Range {
-  Selection(Point anchor, Point focus, {props})
-      : props = props ?? {},
-        super(anchor, focus);
-
+  /// Custom properties that can extend the `Range` behavior for e.g. decorations or selections
   Map<String, dynamic> props;
 }
 

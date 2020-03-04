@@ -33,10 +33,10 @@ class TextUtils {
   }
 
   /// Get the leaves for a text node given decorations.
-  static List<Text> decorations(Text text, List<Decoration> decorations) {
+  static List<Text> decorations(Text text, List<Range> decorations) {
     List<Text> leaves = [text];
 
-    for (Decoration dec in decorations) {
+    for (Range dec in decorations) {
       Edges edges = RangeUtils.edges(dec);
       Point start = edges.start;
       Point end = edges.end;

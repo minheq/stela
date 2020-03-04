@@ -34,7 +34,7 @@ class Editor implements Ancestor {
   List<Node> children;
 
   /// The `selection` property contains the user's current selection, if any
-  Selection selection;
+  Range selection;
 
   /// The `operations` property contains all of the operations that have been applied since the last "change" was flushed. (Since Slate batches operations up into ticks of the event loop.)
   List<Operation> operations;
@@ -335,6 +335,7 @@ enum Unit {
 }
 
 enum Edge { start, end }
+enum SelectionEdge { anchor, focus, start, end }
 
 class EditorUtils {
   /// Get the ancestor above a location in the document.
@@ -1313,7 +1314,7 @@ class EditorUtils {
   /// Transform the editor by an operation.
   static void transform(Editor prevEditor, Operation op) {
     Editor editor = NodeUtils.copy(prevEditor);
-    Selection selection = editor.selection;
+    Range selection = editor.selection;
 
     if (op is InsertNodeOperation) {
       Path path = op.path;
@@ -1327,11 +1328,10 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection =
-                Selection(PointUtils.transform(point, op), selection.focus);
+            selection = Range(PointUtils.transform(point, op), selection.focus);
           } else {
             selection =
-                Selection(selection.anchor, PointUtils.transform(point, op));
+                Range(selection.anchor, PointUtils.transform(point, op));
           }
         }
       }
@@ -1351,11 +1351,10 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection =
-                Selection(PointUtils.transform(point, op), selection.focus);
+            selection = Range(PointUtils.transform(point, op), selection.focus);
           } else {
             selection =
-                Selection(selection.anchor, PointUtils.transform(point, op));
+                Range(selection.anchor, PointUtils.transform(point, op));
           }
         }
       }
@@ -1385,11 +1384,10 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection =
-                Selection(PointUtils.transform(point, op), selection.focus);
+            selection = Range(PointUtils.transform(point, op), selection.focus);
           } else {
             selection =
-                Selection(selection.anchor, PointUtils.transform(point, op));
+                Range(selection.anchor, PointUtils.transform(point, op));
           }
         }
       }
@@ -1426,11 +1424,10 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection =
-                Selection(PointUtils.transform(point, op), selection.focus);
+            selection = Range(PointUtils.transform(point, op), selection.focus);
           } else {
             selection =
-                Selection(selection.anchor, PointUtils.transform(point, op));
+                Range(selection.anchor, PointUtils.transform(point, op));
           }
         }
       }
@@ -1452,9 +1449,9 @@ class EditorUtils {
 
           if (selection != null && result != null) {
             if (type == PointType.anchor) {
-              selection = Selection(result, selection.focus);
+              selection = Range(result, selection.focus);
             } else {
-              selection = Selection(selection.anchor, result);
+              selection = Range(selection.anchor, result);
             }
           } else {
             NodeEntry<Text> prev;
@@ -1499,11 +1496,10 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection =
-                Selection(PointUtils.transform(point, op), selection.focus);
+            selection = Range(PointUtils.transform(point, op), selection.focus);
           } else {
             selection =
-                Selection(selection.anchor, PointUtils.transform(point, op));
+                Range(selection.anchor, PointUtils.transform(point, op));
           }
         }
       }
@@ -1531,7 +1527,7 @@ class EditorUtils {
     }
 
     if (op is SetSelectionOperation) {
-      Selection newSelection = op.newSelection;
+      Range newSelection = op.newSelection;
 
       if (newSelection == null) {
         selection = newSelection;
@@ -1580,11 +1576,10 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection =
-                Selection(PointUtils.transform(point, op), selection.focus);
+            selection = Range(PointUtils.transform(point, op), selection.focus);
           } else {
             selection =
-                Selection(selection.anchor, PointUtils.transform(point, op));
+                Range(selection.anchor, PointUtils.transform(point, op));
           }
         }
       }
