@@ -1,1482 +1,1474 @@
 import 'package:inday/stela/editor.dart';
+import 'package:inday/stela/element.dart';
 import 'package:inday/stela/location.dart';
 import 'package:inday/stela/node.dart';
+import 'package:inday/stela/operation.dart';
+import 'package:inday/stela/path.dart';
+import 'package:inday/stela/path_ref.dart';
 import 'package:inday/stela/point.dart';
+import 'package:inday/stela/point_ref.dart';
 import 'package:inday/stela/range.dart';
+import 'package:inday/stela/range_ref.dart';
 import 'package:inday/stela/text.dart';
 
 class Transforms {
-  // /// Insert nodes at a specific location in the Editor.
-  // void insertNodes(
-  //   Editor editor,
-  //   List<Node> nodes,
-  //   {
-  //     Location at,
-  //     NodeMatch match,
-  //     Mode mode = Mode.lowest,
-  //     bool hanging = false,
-  //     bool select,
-  //     bool voids = false,
-  //   }
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const [node] = nodes
-
-  //     // By default, use the selection as the target location. But if there is
-  //     // no selection, insert at the end of the document since that is such a
-  //     // common use case when inserting from a non-selected state.
-  //     if (at == null) {
-  //       if (editor.selection) {
-  //         at = editor.selection
-  //       } else if (editor.children.length > 0) {
-  //         at = EditorUtils.end(editor, [])
-  //       } else {
-  //         at = [0]
-  //       }
-
-  //       select = true
-  //     }
-
-  //     if (select == null) {
-  //       select = false
-  //     }
-
-  //     if (at is Range) {
-  //       if (!hanging) {
-  //         at = EditorUtils.unhangRange(editor, at)
-  //       }
-
-  //       if (RangeUtils.isCollapsed(at)) {
-  //         at = at.anchor
-  //       } else {
-  //         const [, end] = RangeUtils.edges(at)
-  //         const pointRef = EditorUtils.pointRef(editor, end)
-  //         Transforms.delete(editor, { at })
-  //         at = pointRef.unref()!
-  //       }
-  //     }
-
-  //     if (at is Point) {
-  //       if (match == null) {
-  //         if (node is Text) {
-  //           match = (n) { return (n is Text); };
-  //         } else if (editor.isInline(node)) {
-  //           match = (n) { return (n is Text); } || EditorUtils.isInline(editor, n)
-  //         } else {
-  //           match = n => EditorUtils.isBlock(editor, n)
-  //         }
-  //       }
-
-  //       const [entry] = EditorUtils.nodes(editor, {
-  //         at: at.path,
-  //         match: match,
-  //         mode: mode,
-  //         voids: voids,
-  //       })
-
-  //       if (entry != null) {
-  //         const [, matchPath] = entry
-  //         const pathRef = EditorUtils.pathRef(editor, matchPath)
-  //         const isAtEnd = EditorUtils.isEnd(editor, at, matchPath)
-  //         Transforms.splitNodes(editor, { at, match, mode, voids })
-  //         const path = pathRef.unref()!
-  //         at = isAtEnd ? PathUtils.next(path) : path
-  //       } else {
-  //         return;
-  //       }
-  //     }
-
-  //     Path parentPath = PathUtils.parent(at)
-  //     let index = at[at.length - 1]
-
-  //     if (!voids && EditorUtils.matchVoid(editor, { at: parentPath })) {
-  //       return
-  //     }
-
-  //     for (Node node in nodes) {
-  //       const path = parentPath.concat(index)
-  //       index++
-  //       editor.apply({ type: 'insert_node', path, node })
-  //     }
-
-  //     if (select) {
-  //       const point = EditorUtils.end(editor, at)
-
-  //       if (point) {
-  //         Transforms.select(editor, point)
-  //       }
-  //     }
-  //   })
-  // }
-
-  // /**
-  //  * Lift nodes at a specific location upwards in the document tree, splitting
-  //  * their parent in two if necessary.
-  //  */
-
-  // liftNodes(
-  //   Editor editor,
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     mode?: 'all' | 'highest' | 'lowest'
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const { at = editor.selection, mode = 'lowest', voids = false } = options
-  //     let { match } = options
-
-  //     if (match == null) {
-  //       match = Path.isPath(at)
-  //         ? matchPath(editor, at)
-  //         : n => EditorUtils.isBlock(editor, n)
-  //     }
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     const matches = EditorUtils.nodes(editor, { at, match, mode, voids })
-  //     const pathRefs = Array.from(matches, ([, p]) => EditorUtils.pathRef(editor, p))
-
-  //     for (const pathRef of pathRefs) {
-  //       const path = pathRef.unref()!
-
-  //       if (path.length < 2) {
-  //         throw new Error(
-  //           `Cannot lift node at a path [${path}] because it has a depth of less than \`2\`.`
-  //         )
-  //       }
-
-  //       const [parent, parentPath] = EditorUtils.node(editor, Path.parent(path))
-  //       const index = path[path.length - 1]
-  //       const { length } = parent.children
-
-  //       if (length == 1) {
-  //         const toPath = Path.next(parentPath)
-  //         Transforms.moveNodes(editor, { at: path, to: toPath, voids })
-  //         Transforms.removeNodes(editor, { at: parentPath, voids })
-  //       } else if (index == 0) {
-  //         Transforms.moveNodes(editor, { at: path, to: parentPath, voids })
-  //       } else if (index == length - 1) {
-  //         const toPath = Path.next(parentPath)
-  //         Transforms.moveNodes(editor, { at: path, to: toPath, voids })
-  //       } else {
-  //         const splitPath = Path.next(path)
-  //         const toPath = Path.next(parentPath)
-  //         Transforms.splitNodes(editor, { at: splitPath, voids })
-  //         Transforms.moveNodes(editor, { at: path, to: toPath, voids })
-  //       }
-  //     }
-  //   })
-  // },
-
-  // /**
-  //  * Merge a node at a location with the previous node of the same depth,
-  //  * removing any empty containing nodes after the merge if necessary.
-  //  */
-
-  // mergeNodes(
-  //   Editor editor,
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     Mode mode = Mode.lowest,
-  //     bool hanging = false,
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     let { match, at = editor.selection } = options
-  //     const { hanging = false, voids = false, mode = 'lowest' } = options
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     if (match == null) {
-  //       if (Path.isPath(at)) {
-  //         const [parent] = EditorUtils.parent(editor, at)
-  //         match = n => parent.children.includes(n)
-  //       } else {
-  //         match = n => EditorUtils.isBlock(editor, n)
-  //       }
-  //     }
-
-  //     if (!hanging && at is Range) {
-  //       at = EditorUtils.unhangRange(editor, at)
-  //     }
-
-  //     if (at is Range) {
-  //       if (RangeUtils.isCollapsed(at)) {
-  //         at = at.anchor
-  //       } else {
-  //         const [, end] = RangeUtils.edges(at)
-  //         const pointRef = EditorUtils.pointRef(editor, end)
-  //         Transforms.delete(editor, { at })
-  //         at = pointRef.unref()!
-
-  //         if (options.at == null) {
-  //           Transforms.select(editor, at)
-  //         }
-  //       }
-  //     }
-
-  //     const [current] = EditorUtils.nodes(editor, { at, match, voids, mode })
-  //     const prev = EditorUtils.previous(editor, { at, match, voids, mode })
-
-  //     if (!current || !prev) {
-  //       return
-  //     }
-
-  //     const [node, path] = current
-  //     const [prevNode, prevPath] = prev
-
-  //     if (path.length == 0 || prevPath.length == 0) {
-  //       return
-  //     }
-
-  //     const newPath = Path.next(prevPath)
-  //     const commonPath = Path.common(path, prevPath)
-  //     const isPreviousSibling = Path.isSibling(path, prevPath)
-  //     const levels = Array.from(EditorUtils.levels(editor, { at: path }), ([n]) => n)
-  //       .slice(commonPath.length)
-  //       .slice(0, -1)
-
-  //     // Determine if the merge will leave an ancestor of the path empty as a
-  //     // result, in which case we'll want to remove it after merging.
-  //     const emptyAncestor = EditorUtils.above(editor, {
-  //       at: path,
-  //       mode: 'highest',
-  //       match: n =>
-  //         levels.includes(n) && Element.isElement(n) && n.children.length == 1,
-  //     })
-
-  //     const emptyRef = emptyAncestor && EditorUtils.pathRef(editor, emptyAncestor[1])
-  //     let properties
-  //     let position
-
-  //     // Ensure that the nodes are equivalent, and figure out what the position
-  //     // and extra properties of the merge will be.
-  //     if (node is Text && Text.isText(prevNode)) {
-  //       const { text, ...rest } = node
-  //       position = prevNode.text.length
-  //       properties = rest as Partial<Text>
-  //     } else if (Element.isElement(node) && Element.isElement(prevNode)) {
-  //       const { children, ...rest } = node
-  //       position = prevNode.children.length
-  //       properties = rest as Partial<Element>
-  //     } else {
-  //       throw new Error(
-  //         `Cannot merge the node at path [${path}] with the previous sibling because it is not the same kind: ${JSON.stringify(
-  //           node
-  //         )} ${JSON.stringify(prevNode)}`
-  //       )
-  //     }
-
-  //     // If the node isn't already the next sibling of the previous node, move
-  //     // it so that it is before merging.
-  //     if (!isPreviousSibling) {
-  //       Transforms.moveNodes(editor, { at: path, to: newPath, voids })
-  //     }
-
-  //     // If there was going to be an empty ancestor of the node that was merged,
-  //     // we remove it from the tree.
-  //     if (emptyRef) {
-  //       Transforms.removeNodes(editor, { at: emptyRef.current!, voids })
-  //     }
-
-  //     // If the target node that we're merging with is empty, remove it instead
-  //     // of merging the two. This is a common rich text editor behavior to
-  //     // prevent losing formatting when deleting entire nodes when you have a
-  //     // hanging selection.
-  //     if (
-  //       (Element.isElement(prevNode) && EditorUtils.isEmpty(editor, prevNode)) ||
-  //       (Text.isText(prevNode) && prevNode.text == '')
-  //     ) {
-  //       Transforms.removeNodes(editor, { at: prevPath, voids })
-  //     } else {
-  //       editor.apply({
-  //         type: 'merge_node',
-  //         path: newPath,
-  //         position,
-  //         target: null,
-  //         properties,
-  //       })
-  //     }
-
-  //     if (emptyRef) {
-  //       emptyRef.unref()
-  //     }
-  //   })
-  // },
-
-  // /**
-  //  * Move the nodes at a location to a new location.
-  //  */
-
-  // moveNodes(
-  //   Editor editor,
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     mode?: 'all' | 'highest' | 'lowest'
-  //     to: Path
-  //     bool voids = false
-  //   }
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const {
-  //       to,
-  //       at = editor.selection,
-  //       mode = 'lowest',
-  //       voids = false,
-  //     } = options
-  //     let { match } = options
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     if (match == null) {
-  //       match = Path.isPath(at)
-  //         ? matchPath(editor, at)
-  //         : n => EditorUtils.isBlock(editor, n)
-  //     }
-
-  //     const toRef = EditorUtils.pathRef(editor, to)
-  //     const targets = EditorUtils.nodes(editor, { at, match, mode, voids })
-  //     const pathRefs = Array.from(targets, ([, p]) => EditorUtils.pathRef(editor, p))
-
-  //     for (const pathRef of pathRefs) {
-  //       const path = pathRef.unref()!
-  //       const newPath = toRef.current!
-
-  //       if (path.length !== 0) {
-  //         editor.apply({ type: 'move_node', path, newPath })
-  //       }
-  //     }
-
-  //     toRef.unref()
-  //   })
-  // },
-
-  // /**
-  //  * Remove the nodes at a specific location in the document.
-  //  */
-
-  // removeNodes(
-  //   Editor editor,
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     Mode mode = Mode.lowest,
-  //     bool hanging = false,
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const { hanging = false, voids = false, mode = 'lowest' } = options
-  //     let { at = editor.selection, match } = options
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     if (match == null) {
-  //       match = Path.isPath(at)
-  //         ? matchPath(editor, at)
-  //         : n => EditorUtils.isBlock(editor, n)
-  //     }
-
-  //     if (!hanging && at is Range) {
-  //       at = EditorUtils.unhangRange(editor, at)
-  //     }
-
-  //     const depths = EditorUtils.nodes(editor, { at, match, mode, voids })
-  //     const pathRefs = Array.from(depths, ([, p]) => EditorUtils.pathRef(editor, p))
-
-  //     for (const pathRef of pathRefs) {
-  //       const path = pathRef.unref()!
-
-  //       if (path) {
-  //         const [node] = EditorUtils.node(editor, path)
-  //         editor.apply({ type: 'remove_node', path, node })
-  //       }
-  //     }
-  //   })
-  // },
-
-  // /**
-  //  * Set new properties on the nodes at a location.
-  //  */
-
-  // setNodes(
-  //   Editor editor,
-  //   props: Partial<Node>,
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     mode?: 'all' | 'highest' | 'lowest'
-  //     bool hanging = false,
-  //     split?: boolean
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     let { match, at = editor.selection } = options
-  //     const {
-  //       hanging = false,
-  //       mode = 'lowest',
-  //       split = false,
-  //       voids = false,
-  //     } = options
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     if (match == null) {
-  //       match = Path.isPath(at)
-  //         ? matchPath(editor, at)
-  //         : n => EditorUtils.isBlock(editor, n)
-  //     }
-
-  //     if (!hanging && at is Range) {
-  //       at = EditorUtils.unhangRange(editor, at)
-  //     }
-
-  //     if (split && at is Range) {
-  //       const rangeRef = EditorUtils.rangeRef(editor, at, { affinity: 'inward' })
-  //       const [start, end] = RangeUtils.edges(at)
-  //       const splitMode = mode == 'lowest' ? 'lowest' : 'highest'
-  //       Transforms.splitNodes(editor, {
-  //         at: end,
-  //         match,
-  //         mode: splitMode,
-  //         voids,
-  //       })
-  //       Transforms.splitNodes(editor, {
-  //         at: start,
-  //         match,
-  //         mode: splitMode,
-  //         voids,
-  //       })
-  //       at = rangeRef.unref()!
-
-  //       if (options.at == null) {
-  //         Transforms.select(editor, at)
-  //       }
-  //     }
-
-  //     for (const [node, path] of EditorUtils.nodes(editor, {
-  //       at,
-  //       match,
-  //       mode,
-  //       voids,
-  //     })) {
-  //       const properties: Partial<Node> = {}
-  //       const newProperties: Partial<Node> = {}
-
-  //       // You can't set properties on the editor node.
-  //       if (path.length == 0) {
-  //         continue
-  //       }
-
-  //       for (const k in props) {
-  //         if (k == 'children' || k == 'text') {
-  //           continue
-  //         }
-
-  //         if (props[k] !== node[k]) {
-  //           properties[k] = node[k]
-  //           newProperties[k] = props[k]
-  //         }
-  //       }
-
-  //       if (Object.keys(newProperties).length !== 0) {
-  //         editor.apply({
-  //           type: 'set_node',
-  //           path,
-  //           properties,
-  //           newProperties,
-  //         })
-  //       }
-  //     }
-  //   })
-  // },
-
-  // /**
-  //  * Split the nodes at a specific location.
-  //  */
-
-  // splitNodes(
-  //   Editor editor,
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     Mode mode = Mode.lowest,
-  //     always?: boolean
-  //     height?: number
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const { mode = 'lowest', voids = false } = options
-  //     let { match, at = editor.selection, height = 0, always = false } = options
-
-  //     if (match == null) {
-  //       match = n => EditorUtils.isBlock(editor, n)
-  //     }
-
-  //     if (at is Range) {
-  //       at = deleteRange(editor, at)
-  //     }
-
-  //     // If the target is a path, the default height-skipping and position
-  //     // counters need to account for us potentially splitting at a non-leaf.
-  //     if (Path.isPath(at)) {
-  //       const path = at
-  //       const point = EditorUtils.point(editor, path)
-  //       const [parent] = EditorUtils.parent(editor, path)
-  //       match = n => n == parent
-  //       height = point.path.length - path.length + 1
-  //       at = point
-  //       always = true
-  //     }
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     const beforeRef = EditorUtils.pointRef(editor, at, {
-  //       affinity: 'backward',
-  //     })
-  //     const [highest] = EditorUtils.nodes(editor, { at, match, mode, voids })
-
-  //     if (!highest) {
-  //       return
-  //     }
-
-  //     const voidMatch = EditorUtils.matchVoid(editor, { at, mode: 'highest' })
-  //     const nudge = 0
-
-  //     if (!voids && voidMatch) {
-  //       const [voidNode, voidPath] = voidMatch
-
-  //       if (Element.isElement(voidNode) && editor.isInline(voidNode)) {
-  //         let after = EditorUtils.after(editor, voidPath)
-
-  //         if (!after) {
-  //           const text = { text: '' }
-  //           const afterPath = Path.next(voidPath)
-  //           Transforms.insertNodes(editor, text, { at: afterPath, voids })
-  //           after = EditorUtils.point(editor, afterPath)!
-  //         }
-
-  //         at = after
-  //         always = true
-  //       }
-
-  //       const siblingHeight = at.path.length - voidPath.length
-  //       height = siblingHeight + 1
-  //       always = true
-  //     }
-
-  //     const afterRef = EditorUtils.pointRef(editor, at)
-  //     const depth = at.path.length - height
-  //     const [, highestPath] = highest
-  //     const lowestPath = at.path.slice(0, depth)
-  //     let position = height == 0 ? at.offset : at.path[depth] + nudge
-  //     let target: number | null = null
-
-  //     for (const [node, path] of EditorUtils.levels(editor, {
-  //       at: lowestPath,
-  //       reverse: true,
-  //       voids,
-  //     })) {
-  //       let split = false
-
-  //       if (
-  //         path.length < highestPath.length ||
-  //         path.length == 0 ||
-  //         (!voids && EditorUtils.isVoid(editor, node))
-  //       ) {
-  //         break
-  //       }
-
-  //       const point = beforeRef.current!
-  //       const isEnd = EditorUtils.isEnd(editor, point, path)
-
-  //       if (always || !beforeRef || !EditorUtils.isEdge(editor, point, path)) {
-  //         split = true
-  //         const { text, children, ...properties } = node
-  //         editor.apply({
-  //           type: 'split_node',
-  //           path,
-  //           position,
-  //           target,
-  //           properties,
-  //         })
-  //       }
-
-  //       target = position
-  //       position = path[path.length - 1] + (split || isEnd ? 1 : 0)
-  //     }
-
-  //     if (options.at == null) {
-  //       const point = afterRef.current || EditorUtils.end(editor, [])
-  //       Transforms.select(editor, point)
-  //     }
-
-  //     beforeRef.unref()
-  //     afterRef.unref()
-  //   })
-  // },
-
-  // /**
-  //  * Unset properties on the nodes at a location.
-  //  */
-
-  // unsetNodes(
-  //   Editor editor,
-  //   props: string | string[],
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     mode?: 'all' | 'highest' | 'lowest'
-  //     split?: boolean
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   if (!Array.isArray(props)) {
-  //     props = [props]
-  //   }
-
-  //   const obj = {}
-
-  //   for (const key of props) {
-  //     obj[key] = null
-  //   }
-
-  //   Transforms.setNodes(editor, obj, options)
-  // },
-
-  // /**
-  //  * Unwrap the nodes at a location from a parent node, splitting the parent if
-  //  * necessary to ensure that only the content in the range is unwrapped.
-  //  */
-
-  // unwrapNodes(
-  //   Editor editor,
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     mode?: 'all' | 'highest' | 'lowest'
-  //     split?: boolean
-  //     bool voids = false
-  //   }
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const { mode = 'lowest', split = false, voids = false } = options
-  //     let { at = editor.selection, match } = options
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     if (match == null) {
-  //       match = Path.isPath(at)
-  //         ? matchPath(editor, at)
-  //         : n => EditorUtils.isBlock(editor, n)
-  //     }
-
-  //     if (Path.isPath(at)) {
-  //       at = EditorUtils.range(editor, at)
-  //     }
-
-  //     const rangeRef = at is Range ? EditorUtils.rangeRef(editor, at) : null
-  //     const matches = EditorUtils.nodes(editor, { at, match, mode, voids })
-  //     const pathRefs = Array.from(matches, ([, p]) => EditorUtils.pathRef(editor, p))
-
-  //     for (const pathRef of pathRefs) {
-  //       const path = pathRef.unref()!
-  //       const [node] = EditorUtils.node(editor, path)
-  //       let range = EditorUtils.range(editor, path)
-
-  //       if (split && rangeRef) {
-  //         range = RangeUtils.intersection(rangeRef.current!, range)!
-  //       }
-
-  //       Transforms.liftNodes(editor, {
-  //         at: range,
-  //         match: n => node.children.includes(n),
-  //         voids,
-  //       })
-  //     }
-
-  //     if (rangeRef) {
-  //       rangeRef.unref()
-  //     }
-  //   })
-  // },
-
-  // /**
-  //  * Wrap the nodes at a location in a new container node, splitting the edges
-  //  * of the range first to ensure that only the content in the range is wrapped.
-  //  */
-
-  // wrapNodes(
-  //   Editor editor,
-  //   element: Element,
-  //   options: {
-  //     Location at,
-  //     NodeMatch match,
-  //     mode?: 'all' | 'highest' | 'lowest'
-  //     split?: boolean
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const { mode = 'lowest', split = false, voids = false } = options
-  //     let { match, at = editor.selection } = options
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     if (match == null) {
-  //       if (Path.isPath(at)) {
-  //         match = matchPath(editor, at)
-  //       } else if (editor.isInline(element)) {
-  //         match = n => EditorUtils.isInline(editor, n) || (n is Text)
-  //       } else {
-  //         match = n => EditorUtils.isBlock(editor, n)
-  //       }
-  //     }
-
-  //     if (split && at is Range) {
-  //       const [start, end] = RangeUtils.edges(at)
-  //       const rangeRef = EditorUtils.rangeRef(editor, at, {
-  //         affinity: 'inward',
-  //       })
-  //       Transforms.splitNodes(editor, { at: end, match, voids })
-  //       Transforms.splitNodes(editor, { at: start, match, voids })
-  //       at = rangeRef.unref()!
-
-  //       if (options.at == null) {
-  //         Transforms.select(editor, at)
-  //       }
-  //     }
-
-  //     const roots = Array.from(
-  //       EditorUtils.nodes(editor, {
-  //         at,
-  //         match: editor.isInline(element)
-  //           ? n => EditorUtils.isBlock(editor, n)
-  //           : n => EditorUtils.isEditor(n),
-  //         mode: 'highest',
-  //         voids,
-  //       })
-  //     )
-
-  //     for (const [, rootPath] of roots) {
-  //       const a = at is Range
-  //         ? RangeUtils.intersection(at, EditorUtils.range(editor, rootPath))
-  //         : at
-
-  //       if (!a) {
-  //         continue
-  //       }
-
-  //       const matches = Array.from(
-  //         EditorUtils.nodes(editor, { at: a, match, mode, voids })
-  //       )
-
-  //       if (matches.length > 0) {
-  //         const [first] = matches
-  //         const last = matches[matches.length - 1]
-  //         const [, firstPath] = first
-  //         const [, lastPath] = last
-  //         const commonPath = Path.equals(firstPath, lastPath)
-  //           ? Path.parent(firstPath)
-  //           : Path.common(firstPath, lastPath)
-
-  //         const range = EditorUtils.range(editor, firstPath, lastPath)
-  //         const [commonNode] = EditorUtils.node(editor, commonPath)
-  //         const depth = commonPath.length + 1
-  //         const wrapperPath = Path.next(lastPath.slice(0, depth))
-  //         const wrapper = { ...element, children: [] }
-  //         Transforms.insertNodes(editor, wrapper, { at: wrapperPath, voids })
-
-  //         Transforms.moveNodes(editor, {
-  //           at: range,
-  //           match: n => commonNode.children.includes(n),
-  //           to: wrapperPath.concat(0),
-  //           voids,
-  //         })
-  //       }
-  //     }
-  //   })
-  // },
-
-  // // Selection transforms
-
-  // /**
-  //  * Collapse the selection.
-  //  */
-
-  // collapse(
-  //   Editor editor,
-  //   options: {
-  //     edge?: 'anchor' | 'focus' | 'start' | 'end'
-  //   } = {}
-  // ) {
-  //   const { edge = 'anchor' } = options
-  //   const { selection } = editor
-
-  //   if (!selection) {
-  //     return
-  //   } else if (edge == 'anchor') {
-  //     Transforms.select(editor, selection.anchor)
-  //   } else if (edge == 'focus') {
-  //     Transforms.select(editor, selection.focus)
-  //   } else if (edge == 'start') {
-  //     const [start] = RangeUtils.edges(selection)
-  //     Transforms.select(editor, start)
-  //   } else if (edge == 'end') {
-  //     const [, end] = RangeUtils.edges(selection)
-  //     Transforms.select(editor, end)
-  //   }
-  // },
-
-  // /**
-  //  * Unset the selection.
-  //  */
-
-  // deselect(Editor editor) {
-  //   const { selection } = editor
-
-  //   if (selection) {
-  //     editor.apply({
-  //       type: 'set_selection',
-  //       properties: selection,
-  //       newProperties: null,
-  //     })
-  //   }
-  // },
-
-  // /**
-  //  * Move the selection's point forward or backward.
-  //  */
-
-  // move(
-  //   Editor editor,
-  //   options: {
-  //     distance?: number
-  //     unit?: 'offset' | 'character' | 'word' | 'line'
-  //     reverse?: boolean
-  //     edge?: 'anchor' | 'focus' | 'start' | 'end'
-  //   } = {}
-  // ) {
-  //   const { selection } = editor
-  //   const { distance = 1, unit = 'character', reverse = false } = options
-  //   let { edge = null } = options
-
-  //   if (!selection) {
-  //     return
-  //   }
-
-  //   if (edge == 'start') {
-  //     edge = RangeUtils.isBackward(selection) ? 'focus' : 'anchor'
-  //   }
-
-  //   if (edge == 'end') {
-  //     edge = RangeUtils.isBackward(selection) ? 'anchor' : 'focus'
-  //   }
-
-  //   const { anchor, focus } = selection
-  //   const opts = { distance, unit }
-  //   const props: Partial<Range> = {}
-
-  //   if (edge == null || edge == 'anchor') {
-  //     const point = reverse
-  //       ? EditorUtils.before(editor, anchor, opts)
-  //       : EditorUtils.after(editor, anchor, opts)
-
-  //     if (point) {
-  //       props.anchor = point
-  //     }
-  //   }
-
-  //   if (edge == null || edge == 'focus') {
-  //     const point = reverse
-  //       ? EditorUtils.before(editor, focus, opts)
-  //       : EditorUtils.after(editor, focus, opts)
-
-  //     if (point) {
-  //       props.focus = point
-  //     }
-  //   }
-
-  //   Transforms.setSelection(editor, props)
-  // },
-
-  // /**
-  //  * Set the selection to a new value.
-  //  */
-
-  // select(Editor editor, target: Location) {
-  //   const { selection } = editor
-  //   target = EditorUtils.range(editor, target)
-
-  //   if (selection) {
-  //     Transforms.setSelection(editor, target)
-  //     return
-  //   }
-
-  //   if (!RangeUtils.isRange(target)) {
-  //     throw new Error(
-  //       `When setting the selection and the current selection is \`null\` you must provide at least an \`anchor\` and \`focus\`, but you passed: ${JSON.stringify(
-  //         target
-  //       )}`
-  //     )
-  //   }
-
-  //   editor.apply({
-  //     type: 'set_selection',
-  //     properties: selection,
-  //     newProperties: target,
-  //   })
-  // },
-
-  // /**
-  //  * Set new properties on one of the selection's points.
-  //  */
-
-  // setPoint(
-  //   Editor editor,
-  //   props: Partial<Point>,
-  //   options: {
-  //     edge?: 'anchor' | 'focus' | 'start' | 'end'
-  //   }
-  // ) {
-  //   const { selection } = editor
-  //   let { edge = 'both' } = options
-
-  //   if (!selection) {
-  //     return
-  //   }
-
-  //   if (edge == 'start') {
-  //     edge = RangeUtils.isBackward(selection) ? 'focus' : 'anchor'
-  //   }
-
-  //   if (edge == 'end') {
-  //     edge = RangeUtils.isBackward(selection) ? 'anchor' : 'focus'
-  //   }
-
-  //   const { anchor, focus } = selection
-  //   const point = edge == 'anchor' ? anchor : focus
-  //   const newPoint = Object.assign(point, props)
-
-  //   if (edge == 'anchor') {
-  //     Transforms.setSelection(editor, { anchor: newPoint })
-  //   } else {
-  //     Transforms.setSelection(editor, { focus: newPoint })
-  //   }
-  // },
-
-  // /**
-  //  * Set new properties on the selection.
-  //  */
-
-  // setSelection(Editor editor, props: Partial<Range>) {
-  //   const { selection } = editor
-  //   const oldProps: Partial<Range> | null = {}
-  //   const newProps: Partial<Range> = {}
-
-  //   if (!selection) {
-  //     return
-  //   }
-
-  //   for (const k in props) {
-  //     if (
-  //       (k == 'anchor' &&
-  //         props.anchor != null &&
-  //         !Point.equals(props.anchor, selection.anchor)) ||
-  //       (k == 'focus' &&
-  //         props.focus != null &&
-  //         !Point.equals(props.focus, selection.focus)) ||
-  //       (k !== 'anchor' && k !== 'focus' && props[k] !== selection[k])
-  //     ) {
-  //       oldProps[k] = selection[k]
-  //       newProps[k] = props[k]
-  //     }
-  //   }
-
-  //   if (Object.keys(oldProps).length > 0) {
-  //     editor.apply({
-  //       type: 'set_selection',
-  //       properties: oldProps,
-  //       newProperties: newProps,
-  //     })
-  //   }
-  // },
-
-  // // Text transforms
-  // /**
-  //  * Delete content in the editor.
-  //  */
-
-  // delete(
-  //   Editor editor,
-  //   options: {
-  //     Location at,
-  //     distance?: number
-  //     unit?: 'character' | 'word' | 'line' | 'block'
-  //     reverse?: boolean
-  //     bool hanging = false,
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const {
-  //       reverse = false,
-  //       unit = 'character',
-  //       distance = 1,
-  //       voids = false,
-  //     } = options
-  //     let { at = editor.selection, hanging = false } = options
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     if (at is Range && RangeUtils.isCollapsed(at)) {
-  //       at = at.anchor
-  //     }
-
-  //     if (at is Point) {
-  //       const furthestVoid = EditorUtils.matchVoid(editor, { at, mode: 'highest' })
-
-  //       if (!voids && furthestVoid) {
-  //         const [, voidPath] = furthestVoid
-  //         at = voidPath
-  //       } else {
-  //         const opts = { unit, distance }
-  //         const target = reverse
-  //           ? EditorUtils.before(editor, at, opts) || EditorUtils.start(editor, [])
-  //           : EditorUtils.after(editor, at, opts) || EditorUtils.end(editor, [])
-  //         at = { anchor: at, focus: target }
-  //         hanging = true
-  //       }
-  //     }
-
-  //     if (Path.isPath(at)) {
-  //       Transforms.removeNodes(editor, { at, voids })
-  //       return
-  //     }
-
-  //     if (RangeUtils.isCollapsed(at)) {
-  //       return
-  //     }
-
-  //     if (!hanging) {
-  //       at = EditorUtils.unhangRange(editor, at, { voids })
-  //     }
-
-  //     let [start, end] = RangeUtils.edges(at)
-  //     const startBlock = EditorUtils.above(editor, {
-  //       match: n => EditorUtils.isBlock(editor, n),
-  //       at: start,
-  //       voids,
-  //     })
-  //     const endBlock = EditorUtils.above(editor, {
-  //       match: n => EditorUtils.isBlock(editor, n),
-  //       at: end,
-  //       voids,
-  //     })
-  //     const isAcrossBlocks =
-  //       startBlock && endBlock && !Path.equals(startBlock[1], endBlock[1])
-  //     const isSingleText = Path.equals(start.path, end.path)
-  //     const startVoid = voids
-  //       ? null
-  //       : EditorUtils.matchVoid(editor, { at: start, mode: 'highest' })
-  //     const endVoid = voids
-  //       ? null
-  //       : EditorUtils.matchVoid(editor, { at: end, mode: 'highest' })
-
-  //     // If the start or end points are inside an inline void, nudge them out.
-  //     if (startVoid) {
-  //       const before = EditorUtils.before(editor, start)
-
-  //       if (
-  //         before &&
-  //         startBlock &&
-  //         Path.isAncestor(startBlock[1], before.path)
-  //       ) {
-  //         start = before
-  //       }
-  //     }
-
-  //     if (endVoid) {
-  //       const after = EditorUtils.after(editor, end)
-
-  //       if (after && endBlock && Path.isAncestor(endBlock[1], after.path)) {
-  //         end = after
-  //       }
-  //     }
-
-  //     // Get the highest nodes that are completely inside the range, as well as
-  //     // the start and end nodes.
-  //     const matches: NodeEntry[] = []
-  //     let lastPath: Path | undefined
-
-  //     for (const entry of EditorUtils.nodes(editor, { at, voids })) {
-  //       const [node, path] = entry
-
-  //       if (lastPath && Path.compare(path, lastPath) == 0) {
-  //         continue
-  //       }
-
-  //       if (
-  //         (!voids && EditorUtils.isVoid(editor, node)) ||
-  //         (!Path.isCommon(path, start.path) && !Path.isCommon(path, end.path))
-  //       ) {
-  //         matches.push(entry)
-  //         lastPath = path
-  //       }
-  //     }
-
-  //     const pathRefs = Array.from(matches, ([, p]) => EditorUtils.pathRef(editor, p))
-  //     const startRef = EditorUtils.pointRef(editor, start)
-  //     const endRef = EditorUtils.pointRef(editor, end)
-
-  //     if (!isSingleText && !startVoid) {
-  //       const point = startRef.current!
-  //       const [node] = EditorUtils.leaf(editor, point)
-  //       const { path } = point
-  //       const { offset } = start
-  //       const text = node.text.slice(offset)
-  //       editor.apply({ type: 'remove_text', path, offset, text })
-  //     }
-
-  //     for (const pathRef of pathRefs) {
-  //       const path = pathRef.unref()!
-  //       Transforms.removeNodes(editor, { at: path, voids })
-  //     }
-
-  //     if (!endVoid) {
-  //       const point = endRef.current!
-  //       const [node] = EditorUtils.leaf(editor, point)
-  //       const { path } = point
-  //       const offset = isSingleText ? start.offset : 0
-  //       const text = node.text.slice(offset, end.offset)
-  //       editor.apply({ type: 'remove_text', path, offset, text })
-  //     }
-
-  //     if (
-  //       !isSingleText &&
-  //       isAcrossBlocks &&
-  //       endRef.current &&
-  //       startRef.current
-  //     ) {
-  //       Transforms.mergeNodes(editor, {
-  //         at: endRef.current,
-  //         hanging: true,
-  //         voids,
-  //       })
-  //     }
-
-  //     const point = endRef.unref() || startRef.unref()
-
-  //     if (options.at == null && point) {
-  //       Transforms.select(editor, point)
-  //     }
-  //   })
-  // },
-
-  // /**
-  //  * Insert a fragment at a specific location in the editor.
-  //  */
-
-  // insertFragment(
-  //   Editor editor,
-  //   fragment: Node[],
-  //   options: {
-  //     Location at,
-  //     bool hanging = false,
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const { hanging = false, voids = false } = options
-  //     let { at = editor.selection } = options
-
-  //     if (!fragment.length) {
-  //       return
-  //     }
-
-  //     if (at == null) {
-  //       return
-  //     } else if (at is Range) {
-  //       if (!hanging) {
-  //         at = EditorUtils.unhangRange(editor, at)
-  //       }
-
-  //       if (RangeUtils.isCollapsed(at)) {
-  //         at = at.anchor
-  //       } else {
-  //         const [, end] = RangeUtils.edges(at)
-
-  //         if (!voids && EditorUtils.matchVoid(editor, { at: end })) {
-  //           return
-  //         }
-
-  //         const pointRef = EditorUtils.pointRef(editor, end)
-  //         Transforms.delete(editor, { at })
-  //         at = pointRef.unref()!
-  //       }
-  //     } else if (Path.isPath(at)) {
-  //       at = EditorUtils.start(editor, at)
-  //     }
-
-  //     if (!voids && EditorUtils.matchVoid(editor, { at })) {
-  //       return
-  //     }
-
-  //     // If the insert point is at the edge of an inline node, move it outside
-  //     // instead since it will need to be split otherwise.
-  //     const inlineElementMatch = EditorUtils.above(editor, {
-  //       at,
-  //       match: n => EditorUtils.isInline(editor, n),
-  //       mode: 'highest',
-  //       voids,
-  //     })
-
-  //     if (inlineElementMatch) {
-  //       const [, inlinePath] = inlineElementMatch
-
-  //       if (EditorUtils.isEnd(editor, at, inlinePath)) {
-  //         const after = EditorUtils.after(editor, inlinePath)!
-  //         at = after
-  //       } else if (EditorUtils.isStart(editor, at, inlinePath)) {
-  //         const before = EditorUtils.before(editor, inlinePath)!
-  //         at = before
-  //       }
-  //     }
-
-  //     const blockMatch = EditorUtils.above(editor, {
-  //       match: n => EditorUtils.isBlock(editor, n),
-  //       at,
-  //       voids,
-  //     })!
-  //     const [, blockPath] = blockMatch
-  //     const isBlockStart = EditorUtils.isStart(editor, at, blockPath)
-  //     const isBlockEnd = EditorUtils.isEnd(editor, at, blockPath)
-  //     const mergeStart = !isBlockStart || (isBlockStart && isBlockEnd)
-  //     const mergeEnd = !isBlockEnd
-  //     const [, firstPath] = Node.first({ children: fragment }, [])
-  //     const [, lastPath] = Node.last({ children: fragment }, [])
-
-  //     const matches: NodeEntry[] = []
-  //     const matcher = ([n, p]: NodeEntry) => {
-  //       if (
-  //         mergeStart &&
-  //         Path.isAncestor(p, firstPath) &&
-  //         Element.isElement(n) &&
-  //         !editor.isVoid(n) &&
-  //         !editor.isInline(n)
-  //       ) {
-  //         return false
-  //       }
-
-  //       if (
-  //         mergeEnd &&
-  //         Path.isAncestor(p, lastPath) &&
-  //         Element.isElement(n) &&
-  //         !editor.isVoid(n) &&
-  //         !editor.isInline(n)
-  //       ) {
-  //         return false
-  //       }
-
-  //       return true
-  //     }
-
-  //     for (const entry of Node.nodes(
-  //       { children: fragment },
-  //       { pass: matcher }
-  //     )) {
-  //       if (entry[1].length > 0 && matcher(entry)) {
-  //         matches.push(entry)
-  //       }
-  //     }
-
-  //     const starts = []
-  //     const middles = []
-  //     const ends = []
-  //     let starting = true
-  //     let hasBlocks = false
-
-  //     for (const [node] of matches) {
-  //       if (Element.isElement(node) && !editor.isInline(node)) {
-  //         starting = false
-  //         hasBlocks = true
-  //         middles.push(node)
-  //       } else if (starting) {
-  //         starts.push(node)
-  //       } else {
-  //         ends.push(node)
-  //       }
-  //     }
-
-  //     const [inlineMatch] = EditorUtils.nodes(editor, {
-  //       at,
-  //       match: (n) { return (n is Text); } || EditorUtils.isInline(editor, n),
-  //       mode: 'highest',
-  //       voids,
-  //     })!
-
-  //     const [, inlinePath] = inlineMatch
-  //     const isInlineStart = EditorUtils.isStart(editor, at, inlinePath)
-  //     const isInlineEnd = EditorUtils.isEnd(editor, at, inlinePath)
-
-  //     const middleRef = EditorUtils.pathRef(
-  //       editor,
-  //       isBlockEnd ? Path.next(blockPath) : blockPath
-  //     )
-
-  //     const endRef = EditorUtils.pathRef(
-  //       editor,
-  //       isInlineEnd ? Path.next(inlinePath) : inlinePath
-  //     )
-
-  //     Transforms.splitNodes(editor, {
-  //       at,
-  //       match: n =>
-  //         hasBlocks
-  //           ? EditorUtils.isBlock(editor, n)
-  //           : (n is Text) || EditorUtils.isInline(editor, n),
-  //       mode: hasBlocks ? 'lowest' : 'highest',
-  //       voids,
-  //     })
-
-  //     const startRef = EditorUtils.pathRef(
-  //       editor,
-  //       !isInlineStart || (isInlineStart && isInlineEnd)
-  //         ? Path.next(inlinePath)
-  //         : inlinePath
-  //     )
-
-  //     Transforms.insertNodes(editor, starts, {
-  //       at: startRef.current!,
-  //       match: (n) { return (n is Text); } || EditorUtils.isInline(editor, n),
-  //       mode: 'highest',
-  //       voids,
-  //     })
-
-  //     Transforms.insertNodes(editor, middles, {
-  //       at: middleRef.current!,
-  //       match: n => EditorUtils.isBlock(editor, n),
-  //       mode: 'lowest',
-  //       voids,
-  //     })
-
-  //     Transforms.insertNodes(editor, ends, {
-  //       at: endRef.current!,
-  //       match: (n) { return (n is Text); } || EditorUtils.isInline(editor, n),
-  //       mode: 'highest',
-  //       voids,
-  //     })
-
-  //     if (!options.at) {
-  //       let path
-
-  //       if (ends.length > 0) {
-  //         path = Path.previous(endRef.current!)
-  //       } else if (middles.length > 0) {
-  //         path = Path.previous(middleRef.current!)
-  //       } else {
-  //         path = Path.previous(startRef.current!)
-  //       }
-
-  //       const end = EditorUtils.end(editor, path)
-  //       Transforms.select(editor, end)
-  //     }
-
-  //     startRef.unref()
-  //     middleRef.unref()
-  //     endRef.unref()
-  //   })
-  // },
-
-  // /**
-  //  * Insert a string of text in the Editor.
-  //  */
-
-  // insertText(
-  //   Editor editor,
-  //   text: string,
-  //   options: {
-  //     Location at,
-  //     bool voids = false
-  //   } = {}
-  // ) {
-  //   EditorUtils.withoutNormalizing(editor, () {
-  //     const { voids = false } = options
-  //     let { at = editor.selection } = options
-
-  //     if (at == null) {
-  //       return
-  //     }
-
-  //     if (Path.isPath(at)) {
-  //       at = EditorUtils.range(editor, at)
-  //     }
-
-  //     if (at is Range) {
-  //       if (RangeUtils.isCollapsed(at)) {
-  //         at = at.anchor
-  //       } else {
-  //         const end = RangeUtils.end(at)
-
-  //         if (!voids && EditorUtils.matchVoid(editor, { at: end })) {
-  //           return
-  //         }
-
-  //         const pointRef = EditorUtils.pointRef(editor, end)
-  //         Transforms.delete(editor, { at, voids })
-  //         at = pointRef.unref()!
-  //         Transforms.setSelection(editor, { anchor: at, focus: at })
-  //       }
-  //     }
-
-  //     if (!voids && EditorUtils.matchVoid(editor, { at })) {
-  //       return
-  //     }
-
-  //     const { path, offset } = at
-  //     editor.apply({ type: 'insert_text', path, offset, text })
-  //   })
-  // },
+  /// Insert nodes at a specific location in the Editor.
+  static void insertNodes(
+    Editor editor,
+    List<Node> nodes, {
+    Location at,
+    NodeMatch match,
+    Mode mode = Mode.lowest,
+    bool hanging = false,
+    bool select,
+    bool voids = false,
+  }) {
+    EditorUtils.withoutNormalizing(editor, () {
+      Node node = nodes.first;
+
+      // By default, use the selection as the target location. But if there is
+      // no selection, insert at the end of the document since that is such a
+      // common use case when inserting from a non-selected state.
+      if (at == null) {
+        if (editor.selection != null) {
+          at = editor.selection;
+        } else if (editor.children.length > 0) {
+          at = EditorUtils.end(editor, Path([]));
+        } else {
+          at = Path([0]);
+        }
+
+        select = true;
+      }
+
+      if (select == null) {
+        select = false;
+      }
+
+      if (at is Range) {
+        if (!hanging) {
+          at = EditorUtils.unhangRange(editor, at);
+        }
+
+        if (RangeUtils.isCollapsed(at)) {
+          at = (at as Range).anchor;
+        } else {
+          Edges edges = RangeUtils.edges(at);
+          Point end = edges.end;
+
+          PointRef pointRef = EditorUtils.pointRef(editor, end);
+
+          Transforms.delete(editor, at: at);
+
+          Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
+          at = pointRef.unref(pointRefs);
+        }
+      }
+
+      if (at is Point) {
+        if (match == null) {
+          if (node is Text) {
+            match = (n) {
+              return (n is Text);
+            };
+          } else if (editor.isInline(node)) {
+            match = (n) {
+              return (n is Text) || EditorUtils.isInline(editor, n);
+            };
+          } else {
+            match = (n) {
+              return EditorUtils.isBlock(editor, n);
+            };
+          }
+        }
+
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(editor,
+            at: (at as Point).path, match: match, mode: mode, voids: voids));
+
+        NodeEntry entry = entries.first;
+
+        if (entry != null) {
+          Path matchPath = entry.path;
+          PathRef pathRef = EditorUtils.pathRef(editor, matchPath);
+          bool isAtEnd = EditorUtils.isEnd(editor, at, matchPath);
+          Transforms.splitNodes(editor,
+              at: at, match: match, mode: mode, voids: voids);
+
+          Set<PathRef> pathRefs = EditorUtils.pathRefs(editor);
+          Path path = pathRef.unref(pathRefs);
+          at = isAtEnd ? PathUtils.next(path) : path;
+        } else {
+          return;
+        }
+      }
+
+      Path parentPath = PathUtils.parent(at);
+      int index = (at as Path)[(at as Path).length - 1];
+
+      if (!voids && EditorUtils.matchVoid(editor, at: parentPath) != null) {
+        return;
+      }
+
+      for (Node node in nodes) {
+        Path path = PathUtils.copy(parentPath);
+        path.add(index);
+
+        index++;
+
+        editor.apply(InsertNodeOperation(path, node));
+      }
+
+      if (select != null) {
+        Point point = EditorUtils.end(editor, at);
+
+        if (point != null) {
+          Transforms.select(editor, point);
+        }
+      }
+    });
+  }
+
+  /// Lift nodes at a specific location upwards in the document tree, splitting
+  /// their parent in two if necessary.
+  static void liftNodes(Editor editor,
+      {Location at,
+      NodeMatch match,
+      Mode mode = Mode.lowest,
+      bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      if (match == null) {
+        match = (at is Path)
+            ? matchPath(editor, at)
+            : (n) {
+                return EditorUtils.isBlock(editor, n);
+              };
+      }
+
+      if (at == null) {
+        return;
+      }
+
+      List<NodeEntry> matches = [];
+
+      for (NodeEntry entry in EditorUtils.nodes(editor,
+          at: at, match: match, mode: mode, voids: voids)) {
+        matches.add(entry);
+      }
+
+      Set<PathRef> pathRefs = Set();
+
+      for (NodeEntry match in matches) {
+        PathRef pathRef = EditorUtils.pathRef(editor, match.path);
+        pathRefs.add(pathRef);
+      }
+
+      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
+
+      for (PathRef pathRef in pathRefs) {
+        Path path = pathRef.unref(editorPathRefs);
+
+        if (path.length < 2) {
+          throw Exception(
+              "Cannot lift node at a path [$path] because it has a depth of less than \`2\`.");
+        }
+
+        NodeEntry parentEntry =
+            EditorUtils.node(editor, PathUtils.parent(path));
+        Ancestor parent = parentEntry.node;
+        Path parentPath = parentEntry.path;
+
+        int index = path[path.length - 1];
+        int length = parent.children.length;
+
+        if (length == 1) {
+          Path toPath = PathUtils.next(parentPath);
+          Transforms.moveNodes(editor, at: path, to: toPath, voids: voids);
+          Transforms.removeNodes(editor, at: parentPath, voids: voids);
+        } else if (index == 0) {
+          Transforms.moveNodes(editor, at: path, to: parentPath, voids: voids);
+        } else if (index == length - 1) {
+          Path toPath = PathUtils.next(parentPath);
+          Transforms.moveNodes(editor, at: path, to: toPath, voids: voids);
+        } else {
+          Path splitPath = PathUtils.next(path);
+          Path toPath = PathUtils.next(parentPath);
+          Transforms.splitNodes(editor, at: splitPath, voids: voids);
+          Transforms.moveNodes(editor, at: path, to: toPath, voids: voids);
+        }
+      }
+    });
+  }
+
+  /// Merge a node at a location with the previous node of the same depth,
+  /// removing any empty containing nodes after the merge if necessary.
+  static void mergeNodes(Editor editor,
+      {Location at,
+      NodeMatch match,
+      Mode mode = Mode.lowest,
+      bool hanging = false,
+      bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (at == null) {
+        return;
+      }
+
+      if (match == null) {
+        if (at is Path) {
+          NodeEntry<Ancestor> entry = EditorUtils.parent(editor, at);
+          Ancestor parent = entry.node;
+          match = (n) {
+            return parent.children.contains(n);
+          };
+        } else {
+          match = (n) {
+            return EditorUtils.isBlock(editor, n);
+          };
+        }
+      }
+
+      if (!hanging && at is Range) {
+        at = EditorUtils.unhangRange(editor, at);
+      }
+
+      if (at is Range) {
+        if (RangeUtils.isCollapsed(at)) {
+          at = (at as Range).anchor;
+        } else {
+          Edges edge = RangeUtils.edges(at);
+          Point end = edge.end;
+          PointRef pointRef = EditorUtils.pointRef(editor, end);
+          Transforms.delete(editor, at: at);
+          Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
+          at = pointRef.unref(pointRefs);
+
+          if (at == null) {
+            Transforms.select(editor, at);
+          }
+        }
+      }
+
+      List<NodeEntry> currentNodes = EditorUtils.nodes(editor,
+          at: at, match: match, voids: voids, mode: mode);
+      NodeEntry current = currentNodes.first;
+      NodeEntry prev = EditorUtils.previous(editor,
+          at: at, match: match, voids: voids, mode: mode);
+
+      if (current == null || prev == null) {
+        return;
+      }
+
+      Node node = current.node;
+      Path path = current.path;
+      Node prevNode = prev.node;
+      Path prevPath = prev.path;
+
+      if (path.length == 0 || prevPath.length == 0) {
+        return;
+      }
+
+      Path newPath = PathUtils.next(prevPath);
+      Path commonPath = PathUtils.common(path, prevPath);
+      bool isPreviousSibling = PathUtils.isSibling(path, prevPath);
+
+      List<NodeEntry> entries = List.from(EditorUtils.levels(editor, at: path));
+      entries = entries.sublist(commonPath.length);
+      List<Node> levels;
+
+      for (int i = 0; i < entries.length - 2; i++) {
+        NodeEntry entry = entries[i];
+        Node node = entry.node;
+        levels.add(node);
+      }
+
+      // Determine if the merge will leave an ancestor of the path empty as a
+      // result, in which case we'll want to remove it after merging.
+      NodeEntry emptyAncestor =
+          EditorUtils.above(editor, at: path, mode: Mode.highest, match: (n) {
+        return levels.contains(n) && (n is Element) && n.children.length == 1;
+      });
+
+      PathRef emptyRef;
+      if (emptyAncestor != null) {
+        emptyRef = EditorUtils.pathRef(editor, emptyAncestor.path);
+      }
+      Map<String, dynamic> props;
+      int position;
+
+      // Ensure that the nodes are equivalent, and figure out what the position
+      // and extra props of the merge will be.
+      if (node is Text && prevNode is Text) {
+        position = prevNode.text.length;
+        props = node.props;
+      } else if ((node is Element) && prevNode is Element) {
+        position = prevNode.children.length;
+        props = node.props;
+      } else {
+        throw Exception(
+            "Cannot merge the node at path [$path] with the previous sibling because it is not the same kind: ${node.toString()} ${prevNode.toString()}");
+      }
+
+      // If the node isn't already the next sibling of the previous node, move
+      // it so that it is before merging.
+      if (!isPreviousSibling) {
+        Transforms.moveNodes(editor, at: path, to: newPath, voids: voids);
+      }
+
+      // If there was going to be an empty ancestor of the node that was merged,
+      // we remove it from the tree.
+      if (emptyRef != null) {
+        Transforms.removeNodes(editor, at: emptyRef.current, voids: voids);
+      }
+
+      // If the target node that we're merging with is empty, remove it instead
+      // of merging the two. This is a common rich text editor behavior to
+      // prevent losing formatting when deleting entire nodes when you have a
+      // hanging selection.
+      if ((prevNode is Element && EditorUtils.isEmpty(editor, prevNode)) ||
+          (prevNode is Text && prevNode.text == '')) {
+        Transforms.removeNodes(editor, at: prevPath, voids: voids);
+      } else {
+        editor.apply(MergeNodeOperation(newPath, position, null, props));
+      }
+
+      if (emptyRef != null) {
+        Set<PathRef> pathRefs = EditorUtils.pathRefs(editor);
+        emptyRef.unref(pathRefs);
+      }
+    });
+  }
+
+  /// Move the nodes at a location to a new location.
+  static void moveNodes(Editor editor,
+      {Location at,
+      NodeMatch match,
+      Mode mode = Mode.lowest,
+      Path to,
+      bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (at == null) {
+        return;
+      }
+
+      if (match == null) {
+        match = at is Path
+            ? matchPath(editor, at)
+            : (n) {
+                return EditorUtils.isBlock(editor, n);
+              };
+      }
+
+      PathRef toRef = EditorUtils.pathRef(editor, to);
+      List<NodeEntry> targets = List.from(EditorUtils.nodes(editor,
+          at: at, match: match, mode: mode, voids: voids));
+      List<PathRef> pathRefs;
+
+      for (NodeEntry entry in targets) {
+        pathRefs.add(EditorUtils.pathRef(editor, entry.path));
+      }
+
+      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
+      for (PathRef pathRef in pathRefs) {
+        Path path = pathRef.unref(editorPathRefs);
+        Path newPath = toRef.current;
+
+        if (path.length != 0) {
+          editor.apply(MoveNodeOperation(path, newPath));
+        }
+      }
+
+      toRef.unref(editorPathRefs);
+    });
+  }
+
+  /// Remove the nodes at a specific location in the document.
+  static void removeNodes(Editor editor,
+      {Location at,
+      NodeMatch match,
+      Mode mode = Mode.lowest,
+      bool hanging = false,
+      bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (at == null) {
+        return;
+      }
+
+      if (match == null) {
+        match = at is Path
+            ? matchPath(editor, at)
+            : (n) {
+                return EditorUtils.isBlock(editor, n);
+              };
+      }
+
+      if (!hanging && at is Range) {
+        at = EditorUtils.unhangRange(editor, at);
+      }
+
+      List<NodeEntry> depths = List.from(EditorUtils.nodes(editor,
+          at: at, match: match, mode: mode, voids: voids));
+
+      Set<PathRef> pathRefs = Set();
+
+      for (NodeEntry depth in depths) {
+        PathRef pathRef = EditorUtils.pathRef(editor, depth.path);
+        pathRefs.add(pathRef);
+      }
+
+      for (PathRef pathRef in pathRefs) {
+        Path path = pathRef.unref(pathRefs);
+
+        if (path != null) {
+          NodeEntry entry = EditorUtils.node(editor, path);
+          Node node = entry.node;
+
+          editor.apply(RemoveNodeOperation(path, node));
+        }
+      }
+    });
+  }
+
+  /// Set new properties on the nodes at a location.
+  static void setNodes(Editor editor, Map<String, dynamic> props,
+      {Location at,
+      NodeMatch match,
+      Mode mode = Mode.lowest,
+      bool hanging = false,
+      bool split = false,
+      bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (at == null) {
+        return;
+      }
+
+      if (match == null) {
+        match = at is Path
+            ? matchPath(editor, at)
+            : (n) {
+                return EditorUtils.isBlock(editor, n);
+              };
+      }
+
+      if (!hanging && at is Range) {
+        at = EditorUtils.unhangRange(editor, at);
+      }
+
+      if (split && at is Range) {
+        RangeRef rangeRef =
+            EditorUtils.rangeRef(editor, at, affinity: Affinity.inward);
+        Edges edges = RangeUtils.edges(at);
+        Point start = edges.start;
+        Point end = edges.end;
+        Mode splitMode = mode == Mode.lowest ? Mode.lowest : Mode.highest;
+
+        Transforms.splitNodes(
+          editor,
+          at: end,
+          match: match,
+          mode: splitMode,
+          voids: voids,
+        );
+        Transforms.splitNodes(editor,
+            at: start, match: match, mode: splitMode, voids: voids);
+
+        Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(editor);
+        at = rangeRef.unref(rangeRefs);
+
+        if (at == null) {
+          Transforms.select(editor, at);
+        }
+      }
+
+      for (NodeEntry entry in EditorUtils.nodes(
+        editor,
+        at: at,
+        match: match,
+        mode: mode,
+        voids: voids,
+      )) {
+        Node node = entry.node;
+        Path path = entry.path;
+        Map<String, dynamic> props = {};
+        Map<String, dynamic> newProps = {};
+
+        // You can't set props on the editor node.
+        if (path.length == 0) {
+          continue;
+        }
+
+        for (String k in props.keys) {
+          if (props[k] != node.props[k]) {
+            props[k] = node.props[k];
+            newProps[k] = props[k];
+          }
+        }
+
+        if (newProps.keys.length != 0) {
+          editor.apply(SetNodeOperation(path, props, newProps));
+        }
+      }
+    });
+  }
+
+  /// Split the nodes at a specific location.
+  static void splitNodes(
+    Editor editor, {
+    Location at,
+    NodeMatch match,
+    Mode mode = Mode.lowest,
+    bool always = false,
+    int height = 0,
+    bool voids = false,
+  }) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (match == null) {
+        match = (n) {
+          return EditorUtils.isBlock(editor, n);
+        };
+      }
+
+      if (at is Range) {
+        at = deleteRange(editor, at);
+      }
+
+      // If the target is a path, the default height-skipping and position
+      // counters need to account for us potentially splitting at a non-leaf.
+      if (at is Path) {
+        Path path = at;
+        Point point = EditorUtils.point(editor, path);
+        NodeEntry<Ancestor> entry = EditorUtils.parent(editor, path);
+        Ancestor parent = entry.node;
+        match = (n) {
+          return n == parent;
+        };
+        height = point.path.length - path.length + 1;
+        at = point;
+        always = true;
+      }
+
+      if (at == null) {
+        return;
+      }
+
+      PointRef beforeRef =
+          EditorUtils.pointRef(editor, at, affinity: Affinity.backward);
+      List<NodeEntry> entries = EditorUtils.nodes(editor,
+          at: at, match: match, mode: mode, voids: voids);
+      NodeEntry highest = entries.first;
+
+      if (highest == null) {
+        return;
+      }
+
+      NodeEntry<Element> voidMatch =
+          EditorUtils.matchVoid(editor, at: at, mode: Mode.highest);
+      int nudge = 0;
+
+      if (voids == false && voidMatch != null) {
+        Node voidNode = voidMatch.node;
+        Path voidPath = voidMatch.path;
+
+        if (voidNode is Element && editor.isInline(voidNode)) {
+          Point after = EditorUtils.after(editor, voidPath);
+
+          if (after == null) {
+            Text text = Text('');
+            Path afterPath = PathUtils.next(voidPath);
+            Transforms.insertNodes(editor, [text], at: afterPath, voids: voids);
+            after = EditorUtils.point(editor, afterPath);
+          }
+
+          at = after;
+          always = true;
+        }
+
+        int siblingHeight = (at as Point).path.length - voidPath.length;
+        height = siblingHeight + 1;
+        always = true;
+      }
+
+      PointRef afterRef = EditorUtils.pointRef(editor, at);
+      int depth = (at as Point).path.length - height;
+      Path highestPath = highest.path;
+      Path lowestPath = (at as Point).path.slice(0, depth);
+      int position = height == 0
+          ? (at as Point).offset
+          : (at as Point).path[depth] + nudge;
+      int target;
+
+      for (NodeEntry entry in EditorUtils.levels(editor,
+          at: lowestPath, reverse: true, voids: voids)) {
+        Node node = entry.node;
+        Path path = entry.path;
+        bool split = false;
+
+        if (path.length < highestPath.length ||
+            path.length == 0 ||
+            (!voids && EditorUtils.isVoid(editor, node))) {
+          break;
+        }
+
+        Point point = beforeRef.current;
+        bool isEnd = EditorUtils.isEnd(editor, point, path);
+
+        if (always ||
+            beforeRef == null ||
+            !EditorUtils.isEdge(editor, point, path)) {
+          split = true;
+          editor.apply(SplitNodeOperation(path, position, target, node.props));
+        }
+
+        target = position;
+        position = path[path.length - 1] + (split || isEnd ? 1 : 0);
+      }
+
+      if (at == null) {
+        Point point = afterRef.current ?? EditorUtils.end(editor, Path([]));
+        Transforms.select(editor, point);
+      }
+
+      Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
+      beforeRef.unref(pointRefs);
+      afterRef.unref(pointRefs);
+    });
+  }
+
+  /// Unset properties on the nodes at a location.
+  static void unsetNodes(Editor editor, List<String> props,
+      {Location at,
+      NodeMatch match,
+      Mode mode = Mode.lowest,
+      bool split = false,
+      bool voids = false}) {
+    Map<String, dynamic> obj = {};
+
+    for (String key in props) {
+      obj[key] = null;
+    }
+
+    Transforms.setNodes(
+      editor,
+      obj,
+      at: at,
+      match: match,
+      mode: mode,
+      split: split,
+      voids: voids,
+    );
+  }
+
+  /// Unwrap the nodes at a location from a parent node, splitting the parent if
+  /// necessary to ensure that only the content in the range is unwrapped.
+  static void unwrapNodes(Editor editor,
+      {Location at,
+      NodeMatch match,
+      Mode mode = Mode.lowest,
+      bool split = false,
+      bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (at == null) {
+        return;
+      }
+
+      if (match == null) {
+        match = at is Path
+            ? matchPath(editor, at)
+            : (n) {
+                return EditorUtils.isBlock(editor, n);
+              };
+      }
+
+      if (at is Path) {
+        at = EditorUtils.range(editor, at, null);
+      }
+
+      RangeRef rangeRef =
+          (at is Range) ? EditorUtils.rangeRef(editor, at) : null;
+
+      List<NodeEntry> matches = [];
+
+      for (NodeEntry entry in EditorUtils.nodes(editor,
+          at: at, match: match, mode: mode, voids: voids)) {
+        matches.add(entry);
+      }
+
+      Set<PathRef> pathRefs = Set();
+
+      for (NodeEntry match in matches) {
+        PathRef pathRef = EditorUtils.pathRef(editor, match.path);
+        pathRefs.add(pathRef);
+      }
+
+      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
+
+      for (PathRef pathRef in pathRefs) {
+        Path path = pathRef.unref(editorPathRefs);
+        NodeEntry entry = EditorUtils.node(editor, path);
+        Ancestor node = entry.node;
+        Range range = EditorUtils.range(editor, path, null);
+
+        if (split && rangeRef != null) {
+          range = RangeUtils.intersection(rangeRef.current, range);
+        }
+
+        Transforms.liftNodes(
+          editor,
+          at: range,
+          match: (n) {
+            return node.children.contains(n);
+          },
+          voids: voids,
+        );
+      }
+
+      Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(editor);
+
+      if (rangeRef != null) {
+        rangeRef.unref(rangeRefs);
+      }
+    });
+  }
+
+  /// Wrap the nodes at a location in a new container node, splitting the edges
+  /// of the range first to ensure that only the content in the range is wrapped.
+  static void wrapNodes(Editor editor, Element element,
+      {Location at,
+      NodeMatch match,
+      Mode mode = Mode.lowest,
+      bool split = false,
+      bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (at == null) {
+        return;
+      }
+
+      if (match == null) {
+        if (at is Path) {
+          match = matchPath(editor, at);
+        } else if (editor.isInline(element)) {
+          match = (n) {
+            return EditorUtils.isInline(editor, n) || (n is Text);
+          };
+        } else {
+          match = (n) {
+            return EditorUtils.isBlock(editor, n);
+          };
+        }
+      }
+
+      if (split && at is Range) {
+        Edges edges = RangeUtils.edges(at);
+        Point start = edges.start;
+        Point end = edges.end;
+
+        RangeRef rangeRef =
+            EditorUtils.rangeRef(editor, at, affinity: Affinity.inward);
+        Transforms.splitNodes(editor, at: end, match: match, voids: voids);
+        Transforms.splitNodes(editor, at: start, match: match, voids: voids);
+        Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(editor);
+        at = rangeRef.unref(rangeRefs);
+
+        if (at == null) {
+          Transforms.select(editor, at);
+        }
+      }
+
+      List<NodeEntry> roots = List.from(EditorUtils.nodes(
+        editor,
+        at: at,
+        match: editor.isInline(element)
+            ? (n) {
+                return EditorUtils.isBlock(editor, n);
+              }
+            : (n) {
+                return n is Editor;
+              },
+        mode: Mode.highest,
+        voids: voids,
+      ));
+
+      for (NodeEntry root in roots) {
+        Path rootPath = root.path;
+        Range a = (at is Range)
+            ? RangeUtils.intersection(
+                at, EditorUtils.range(editor, rootPath, null))
+            : at;
+
+        if (a == null) {
+          continue;
+        }
+
+        List<NodeEntry> matches = List.from(EditorUtils.nodes(editor,
+            at: a, match: match, mode: mode, voids: voids));
+
+        if (matches.length > 0) {
+          NodeEntry first = matches.first;
+          NodeEntry last = matches.last;
+          Path firstPath = first.path;
+          Path lastPath = last.path;
+
+          Path commonPath = PathUtils.equals(firstPath, lastPath)
+              ? PathUtils.parent(firstPath)
+              : PathUtils.common(firstPath, lastPath);
+
+          Range range = EditorUtils.range(editor, firstPath, lastPath);
+          NodeEntry common = EditorUtils.node(editor, commonPath);
+          Ancestor commonNode = common.node;
+          int depth = commonPath.length + 1;
+          Path wrapperPath = PathUtils.next(lastPath.slice(0, depth));
+          Element wrapper = Element(children: [], props: element.props);
+          Transforms.insertNodes(editor, [wrapper],
+              at: wrapperPath, voids: voids);
+
+          wrapperPath.add(0);
+
+          Transforms.moveNodes(
+            editor,
+            at: range,
+            match: (n) {
+              return commonNode.children.contains(n);
+            },
+            to: wrapperPath,
+            voids: voids,
+          );
+        }
+      }
+    });
+  }
+
+  // selection transforms
+
+  /// Collapse the selection.
+  static void collapse(Editor editor,
+      {SelectionEdge edge = SelectionEdge.anchor}) {
+    Range selection = editor.selection;
+
+    if (selection = null) {
+      return;
+    } else if (edge == SelectionEdge.anchor) {
+      Transforms.select(editor, selection.anchor);
+    } else if (edge == SelectionEdge.focus) {
+      Transforms.select(editor, selection.focus);
+    } else if (edge == SelectionEdge.start) {
+      Edges edges = RangeUtils.edges(selection);
+      Point start = edges.start;
+      Transforms.select(editor, start);
+    } else if (edge == SelectionEdge.end) {
+      Edges edges = RangeUtils.edges(selection);
+      Point end = edges.end;
+      Transforms.select(editor, end);
+    }
+  }
+
+  /// Unset the selection.
+  static void deselect(Editor editor) {
+    Range selection = editor.selection;
+
+    if (selection != null) {
+      editor.apply(SetSelectionOperation(selection, null));
+    }
+  }
+
+  /// Move the selection's point forward or backward.
+  static void move(
+    Editor editor, {
+    int distance = 1,
+    Unit unit = Unit.character,
+    bool reverse = false,
+    SelectionEdge edge,
+  }) {
+    Range selection = editor.selection;
+
+    if (selection == null) {
+      return;
+    }
+
+    if (edge == SelectionEdge.start) {
+      edge = RangeUtils.isBackward(selection)
+          ? SelectionEdge.focus
+          : SelectionEdge.anchor;
+    }
+
+    if (edge == SelectionEdge.end) {
+      edge = RangeUtils.isBackward(selection)
+          ? SelectionEdge.anchor
+          : SelectionEdge.focus;
+    }
+
+    Point anchor = selection.anchor;
+    Point focus = selection.focus;
+    Range props;
+
+    if (edge == null || edge == SelectionEdge.anchor) {
+      Point point = reverse
+          ? EditorUtils.before(editor, anchor, distance: distance, unit: unit)
+          : EditorUtils.after(editor, anchor, distance: distance, unit: unit);
+
+      if (point != null) {
+        props.anchor = point;
+      }
+    }
+
+    if (edge == null || edge == SelectionEdge.focus) {
+      Point point = reverse
+          ? EditorUtils.before(editor, focus, distance: distance, unit: unit)
+          : EditorUtils.after(editor, focus, distance: distance, unit: unit);
+
+      if (point != null) {
+        props.focus = point;
+      }
+    }
+
+    Transforms.setSelection(editor, props);
+  }
+
+  /// Set the selection to a new value.
+  static void select(Editor editor, Location target) {
+    Range selection = editor.selection;
+    target = EditorUtils.range(editor, target, null);
+
+    if (selection != null) {
+      Transforms.setSelection(editor, target);
+      return;
+    }
+
+    if (!RangeUtils.isRange(target)) {
+      throw Exception(
+          "When setting the selection and the current selection is \`null\` you must provide at least an \`anchor\` and \`focus\`, but you passed: ${target.toString()}");
+    }
+
+    editor.apply(SetSelectionOperation(selection, target));
+  }
+
+  /// Set new properties on one of the selection's points.
+  static void setPoint(
+    Editor editor,
+    Map<String, dynamic> props, {
+    SelectionEdge edge,
+  }) {
+    Range selection = editor.selection;
+
+    if (selection != null) {
+      return;
+    }
+
+    if (edge == SelectionEdge.start) {
+      edge = RangeUtils.isBackward(selection)
+          ? SelectionEdge.focus
+          : SelectionEdge.anchor;
+    }
+
+    if (edge == SelectionEdge.end) {
+      edge = RangeUtils.isBackward(selection)
+          ? SelectionEdge.anchor
+          : SelectionEdge.focus;
+    }
+
+    Point anchor = selection.anchor;
+    Point focus = selection.focus;
+    Point point = edge == SelectionEdge.anchor ? anchor : focus;
+    Point newPoint = Point(point.path, point.offset, props: point.props);
+    newPoint.props.addAll(props);
+
+    if (edge == SelectionEdge.anchor) {
+      Transforms.setSelection(editor, Range(newPoint, null));
+    } else {
+      Transforms.setSelection(editor, Range(null, newPoint));
+    }
+  }
+
+  /// Set new properties on the selection.
+  static void setSelection(Editor editor, Range newSelection) {
+    Range selection = editor.selection;
+    Map<String, dynamic> oldProps = {};
+    Map<String, dynamic> newProps = {};
+
+    if (selection == null) {
+      return;
+    }
+
+    for (String key in newSelection.props.keys) {
+      if ((key == 'anchor' &&
+              newSelection.anchor != null &&
+              !PointUtils.equals(newSelection.anchor, selection.anchor)) ||
+          (key == 'focus' &&
+              newSelection.focus != null &&
+              !PointUtils.equals(newSelection.focus, selection.focus)) ||
+          (key != 'anchor' &&
+              key != 'focus' &&
+              newSelection.props[key] != selection.props[key])) {
+        oldProps[key] = selection.props[key];
+        newProps[key] = newSelection.props[key];
+      }
+    }
+
+    if (oldProps.length > 0) {
+      selection = Range(selection.anchor, selection.focus, props: oldProps);
+      newSelection =
+          Range(newSelection.anchor, newSelection.focus, props: newProps);
+
+      editor.apply(SetSelectionOperation(selection, newSelection));
+    }
+  }
+
+  // Text transforms
+
+  /// Delete content in the editor.
+  static void delete(Editor editor,
+      {Location at,
+      int distance = 1,
+      Unit unit = Unit.character,
+      bool reverse = false,
+      bool hanging = false,
+      bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (at == null) {
+        return;
+      }
+
+      if (at is Range && RangeUtils.isCollapsed(at)) {
+        at = (at as Range).anchor;
+      }
+
+      if (at is Point) {
+        NodeEntry<Element> furthestVoid =
+            EditorUtils.matchVoid(editor, at: at, mode: Mode.highest);
+
+        if (voids == false && furthestVoid != null) {
+          Path voidPath = furthestVoid.path;
+          at = voidPath;
+        } else {
+          Point target = reverse
+              ? EditorUtils.before(editor, at,
+                      unit: unit, distance: distance) ??
+                  EditorUtils.start(editor, Path([]))
+              : EditorUtils.after(editor, at, unit: unit, distance: distance) ??
+                  EditorUtils.end(editor, Path([]));
+          at = Range(at, target);
+          hanging = true;
+        }
+      }
+
+      if (at is Path) {
+        Transforms.removeNodes(editor, at: at, voids: voids);
+        return;
+      }
+
+      if (RangeUtils.isCollapsed(at)) {
+        return;
+      }
+
+      if (!hanging) {
+        at = EditorUtils.unhangRange(editor, at, voids: voids);
+      }
+
+      Edges edges = RangeUtils.edges(at);
+      Point start = edges.start;
+      Point end = edges.end;
+
+      NodeEntry<Block> startBlock = EditorUtils.above(editor, match: (n) {
+        return EditorUtils.isBlock(editor, n);
+      }, at: start, voids: voids);
+      NodeEntry<Block> endBlock = EditorUtils.above(editor, match: (n) {
+        return EditorUtils.isBlock(editor, n);
+      }, at: end, voids: voids);
+      bool isAcrossBlocks = startBlock != null &&
+          endBlock != null &&
+          !PathUtils.equals(startBlock.path, endBlock.path);
+      bool isSingleText = PathUtils.equals(start.path, end.path);
+      NodeEntry<Element> startVoid = voids
+          ? null
+          : EditorUtils.matchVoid(editor, at: start, mode: Mode.highest);
+      NodeEntry<Element> endVoid = voids
+          ? null
+          : EditorUtils.matchVoid(editor, at: end, mode: Mode.highest);
+
+      // If the start or end points are inside an inline void, nudge them out.
+      if (startVoid != null) {
+        Point before = EditorUtils.before(editor, start);
+
+        if (before != null &&
+            startBlock != null &&
+            PathUtils.isAncestor(startBlock.path, before.path)) {
+          start = before;
+        }
+      }
+
+      if (endVoid != null) {
+        Point after = EditorUtils.after(editor, end);
+
+        if (after != null &&
+            endBlock != null &&
+            PathUtils.isAncestor(endBlock.path, after.path)) {
+          end = after;
+        }
+      }
+
+      // Get the highest nodes that are completely inside the range, as well as
+      // the start and end nodes.
+      List<NodeEntry> matches = [];
+      Path lastPath;
+
+      for (NodeEntry entry in EditorUtils.nodes(editor, at: at, voids: voids)) {
+        Node node = entry.node;
+        Path path = entry.path;
+
+        if (lastPath != null && PathUtils.compare(path, lastPath) == 0) {
+          continue;
+        }
+
+        if ((!voids && EditorUtils.isVoid(editor, node)) ||
+            (!PathUtils.isCommon(path, start.path) &&
+                !PathUtils.isCommon(path, end.path))) {
+          matches.add(entry);
+          lastPath = path;
+        }
+      }
+
+      Set<PathRef> pathRefs = Set();
+
+      for (NodeEntry match in matches) {
+        PathRef pathRef = EditorUtils.pathRef(editor, match.path);
+        pathRefs.add(pathRef);
+      }
+
+      PointRef startRef = EditorUtils.pointRef(editor, start);
+      PointRef endRef = EditorUtils.pointRef(editor, end);
+
+      if (!isSingleText && startVoid == null) {
+        Point point = startRef.current;
+        NodeEntry<Text> entry = EditorUtils.leaf(editor, point);
+        Text node = entry.node;
+        Path path = point.path;
+        int offset = start.offset;
+
+        String text = node.text.substring(offset);
+
+        editor.apply(RemoveTextOperation(path, offset, text));
+      }
+
+      for (PathRef pathRef in pathRefs) {
+        Path path = pathRef.unref(pathRefs);
+        Transforms.removeNodes(editor, at: path, voids: voids);
+      }
+
+      if (endVoid == null) {
+        Point point = endRef.current;
+        NodeEntry<Text> entry = EditorUtils.leaf(editor, point);
+        Text node = entry.node;
+        Path path = point.path;
+
+        int offset = isSingleText ? start.offset : 0;
+        String text = node.text.substring(offset, end.offset);
+
+        editor.apply(RemoveTextOperation(path, offset, text));
+      }
+
+      if (!isSingleText &&
+          isAcrossBlocks &&
+          endRef.current != null &&
+          startRef.current != null) {
+        Transforms.mergeNodes(
+          editor,
+          at: endRef.current,
+          hanging: true,
+          voids: voids,
+        );
+      }
+
+      Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
+      Point point = endRef.unref(pointRefs) ?? startRef.unref(pointRefs);
+
+      if (at == null && point != null) {
+        Transforms.select(editor, point);
+      }
+    });
+  }
+
+  /// Insert a fragment at a specific location in the editor.
+  static void insertFragment(Editor editor, List<Node> fragment,
+      {Location at, bool hanging = false, bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (fragment.length == 0) {
+        return;
+      }
+
+      if (at == null) {
+        return;
+      } else if (at is Range) {
+        if (!hanging) {
+          at = EditorUtils.unhangRange(editor, at);
+        }
+
+        if (RangeUtils.isCollapsed(at)) {
+          at = (at as Range).anchor;
+        } else {
+          Edges edges = RangeUtils.edges(at);
+          Point end = edges.end;
+
+          if (!voids && EditorUtils.matchVoid(editor, at: end) != null) {
+            return;
+          }
+
+          PointRef pointRef = EditorUtils.pointRef(editor, end);
+          Transforms.delete(editor, at: at);
+
+          Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
+          at = pointRef.unref(pointRefs);
+        }
+      } else if (at is Path) {
+        at = EditorUtils.start(editor, at);
+      }
+
+      if (!voids && EditorUtils.matchVoid(editor, at: at) != null) {
+        return;
+      }
+
+      // If the insert point is at the edge of an inline node, move it outside
+      // instead since it will need to be split otherwise.
+      NodeEntry inlineElementMatch =
+          EditorUtils.above(editor, at: at, match: (n) {
+        return EditorUtils.isInline(editor, n);
+      }, mode: Mode.highest, voids: voids);
+
+      if (inlineElementMatch != null) {
+        Path inlinePath = inlineElementMatch.path;
+
+        if (EditorUtils.isEnd(editor, at, inlinePath)) {
+          Point after = EditorUtils.after(editor, inlinePath);
+          at = after;
+        } else if (EditorUtils.isStart(editor, at, inlinePath)) {
+          Point before = EditorUtils.before(editor, inlinePath);
+          at = before;
+        }
+      }
+
+      NodeEntry blockMatch = EditorUtils.above(
+        editor,
+        match: (n) {
+          return EditorUtils.isBlock(editor, n);
+        },
+        at: at,
+        voids: voids,
+      );
+
+      Path blockPath = blockMatch.path;
+      bool isBlockStart = EditorUtils.isStart(editor, at, blockPath);
+      bool isBlockEnd = EditorUtils.isEnd(editor, at, blockPath);
+      bool mergeStart = !isBlockStart || (isBlockStart && isBlockEnd);
+      bool mergeEnd = !isBlockEnd;
+      NodeEntry first = NodeUtils.first(Element(children: fragment), Path([]));
+      Path firstPath = first.path;
+      NodeEntry last = NodeUtils.last(Element(children: fragment), Path([]));
+      Path lastPath = last.path;
+
+      List<NodeEntry> matches = [];
+
+      bool Function(NodeEntry) matcher = (NodeEntry entry) {
+        Node n = entry.node;
+        Path p = entry.path;
+
+        if (mergeStart &&
+            PathUtils.isAncestor(p, firstPath) &&
+            (n is Element) &&
+            !editor.isVoid(n) &&
+            !editor.isInline(n)) {
+          return false;
+        }
+
+        if (mergeEnd &&
+            PathUtils.isAncestor(p, lastPath) &&
+            (n is Element) &&
+            !editor.isVoid(n) &&
+            !editor.isInline(n)) {
+          return false;
+        }
+
+        return true;
+      };
+
+      for (NodeEntry entry
+          in NodeUtils.nodes(Element(children: fragment), pass: matcher)) {
+        if (entry.path.length > 0 && matcher(entry)) {
+          matches.add(entry);
+        }
+      }
+
+      List<Node> starts = [];
+      List<Node> middles = [];
+      List<Node> ends = [];
+      bool starting = true;
+      bool hasBlocks = false;
+
+      for (NodeEntry entry in matches) {
+        Node node = entry.node;
+
+        if ((node is Element) && !editor.isInline(node)) {
+          starting = false;
+          hasBlocks = true;
+          middles.add(node);
+        } else if (starting) {
+          starts.add(node);
+        } else {
+          ends.add(node);
+        }
+      }
+
+      List<NodeEntry> inlines =
+          List.from(EditorUtils.nodes(editor, at: at, match: (n) {
+        return (n is Text) || EditorUtils.isInline(editor, n);
+      }, mode: Mode.highest, voids: voids));
+
+      NodeEntry inlineMatch = inlines.first;
+      Path inlinePath = inlineMatch.path;
+
+      bool isInlineStart = EditorUtils.isStart(editor, at, inlinePath);
+      bool isInlineEnd = EditorUtils.isEnd(editor, at, inlinePath);
+
+      PathRef middleRef = EditorUtils.pathRef(
+          editor, isBlockEnd ? PathUtils.next(blockPath) : blockPath);
+
+      PathRef endRef = EditorUtils.pathRef(
+          editor, isInlineEnd ? PathUtils.next(inlinePath) : inlinePath);
+
+      Transforms.splitNodes(editor, at: at, match: (n) {
+        return hasBlocks
+            ? EditorUtils.isBlock(editor, n)
+            : (n is Text) || EditorUtils.isInline(editor, n);
+      }, mode: hasBlocks ? Mode.lowest : Mode.highest, voids: voids);
+
+      PathRef startRef = EditorUtils.pathRef(
+          editor,
+          !isInlineStart || (isInlineStart && isInlineEnd)
+              ? PathUtils.next(inlinePath)
+              : inlinePath);
+
+      Transforms.insertNodes(
+        editor,
+        starts,
+        at: startRef.current,
+        match: (n) {
+          return (n is Text) || EditorUtils.isInline(editor, n);
+        },
+        mode: Mode.highest,
+        voids: voids,
+      );
+
+      Transforms.insertNodes(editor, middles, at: middleRef.current,
+          match: (n) {
+        return EditorUtils.isBlock(editor, n);
+      }, mode: Mode.lowest, voids: voids);
+
+      Transforms.insertNodes(editor, ends, at: endRef.current, match: (n) {
+        return (n is Text) || EditorUtils.isInline(editor, n);
+      }, mode: Mode.highest, voids: voids);
+
+      if (at == null) {
+        Path path;
+
+        if (ends.length > 0) {
+          path = PathUtils.previous(endRef.current);
+        } else if (middles.length > 0) {
+          path = PathUtils.previous(middleRef.current);
+        } else {
+          path = PathUtils.previous(startRef.current);
+        }
+
+        Point end = EditorUtils.end(editor, path);
+        Transforms.select(editor, end);
+      }
+
+      Set<PathRef> pathRefs = EditorUtils.pathRefs(editor);
+
+      startRef.unref(pathRefs);
+      middleRef.unref(pathRefs);
+      endRef.unref(pathRefs);
+    });
+  }
+
+  /// Insert a string of text in the Editor.
+  static void insertText(Editor editor, String text,
+      {Location at, bool voids = false}) {
+    EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
+      if (at == null) {
+        return;
+      }
+
+      if (at is Path) {
+        at = EditorUtils.range(editor, at, null);
+      }
+
+      if (at is Range) {
+        if (RangeUtils.isCollapsed(at)) {
+          at = (at as Range).anchor;
+        } else {
+          Point end = RangeUtils.end(at);
+
+          if (!voids && EditorUtils.matchVoid(editor, at: end) != null) {
+            return;
+          }
+
+          PointRef pointRef = EditorUtils.pointRef(editor, end);
+          Transforms.delete(editor, at: at, voids: voids);
+          Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
+          at = pointRef.unref(pointRefs);
+          Transforms.setSelection(editor, Range(at, at));
+        }
+      }
+
+      if (!voids && EditorUtils.matchVoid(editor, at: at) != null) {
+        return;
+      }
+
+      Path path = (at as Point).path;
+      int offset = (at as Point).offset;
+      editor.apply(InsertTextOperation(path, offset, text));
+    });
+  }
 }
 
-// /// Convert a range into a point by deleting it's content.
-// Point Function(Editor editor, Range range) deleteRange = (Editor editor, Range range)  {
-//   if (RangeUtils.isCollapsed(range)) {
-//     return range.anchor;
-//   } else {
-//     const [, end] = RangeUtils.edges(range)
-//     const pointRef = EditorUtils.pointRef(editor, end)
-//     Transforms.delete(editor, { at: range })
-//     return pointRef.unref();
-//   }
-// }
+/// Convert a range into a point by deleting it's content.
+Point Function(Editor editor, Range range) deleteRange =
+    (Editor editor, Range range) {
+  if (RangeUtils.isCollapsed(range)) {
+    return range.anchor;
+  } else {
+    Edges edges = RangeUtils.edges(range);
+    Point end = edges.end;
 
-// (bool Function(Node node)) Function(Editor editor, Path path) matchPath = (Editor editor, Path path) {
-//   const [node] = EditorUtils.node(editor, path)
-//   return n => n == node
-// }
+    PointRef pointRef = EditorUtils.pointRef(editor, end);
+    Transforms.delete(editor, at: range);
+
+    Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
+    return pointRef.unref(pointRefs);
+  }
+};
+
+bool Function(Node node) Function(Editor editor, Path path) matchPath =
+    (Editor editor, Path path) {
+  NodeEntry entry = EditorUtils.node(editor, path);
+  Node node = entry.node;
+
+  return (n) {
+    return n == node;
+  };
+};
