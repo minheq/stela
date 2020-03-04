@@ -5,9 +5,12 @@ import 'package:inday/stela/interfaces/path.dart';
 /// element nodes or text nodes. They can be either "blocks" or "inlines"
 /// depending on the editor's configuration.
 class Element implements Ancestor, Descendant {
-  Element({this.children = const <Node>[]});
+  Element({this.children = const <Node>[], this.props = const {}});
 
   List<Node> children;
+
+  /// Custom properties that can extend the `Element` behavior
+  Map<String, dynamic> props;
 
   /// Check if list of nodes consist of only `Element` nodes.
   static bool isElementList(List<Node> nodes) {

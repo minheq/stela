@@ -6,22 +6,13 @@ import 'package:inday/stela/interfaces/range.dart';
 /// document along with any formatting properties. They are always leaf
 /// nodes in the document tree as they cannot contain any children.
 class Text implements Descendant {
-  Text(this.text, {props}) : _props = props ?? {};
+  Text(this.text, {this.props = const {}});
 
   /// Text content
   String text;
 
   /// Custom properties that can extend the `Text` behavior
-  Map<String, dynamic> _props;
-
-  get props {
-    return _props;
-  }
-
-  /// Add custom properties to the `Text`
-  void addProps(Map<String, dynamic> props) {
-    _props.addAll(props);
-  }
+  Map<String, dynamic> props;
 }
 
 class TextUtils {
@@ -60,7 +51,7 @@ class TextUtils {
 
         // If the range encompases the entire leaf, add the range.
         if (start.offset <= offset && end.offset >= offset + length) {
-          leaf.addProps(dec.props);
+          leaf.props.addAll(dec.props);
           next.add(leaf);
           continue;
         }
@@ -94,7 +85,7 @@ class TextUtils {
           middle = Text(middle.text.substring(off), props: middle.props);
         }
 
-        middle.addProps(dec.props);
+        middle.props.addAll(dec.props);
 
         if (before != null) {
           next.add(before);

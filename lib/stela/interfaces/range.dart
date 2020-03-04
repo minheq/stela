@@ -21,6 +21,14 @@ class Decoration extends Range {
   Map<String, dynamic> props;
 }
 
+class Selection extends Range {
+  Selection(Point anchor, Point focus, {props})
+      : props = props ?? {},
+        super(anchor, focus);
+
+  Map<String, dynamic> props;
+}
+
 class Edges {
   Edges(this.start, this.end);
 

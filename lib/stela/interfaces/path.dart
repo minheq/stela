@@ -91,8 +91,8 @@ class PathUtils {
     int i = path.length - 1;
     Path as = path.slice(0, i);
     Path bs = another.slice(0, i);
-    int av = path.path[i];
-    int bv = another.path[i];
+    int av = i >= path.length ? -1 : path.path[i];
+    int bv = i >= another.length ? -1 : another.path[i];
 
     return PathUtils.equals(as, bs) && av > bv;
   }
@@ -111,8 +111,8 @@ class PathUtils {
     int i = path.length - 1;
     Path as = path.slice(0, i);
     Path bs = another.slice(0, i);
-    int av = path.path[i];
-    int bv = another.path[i];
+    int av = i >= path.length ? -1 : path.path[i];
+    int bv = i >= another.length ? -1 : another.path[i];
 
     return PathUtils.equals(as, bs) && av < bv;
   }

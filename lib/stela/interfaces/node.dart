@@ -7,17 +7,22 @@ import 'package:inday/stela/interfaces/text.dart';
 
 /// The `Node` represents all of the different types of nodes that
 /// occur in a document tree.
-class Node {}
+abstract class Node {
+  Node({this.props});
+
+  /// Custom properties that can extend the `Node` behavior
+  Map<String, dynamic> props;
+}
 
 /// The `Descendant` represents nodes that are descendants in the
 /// tree. It is returned as a convenience in certain cases to narrow a value
 /// further than the more generic `Node` union.
-class Descendant implements Node {}
+abstract class Descendant implements Node {}
 
 /// The `Ancestor` represents nodes that are ancestors in the tree.
 /// It is returned as a convenience in certain cases to narrow a value further
 /// than the more generic `Node` union.
-class Ancestor implements Node {
+abstract class Ancestor implements Node {
   Ancestor({this.children = const <Node>[]});
 
   List<Node> children;
@@ -120,7 +125,11 @@ class NodeUtils {
     }
 
     if (root is Editor) {
-      return Editor(children: copiedChildren);
+      return Editor(
+          children: copiedChildren,
+          selection: root.selection,
+          operations: root.operations,
+          marks: root.marks);
     }
 
     throw Exception("Unrecognized node type ${root.toString()}");

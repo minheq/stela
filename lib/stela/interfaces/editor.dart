@@ -24,13 +24,17 @@ class Editor implements Ancestor {
       {this.children = const <Node>[],
       this.selection,
       this.operations,
-      this.marks});
+      this.marks,
+      this.props = const {}});
+
+  /// Custom properties that can extend the `Element` behavior
+  Map<String, dynamic> props;
 
   /// The `children` property contains the document tree of nodes that make up the editor's content
   List<Node> children;
 
   /// The `selection` property contains the user's current selection, if any
-  Range selection;
+  Selection selection;
 
   /// The `operations` property contains all of the operations that have been applied since the last "change" was flushed. (Since Slate batches operations up into ticks of the event loop.)
   List<Operation> operations;
@@ -1079,274 +1083,286 @@ class EditorUtils {
     return text;
   }
 
-  // /**
-  //  * Transform the editor by an operation.
-  //  */
+  /// Transform the editor by an operation.
+  static void transform(Editor prevEditor, Operation op) {
+    Editor editor = NodeUtils.copy(prevEditor);
+    Selection selection = editor.selection;
 
-  // static transform(Editor editor, Operation op) {
-  //   editor.children = createDraft(editor.children);
-  //   let selection = editor.selection != null && createDraft(editor.selection);
+    if (op is InsertNodeOperation) {
+      Path path = op.path;
+      Node node = op.node;
+      Ancestor parent = NodeUtils.parent(editor, path);
+      int index = path.path[path.length - 1];
+      parent.children.insert(index, node);
 
-  //   switch (op.type) {
-  //     case 'insert_node': {
-  //       const { path, node } = op
-  //       const parent = NodeUtils.parent(editor, path)
-  //       const index = path[path.length - 1]
-  //       parent.children.splice(index, 0, node)
+      if (selection != null) {
+        for (PointEntry entry in RangeUtils.points(selection)) {
+          Point point = entry.point;
+          PointType type = entry.type;
+          if (type == PointType.anchor) {
+            selection =
+                Selection(PointUtils.transform(point, op), selection.focus);
+          } else {
+            selection =
+                Selection(selection.anchor, PointUtils.transform(point, op));
+          }
+        }
+      }
+    }
 
-  //       if (selection) {
-  //         for (const [point, key] of RangeUtils.points(selection)) {
-  //           selection[key] = Point.transform(point, op)!
-  //         }
-  //       }
+    if (op is InsertTextOperation) {
+      Path path = op.path;
+      int offset = op.offset;
+      String text = op.text;
+      Text node = NodeUtils.leaf(editor, path);
+      String before = node.text.substring(0, offset);
+      String after = node.text.substring(offset);
+      node.text = before + text + after;
 
-  //       break
-  //     }
+      if (selection != null) {
+        for (PointEntry entry in RangeUtils.points(selection)) {
+          Point point = entry.point;
+          PointType type = entry.type;
+          if (type == PointType.anchor) {
+            selection =
+                Selection(PointUtils.transform(point, op), selection.focus);
+          } else {
+            selection =
+                Selection(selection.anchor, PointUtils.transform(point, op));
+          }
+        }
+      }
+    }
 
-  //     case 'insert_text': {
-  //       const { path, offset, text } = op
-  //       Node node = NodeUtils.leaf(editor, path)
-  //       const before = node.text.slice(0, offset)
-  //       const after = node.text.slice(offset)
-  //       node.text = before + text + after
+    if (op is MergeNodeOperation) {
+      Path path = op.path;
+      Node node = NodeUtils.get(editor, path);
+      Path prevPath = PathUtils.previous(path);
+      Node prev = NodeUtils.get(editor, prevPath);
+      Ancestor parent = NodeUtils.parent(editor, path);
+      int index = path.path[path.length - 1];
 
-  //       if (selection) {
-  //         for (const [point, key] of RangeUtils.points(selection)) {
-  //           selection[key] = Point.transform(point, op)!
-  //         }
-  //       }
+      if (node is Text && prev is Text) {
+        prev.text += node.text;
+      } else if (!(node is Text) && !(prev is Text)) {
+        (prev as Ancestor).children.addAll((node as Ancestor).children);
+      } else {
+        throw Exception(
+            "Cannot apply a 'merge_node' operation at path [$path] to nodes of different interfaces: $node $prev");
+      }
 
-  //       break
-  //     }
+      parent.children.removeAt(index);
 
-  //     case 'merge_node': {
-  //       const { path } = op
-  //       Node node = NodeUtils.get(editor, path)
-  //       const prevPath = PathUtils.previous(path)
-  //       const prev = NodeUtils.get(editor, prevPath)
-  //       const parent = NodeUtils.parent(editor, path)
-  //       const index = path[path.length - 1]
+      if (selection != null) {
+        for (PointEntry entry in RangeUtils.points(selection)) {
+          Point point = entry.point;
+          PointType type = entry.type;
+          if (type == PointType.anchor) {
+            selection =
+                Selection(PointUtils.transform(point, op), selection.focus);
+          } else {
+            selection =
+                Selection(selection.anchor, PointUtils.transform(point, op));
+          }
+        }
+      }
+    }
 
-  //       if (Text.isText(node) && Text.isText(prev)) {
-  //         prev.text += node.text
-  //       } else if (!Text.isText(node) && !Text.isText(prev)) {
-  //         prev.children.push(...node.children)
-  //       } else {
-  //         throw Exception(
-  //           `Cannot apply a "merge_node" operation at path [${path}] to nodes of different interaces: ${node} ${prev}`
-  //         )
-  //       }
+    if (op is MoveNodeOperation) {
+      Path path = op.path;
+      Path newPath = op.newPath;
 
-  //       parent.children.splice(index, 1)
+      if (PathUtils.isAncestor(path, newPath)) {
+        throw Exception(
+            "Cannot move a path [$path] to new path [$newPath] because the destination is inside itself.");
+      }
 
-  //       if (selection) {
-  //         for (const [point, key] of RangeUtils.points(selection)) {
-  //           selection[key] = Point.transform(point, op)!
-  //         }
-  //       }
+      Node node = NodeUtils.get(editor, path);
+      Ancestor parent = NodeUtils.parent(editor, path);
+      int index = path.path[path.length - 1];
 
-  //       break
-  //     }
+      // This is tricky, but since the `path` and `newPath` both refer to
+      // the same snapshot in time, there's a mismatch. After either
+      // removing the original position, the second step's path can be out
+      // of date. So instead of using the `op.newPath` directly, we
+      // transform `op.path` to ascertain what the `newPath` would be after
+      // the operation was applied.
+      parent.children.removeAt(index);
+      Path truePath = PathUtils.transform(path, op);
+      Ancestor newParent = NodeUtils.get(editor, PathUtils.parent(truePath));
+      int newIndex = truePath.path[truePath.length - 1];
 
-  //     case 'move_node': {
-  //       const { path, newPath } = op
+      newParent.children.insert(newIndex, node);
 
-  //       if (PathUtils.isAncestor(path, newPath)) {
-  //         throw Exception(
-  //           `Cannot move a path [${path}] to new path [${newPath}] because the destination is inside itself.`
-  //         )
-  //       }
+      if (selection != null) {
+        for (PointEntry entry in RangeUtils.points(selection)) {
+          Point point = entry.point;
+          PointType type = entry.type;
+          if (type == PointType.anchor) {
+            selection =
+                Selection(PointUtils.transform(point, op), selection.focus);
+          } else {
+            selection =
+                Selection(selection.anchor, PointUtils.transform(point, op));
+          }
+        }
+      }
+    }
 
-  //       Node node = NodeUtils.get(editor, path)
-  //       const parent = NodeUtils.parent(editor, path)
-  //       const index = path[path.length - 1]
+    if (op is RemoveNodeOperation) {
+      Path path = op.path;
+      int index = path.path[path.length - 1];
+      Ancestor parent = NodeUtils.parent(editor, path);
+      parent.children.removeAt(index);
 
-  //       // This is tricky, but since the `path` and `newPath` both refer to
-  //       // the same snapshot in time, there's a mismatch. After either
-  //       // removing the original position, the second step's path can be out
-  //       // of date. So instead of using the `op.newPath` directly, we
-  //       // transform `op.path` to ascertain what the `newPath` would be after
-  //       // the operation was applied.
-  //       parent.children.splice(index, 1)
-  //       const truePath = PathUtils.transform(path, op)!
-  //       const newParent = NodeUtils.get(editor, PathUtils.parent(truePath))
-  //       const newIndex = truePath[truePathUtils.length - 1]
+      // Transform all of the points in the value, but if the point was in the
+      // node that was removed we need to update the range or remove it.
+      if (selection != null) {
+        for (PointEntry entry in RangeUtils.points(selection)) {
+          Point point = entry.point;
+          PointType type = entry.type;
+          Point result = PointUtils.transform(point, op);
 
-  //       newParent.children.splice(newIndex, 0, node)
+          if (selection != null && result != null) {
+            if (type == PointType.anchor) {
+              selection = Selection(result, selection.focus);
+            } else {
+              selection = Selection(selection.anchor, result);
+            }
+          } else {
+            NodeEntry<Text> prev;
+            NodeEntry<Text> next;
 
-  //       if (selection) {
-  //         for (const [point, key] of RangeUtils.points(selection)) {
-  //           selection[key] = Point.transform(point, op)!
-  //         }
-  //       }
+            for (NodeEntry entry in NodeUtils.texts(editor)) {
+              Text n = entry.node;
+              Path p = entry.path;
+              if (PathUtils.compare(p, path) == -1) {
+                prev = NodeEntry(n, p);
+              } else {
+                next = NodeEntry(n, p);
+                break;
+              }
+            }
 
-  //       break
-  //     }
+            if (prev != null) {
+              point.path = prev.path;
+              point.offset = prev.node.text.length;
+            } else if (next != null) {
+              point.path = next.path;
+              point.offset = 0;
+            } else {
+              selection = null;
+            }
+          }
+        }
+      }
+    }
 
-  //     case 'remove_node': {
-  //       const { path } = op
-  //       const index = path[path.length - 1]
-  //       const parent = NodeUtils.parent(editor, path)
-  //       parent.children.splice(index, 1)
+    if (op is RemoveTextOperation) {
+      Path path = op.path;
+      int offset = op.offset;
+      String text = op.text;
+      Text node = NodeUtils.leaf(editor, path);
+      String before = node.text.substring(0, offset);
+      String after = node.text.substring(offset + text.length);
+      node.text = before + after;
 
-  //       // Transform all of the points in the value, but if the point was in the
-  //       // node that was removed we need to update the range or remove it.
-  //       if (selection) {
-  //         for (const [point, key] of RangeUtils.points(selection)) {
-  //           const result = Point.transform(point, op)
+      if (selection != null) {
+        for (PointEntry entry in RangeUtils.points(selection)) {
+          Point point = entry.point;
+          PointType type = entry.type;
+          if (type == PointType.anchor) {
+            selection =
+                Selection(PointUtils.transform(point, op), selection.focus);
+          } else {
+            selection =
+                Selection(selection.anchor, PointUtils.transform(point, op));
+          }
+        }
+      }
+    }
 
-  //           if (selection != null && result != null) {
-  //             selection[key] = result
-  //           } else {
-  //             NodeEntry<Text> prev;
-  //             NodeEntry<Text> next;
+    if (op is SetNodeOperation) {
+      Path path = op.path;
+      Map<String, dynamic> newProps = op.newProps;
 
-  //             for (const [n, p] of NodeUtils.texts(editor)) {
-  //               if (PathUtils.compare(p, path) == -1) {
-  //                 prev = [n, p]
-  //               } else {
-  //                 next = [n, p]
-  //                 break
-  //               }
-  //             }
+      if (path.length == 0) {
+        throw Exception("Cannot set properties on the root node!");
+      }
 
-  //             if (prev) {
-  //               point.path = prev[1]
-  //               point.offset = prev[0].text.length
-  //             } else if (next) {
-  //               point.path = next[1]
-  //               point.offset = 0
-  //             } else {
-  //               selection = null
-  //             }
-  //           }
-  //         }
-  //       }
+      Node node = NodeUtils.get(editor, path);
 
-  //       break
-  //     }
+      for (String key in newProps.keys) {
+        dynamic value = newProps[key];
 
-  //     case 'remove_text': {
-  //       const { path, offset, text } = op
-  //       Node node = NodeUtils.leaf(editor, path)
-  //       const before = node.text.slice(0, offset)
-  //       const after = node.text.slice(offset + text.length)
-  //       node.text = before + after
+        if (value == null) {
+          node.props.remove(key);
+        } else {
+          node.props[key] = value;
+        }
+      }
+    }
 
-  //       if (selection) {
-  //         for (const [point, key] of RangeUtils.points(selection)) {
-  //           selection[key] = Point.transform(point, op)!
-  //         }
-  //       }
+    if (op is SetSelectionOperation) {
+      Selection newSelection = op.newSelection;
 
-  //       break
-  //     }
+      if (newSelection == null) {
+        selection = newSelection;
+      } else if (selection == null) {
+        selection = newSelection;
+      } else {
+        selection.props.addAll(newSelection.props);
+      }
+    }
 
-  //     case 'set_node': {
-  //       const { path, newProperties } = op
+    if (op is SplitNodeOperation) {
+      Path path = op.path;
+      Map<String, dynamic> props = op.props;
+      int position = op.position;
 
-  //       if (path.length == 0) {
-  //         throw Exception(`Cannot set properties on the root node!`)
-  //       }
+      if (path.length == 0) {
+        throw Exception(
+            "Cannot apply a SplitNodeOperation at path [$path] because the root node cannot be split.");
+      }
 
-  //       Node node = NodeUtils.get(editor, path)
+      Node node = NodeUtils.get(editor, path);
+      Ancestor parent = NodeUtils.parent(editor, path);
+      int index = path.path[path.length - 1];
+      Descendant newNode;
+      Map<String, dynamic> newProps = Map.from(node.props);
+      newProps.addAll(props);
 
-  //       for (const key in newProperties) {
-  //         if (key == 'children' || key == 'text') {
-  //           throw Exception(`Cannot set the "${key}" property of nodes!`)
-  //         }
+      if (node is Text) {
+        String before = node.text.substring(0, position);
+        String after = node.text.substring(position);
+        node.text = before;
 
-  //         const value = newProperties[key]
+        newNode = Text(after, props: newProps);
+      } else {
+        List<Node> before = (node as Ancestor).children.sublist(0, position);
+        List<Node> after = (node as Ancestor).children.sublist(position);
+        (node as Ancestor).children = before;
 
-  //         if (value == null) {
-  //           delete node[key]
-  //         } else {
-  //           node[key] = value
-  //         }
-  //       }
+        newNode = Element(children: after, props: newProps);
+      }
 
-  //       break
-  //     }
+      parent.children.insert(index + 1, newNode);
 
-  //     case 'set_selection': {
-  //       const { newProperties } = op
-
-  //       if (newProperties == null) {
-  //         selection = newProperties
-  //       } else if (selection == null) {
-  //         if (!RangeUtils.isRange(newProperties)) {
-  //           throw Exception(
-  //             `Cannot apply an incomplete "set_selection" operation properties ${JSON.stringify(
-  //               newProperties
-  //             )} when there is no current selection.`
-  //           )
-  //         }
-
-  //         selection = newProperties
-  //       } else {
-  //         Object.assign(selection, newProperties)
-  //       }
-
-  //       break
-  //     }
-
-  //     case 'split_node': {
-  //       const { path, position, properties } = op
-
-  //       if (path.length == 0) {
-  //         throw Exception(
-  //           `Cannot apply a "split_node" operation at path [${path}] because the root node cannot be split.`
-  //         )
-  //       }
-
-  //       Node node = NodeUtils.get(editor, path)
-  //       const parent = NodeUtils.parent(editor, path)
-  //       const index = path[path.length - 1]
-  //       let newNode: Descendant
-
-  //       if (Text.isText(node)) {
-  //         const before = node.text.slice(0, position)
-  //         const after = node.text.slice(position)
-  //         node.text = before
-  //         newNode = {
-  //           ...node,
-  //           ...(properties as Partial<Text>),
-  //           text: after,
-  //         }
-  //       } else {
-  //         const before = node.children.slice(0, position)
-  //         const after = node.children.slice(position)
-  //         node.children = before
-
-  //         newNode = {
-  //           ...node,
-  //           ...(properties as Partial<Element>),
-  //           children: after,
-  //         }
-  //       }
-
-  //       parent.children.splice(index + 1, 0, newNode)
-
-  //       if (selection) {
-  //         for (const [point, key] of RangeUtils.points(selection)) {
-  //           selection[key] = Point.transform(point, op)!
-  //         }
-  //       }
-
-  //       break
-  //     }
-  //   }
-
-  //   editor.children = finishDraft(editor.children) as Node[]
-
-  //   if (selection) {
-  //     editor.selection = isDraft(selection)
-  //       ? (finishDraft(selection) as Range)
-  //       : selection
-  //   } else {
-  //     editor.selection = null
-  //   }
-  // }
+      if (selection != null) {
+        for (PointEntry entry in RangeUtils.points(selection)) {
+          Point point = entry.point;
+          PointType type = entry.type;
+          if (type == PointType.anchor) {
+            selection =
+                Selection(PointUtils.transform(point, op), selection.focus);
+          } else {
+            selection =
+                Selection(selection.anchor, PointUtils.transform(point, op));
+          }
+        }
+      }
+    }
+  }
 
   /// Convert a range into a non-hanging one.
   static Range unhangRange(Editor editor, Range range, {bool voids = false}) {

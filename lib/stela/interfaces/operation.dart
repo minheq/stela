@@ -51,18 +51,18 @@ class Operation {
     }
 
     if (op is SetSelectionOperation) {
-      Range props = op.props;
-      Range newProps = op.newProps;
+      Selection selection = op.selection;
+      Selection newSelection = op.newSelection;
 
-      if (props == null) {
-        return SetSelectionOperation(newProps, null);
+      if (selection == null) {
+        return SetSelectionOperation(newSelection, null);
       }
 
-      if (newProps == null) {
-        return SetSelectionOperation(null, props);
+      if (newSelection == null) {
+        return SetSelectionOperation(null, selection);
       }
 
-      return SetSelectionOperation(newProps, props);
+      return SetSelectionOperation(newSelection, selection);
     }
 
     if (op is SplitNodeOperation) {
@@ -126,10 +126,10 @@ class SplitNodeOperation implements NodeOperation {
 class SelectionOperation implements Operation {}
 
 class SetSelectionOperation implements SelectionOperation {
-  SetSelectionOperation(this.props, this.newProps);
+  SetSelectionOperation(this.selection, this.newSelection);
 
-  final Range props;
-  final Range newProps;
+  final Selection selection;
+  final Selection newSelection;
 }
 
 class TextOperation implements Operation {}
