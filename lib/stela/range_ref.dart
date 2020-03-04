@@ -5,14 +5,21 @@ import 'package:inday/stela/range.dart';
 /// operations are applied to the editor. You can access their `current` property
 /// at any time for the up-to-date range value.
 class RangeRef {
-  RangeRef({this.current, this.affinity, this.unref});
+  RangeRef({this.current, this.affinity});
 
   Range current;
   Affinity affinity;
-  Range Function() unref;
+
+  Range unref(Set<RangeRef> rangeRefs) {
+    Range _current = current;
+    rangeRefs.remove(this);
+    current = null;
+
+    return _current;
+  }
 
   /// Transform the range ref's current value by an operation.
-  static void transform(RangeRef ref, Operation op) {
+  static void transform(Set<RangeRef> rangeRefs, RangeRef ref, Operation op) {
     if (ref.current == null) {
       return null;
     }
@@ -21,11 +28,7 @@ class RangeRef {
     ref.current = range;
 
     if (range == null) {
-      ref.unref();
+      ref.unref(rangeRefs);
     }
-  }
-
-  void setUnref(Range Function() newUnref) {
-    unref = newUnref;
   }
 }

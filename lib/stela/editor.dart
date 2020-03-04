@@ -168,16 +168,20 @@ class Editor implements Ancestor {
   }
 
   void apply(Operation op) {
-    for (PathRef ref in EditorUtils.pathRefs(this)) {
-      PathRef.transform(ref, op);
+    Set<PathRef> pathRefs = EditorUtils.pathRefs(this);
+    Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(this);
+    Set<PointRef> pointRefs = EditorUtils.pointRefs(this);
+
+    for (PathRef ref in pathRefs) {
+      PathRef.transform(pathRefs, ref, op);
     }
 
-    for (PointRef ref in EditorUtils.pointRefs(this)) {
-      PointRef.transform(ref, op);
+    for (PointRef ref in pointRefs) {
+      PointRef.transform(pointRefs, ref, op);
     }
 
-    for (RangeRef ref in EditorUtils.rangeRefs(this)) {
-      RangeRef.transform(ref, op);
+    for (RangeRef ref in rangeRefs) {
+      RangeRef.transform(rangeRefs, ref, op);
     }
 
     Set cache = Set();
@@ -973,20 +977,7 @@ class EditorUtils {
   /// operations are applied to the editor.
   static PathRef pathRef(Editor editor, Path path,
       {Affinity affinity = Affinity.forward}) {
-    PathRef ref = PathRef(
-      current: path,
-      affinity: affinity,
-    );
-
-    Path Function() unref = () {
-      Path current = ref.current;
-      Set<PathRef> pathRefs = EditorUtils.pathRefs(editor);
-      pathRefs.remove(ref);
-      ref.current = null;
-      return current;
-    };
-
-    ref.setUnref(unref);
+    PathRef ref = PathRef(current: path, affinity: affinity);
 
     Set<PathRef> refs = EditorUtils.pathRefs(editor);
     refs.add(ref);
@@ -1040,20 +1031,7 @@ class EditorUtils {
   /// operations are applied to the editor.
   PointRef pointRef(Editor editor, Point point,
       {Affinity affinity = Affinity.forward}) {
-    PointRef ref = PointRef(
-      current: point,
-      affinity: affinity,
-    );
-
-    Point Function() unref = () {
-      Point current = ref.current;
-      Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-      pointRefs.remove(ref);
-      ref.current = null;
-      return current;
-    };
-
-    ref.setUnref(unref);
+    PointRef ref = PointRef(current: point, affinity: affinity);
 
     Set<PointRef> refs = EditorUtils.pointRefs(editor);
     refs.add(ref);
@@ -1268,16 +1246,6 @@ class EditorUtils {
       current: range,
       affinity: affinity,
     );
-
-    Range Function() unref = () {
-      Range current = ref.current;
-      Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(editor);
-      rangeRefs.remove(ref);
-      ref.current = null;
-      return current;
-    };
-
-    ref.setUnref(unref);
 
     Set<RangeRef> refs = EditorUtils.rangeRefs(editor);
     refs.add(ref);

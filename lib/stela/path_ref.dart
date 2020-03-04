@@ -5,14 +5,21 @@ import 'package:inday/stela/path.dart';
 /// operations are applied to the editor. You can access their `current` property
 /// at any time for the up-to-date path value.
 class PathRef {
-  PathRef({this.current, this.affinity, this.unref});
+  PathRef({this.current, this.affinity});
 
   Path current;
   Affinity affinity;
-  Path Function() unref;
+
+  Path unref(Set<PathRef> pathRefs) {
+    Path _current = current;
+    pathRefs.remove(this);
+    current = null;
+
+    return _current;
+  }
 
   /// Transform the path ref's current value by an operation.
-  static void transform(PathRef ref, Operation op) {
+  static void transform(Set<PathRef> pathRefs, PathRef ref, Operation op) {
     if (ref.current == null) {
       return null;
     }
@@ -21,11 +28,7 @@ class PathRef {
     ref.current = path;
 
     if (path == null) {
-      ref.unref();
+      ref.unref(pathRefs);
     }
-  }
-
-  void setUnref(Path Function() newUnref) {
-    unref = newUnref;
   }
 }

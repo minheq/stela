@@ -28,11 +28,6 @@ class Path implements Location {
     return _path.addAll(path.toList());
   }
 
-  /// Returns a copy of the path
-  Path copy() {
-    return Path(_path);
-  }
-
   /// Converts each element to a [String] and concatenates the strings.
   ///
   /// Iterates through elements of this iterable, converts each one to a [String] by calling [Object.toString], and then concatenates the strings, with the [separator] string interleaved between the elements.
@@ -123,6 +118,11 @@ class PathUtils {
     }
 
     return 0;
+  }
+
+  /// Returns a copy of the path
+  static Path copy(Path path) {
+    return Path(path.toList());
   }
 
   /// Check if a path ends after one of the indexes in another.
@@ -294,7 +294,7 @@ class PathUtils {
   /// Transform a path by an operation.
   static Path transform(Path path, Operation operation,
       {Affinity affinity = Affinity.forward}) {
-    Path p = path.copy();
+    Path p = PathUtils.copy(path);
 
     // PERF: Exit early if the operation is guaranteed not to have an effect.
     if (path.length == 0) {

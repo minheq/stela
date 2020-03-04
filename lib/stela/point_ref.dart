@@ -5,14 +5,21 @@ import 'package:inday/stela/point.dart';
 /// operations are applied to the editor. You can access their `current` property
 /// at any time for the up-to-date point value.
 class PointRef {
-  PointRef({this.current, this.affinity, this.unref});
+  PointRef({this.current, this.affinity});
 
   Point current;
   Affinity affinity;
-  Point Function() unref;
+
+  Point unref(Set<PointRef> pointRefs) {
+    Point _current = current;
+    pointRefs.remove(this);
+    current = null;
+
+    return _current;
+  }
 
   /// Transform the point ref's current value by an operation.
-  static void transform(PointRef ref, Operation op) {
+  static void transform(Set<PointRef> pointRefs, PointRef ref, Operation op) {
     if (ref.current == null) {
       return null;
     }
@@ -21,11 +28,7 @@ class PointRef {
     ref.current = point;
 
     if (point == null) {
-      ref.unref();
+      ref.unref(pointRefs);
     }
-  }
-
-  void setUnref(Point Function() newUnref) {
-    unref = newUnref;
   }
 }

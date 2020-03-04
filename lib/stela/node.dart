@@ -183,7 +183,7 @@ class NodeUtils {
 
   /// Get the first node entry in a root node from a path.
   static NodeEntry first(Node root, Path path) {
-    Path p = path.copy();
+    Path p = PathUtils.copy(path);
     Node n = NodeUtils.get(root, p);
 
     while (n != null) {
