@@ -82,7 +82,6 @@ class NodeUtils {
   }
 
   /// Iterate over the children of a node at a specific path.
-
   static Iterable<NodeEntry<Descendant>> children(Node root, Path path,
       {bool reverse = false}) sync* {
     Ancestor ancestor = NodeUtils.ancestor(root, path);
@@ -90,7 +89,7 @@ class NodeUtils {
 
     while (reverse ? index >= 0 : index < ancestor.children.length) {
       Descendant child = NodeUtils.child(ancestor, index);
-      List<int> newPositions = List.from(path.path);
+      List<int> newPositions = path.toList();
       newPositions.add(index);
       Path childPath = Path(newPositions);
 
@@ -184,7 +183,7 @@ class NodeUtils {
 
   /// Get the first node entry in a root node from a path.
   static NodeEntry first(Node root, Path path) {
-    Path p = path.slice();
+    Path p = path.copy();
     Node n = NodeUtils.get(root, p);
 
     while (n != null) {
@@ -197,7 +196,7 @@ class NodeUtils {
       }
 
       n = (n as Ancestor).children[0];
-      p.path.add(0);
+      p.add(0);
     }
 
     return NodeEntry(n, p);
@@ -226,7 +225,7 @@ class NodeUtils {
 
       if (!RangeUtils.includes(range, path)) {
         Ancestor parent = NodeUtils.parent(newRoot, path);
-        int index = path.path[path.length - 1];
+        int index = path[path.length - 1];
         parent.children = parent.children.sublist(index, 1);
       }
 
@@ -255,7 +254,7 @@ class NodeUtils {
 
     // Traverse the nodes tree with the given path
     for (int i = 0; i < path.length; i++) {
-      int p = path.path[i];
+      int p = path[i];
 
       if (node is Text) {
         throw Exception(
@@ -278,7 +277,7 @@ class NodeUtils {
     Node node = root;
 
     for (int i = 0; i < path.length; i++) {
-      int p = path.path[i];
+      int p = path[i];
 
       if (node is Text) {
         return false;
@@ -312,7 +311,7 @@ class NodeUtils {
 
       int i = (n as Ancestor).children.length - 1;
       n = (n as Ancestor).children[i];
-      p.path.add(i);
+      p.add(i);
     }
 
     return NodeEntry(n, p);
@@ -378,9 +377,9 @@ class NodeUtils {
         int nextIndex = reverse ? (n as Ancestor).children.length - 1 : 0;
 
         if (PathUtils.isAncestor(p, from)) {
-          nextIndex = from.path[p.length];
+          nextIndex = from[p.length];
         }
-        List<int> newPositions = List.from(p.path);
+        List<int> newPositions = p.toList();
         newPositions.add(nextIndex);
         p = Path(newPositions);
         n = NodeUtils.get(root, p);
@@ -404,7 +403,7 @@ class NodeUtils {
       }
 
       // If we're going backward...
-      if (reverse && p.path[p.length - 1] != 0) {
+      if (reverse && p[p.length - 1] != 0) {
         Path newPath = PathUtils.previous(p);
         p = newPath;
         n = NodeUtils.get(root, p);

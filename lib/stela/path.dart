@@ -8,12 +8,41 @@ import 'package:inday/stela/operation.dart';
 /// a Slate node tree. Although they are usually relative to the root `Editor`
 /// object, they can be relative to any `Node` object.
 class Path implements Location {
-  const Path(this.path);
+  const Path(List<int> path) : _path = path ?? const [];
 
-  final List<int> path;
+  final List<int> _path;
 
   int get length {
-    return path.length;
+    return _path.length;
+  }
+
+  /// Returns the object at the given index in the list or throws a RangeError if index is out of bounds.
+  void add(int value) {
+    return _path.add(value);
+  }
+
+  /// Appends all objects of [iterable] to the end of this list.
+  ///
+  /// Extends the length of the list by the number of objects in [iterable]. Throws an [UnsupportedError] if this list is fixed-length.
+  void addAll(Path path) {
+    return _path.addAll(path.toList());
+  }
+
+  /// Returns a copy of the path
+  Path copy() {
+    return Path(_path);
+  }
+
+  /// Converts each element to a [String] and concatenates the strings.
+  ///
+  /// Iterates through elements of this iterable, converts each one to a [String] by calling [Object.toString], and then concatenates the strings, with the [separator] string interleaved between the elements.
+  String join([String separator]) {
+    return _path.join(separator);
+  }
+
+  /// Creates a [List] containing the positions of this `Path`.
+  List<int> toList() {
+    return List.from(_path);
   }
 
   /// Returns a `Path` containing the elements between [start] and [end].
@@ -23,14 +52,24 @@ class Path implements Location {
   /// When [end] is greater than the length of `Path`, it defaults to length of the `Path`.
   Path slice([int start = 0, int end]) {
     if (end != null && end < 0) {
-      return Path(path.sublist(start, path.length + end));
+      return Path(_path.sublist(start, _path.length + end));
     }
 
-    if (end != null && end > path.length) {
-      return Path(path.sublist(start));
+    if (end != null && end > _path.length) {
+      return Path(_path.sublist(start));
     }
 
-    return Path(path.sublist(start, end));
+    return Path(_path.sublist(start, end));
+  }
+
+  /// Returns the object at the given index in the list or throws a RangeError if index is out of bounds.
+  int operator [](int index) {
+    return _path[index];
+  }
+
+  /// Sets the value at the given index in the list to value or throws a RangeError if index is out of bounds
+  void operator []=(int index, int value) {
+    _path[index] = value;
   }
 }
 
@@ -56,14 +95,14 @@ class PathUtils {
     Path common = Path([]);
 
     for (int i = 0; i < path.length && i < another.length; i++) {
-      int av = path.path[i];
-      int bv = another.path[i];
+      int av = path[i];
+      int bv = another[i];
 
       if (av != bv) {
         break;
       }
 
-      common.path.add(av);
+      common.add(av);
     }
 
     return common;
@@ -79,8 +118,8 @@ class PathUtils {
     int smaller = min(path.length, another.length);
 
     for (int i = 0; i < smaller; i++) {
-      if (path.path[i] < another.path[i]) return -1;
-      if (path.path[i] > another.path[i]) return 1;
+      if (path[i] < another[i]) return -1;
+      if (path[i] > another[i]) return 1;
     }
 
     return 0;
@@ -91,8 +130,8 @@ class PathUtils {
     int i = path.length - 1;
     Path as = path.slice(0, i);
     Path bs = another.slice(0, i);
-    int av = i >= path.length ? -1 : path.path[i];
-    int bv = i >= another.length ? -1 : another.path[i];
+    int av = i >= path.length ? -1 : path[i];
+    int bv = i >= another.length ? -1 : another[i];
 
     return PathUtils.equals(as, bs) && av > bv;
   }
@@ -111,15 +150,15 @@ class PathUtils {
     int i = path.length - 1;
     Path as = path.slice(0, i);
     Path bs = another.slice(0, i);
-    int av = i >= path.length ? -1 : path.path[i];
-    int bv = i >= another.length ? -1 : another.path[i];
+    int av = i >= path.length ? -1 : path[i];
+    int bv = i >= another.length ? -1 : another[i];
 
     return PathUtils.equals(as, bs) && av < bv;
   }
 
   /// Check if two `Path` nodes are equal.
   static bool equals(Path path, Path another) {
-    return listEquals(path.path, another.path);
+    return listEquals(path.toList(), another.toList());
   }
 
   /// Check if a path is after another.
@@ -170,8 +209,8 @@ class PathUtils {
 
     Path as = path.slice(0, -1);
     Path bs = another.slice(0, -1);
-    int al = path.path[path.length - 1];
-    int bl = another.path[another.length - 1];
+    int al = path[path.length - 1];
+    int bl = another[another.length - 1];
 
     return al != bl && PathUtils.equals(as, bs);
   }
@@ -202,11 +241,11 @@ class PathUtils {
           "Cannot get the next path of a root path [$path], because it has no next index.");
     }
 
-    int last = path.path[path.length - 1];
+    int last = path[path.length - 1];
 
     Path next = path.slice(0, -1);
 
-    next.path.add(last + 1);
+    next.add(last + 1);
 
     return next;
   }
@@ -227,7 +266,7 @@ class PathUtils {
           "Cannot get the previous path of a root path [$path], because it has no previous index.");
     }
 
-    int last = path.path[path.length - 1];
+    int last = path[path.length - 1];
 
     if (last <= 0) {
       throw Exception(
@@ -236,7 +275,7 @@ class PathUtils {
 
     Path prev = path.slice(0, -1);
 
-    prev.path.add(last - 1);
+    prev.add(last - 1);
 
     return prev;
   }
@@ -255,7 +294,7 @@ class PathUtils {
   /// Transform a path by an operation.
   static Path transform(Path path, Operation operation,
       {Affinity affinity = Affinity.forward}) {
-    Path p = Path(path.path);
+    Path p = path.copy();
 
     // PERF: Exit early if the operation is guaranteed not to have an effect.
     if (path.length == 0) {
@@ -268,7 +307,7 @@ class PathUtils {
       if (PathUtils.equals(op, p) ||
           PathUtils.endsBefore(op, p) ||
           PathUtils.isAncestor(op, p)) {
-        p.path[op.length - 1] += 1;
+        p[op.length - 1] += 1;
 
         return p;
       }
@@ -280,7 +319,7 @@ class PathUtils {
       if (PathUtils.equals(op, p) || PathUtils.isAncestor(op, p)) {
         return null;
       } else if (PathUtils.endsBefore(op, p)) {
-        p.path[op.length - 1] -= 1;
+        p[op.length - 1] -= 1;
       }
 
       return p;
@@ -291,10 +330,10 @@ class PathUtils {
       int position = operation.position;
 
       if (PathUtils.equals(op, p) || PathUtils.endsBefore(op, p)) {
-        p.path[op.length - 1] -= 1;
+        p[op.length - 1] -= 1;
       } else if (PathUtils.isAncestor(op, p)) {
-        p.path[op.length - 1] -= 1;
-        p.path[op.length] += position;
+        p[op.length - 1] -= 1;
+        p[op.length] += position;
       }
 
       return p;
@@ -306,18 +345,17 @@ class PathUtils {
 
       if (PathUtils.equals(op, p)) {
         if (affinity == Affinity.forward) {
-          p.path[p.length - 1] += 1;
+          p[p.length - 1] += 1;
         } else if (affinity == Affinity.backward) {
           // Nothing, because it still refers to the right path.
         } else {
           return null;
         }
       } else if (PathUtils.endsBefore(op, p)) {
-        p.path[op.length - 1] += 1;
-      } else if (PathUtils.isAncestor(op, p) &&
-          path.path[op.length] >= position) {
-        p.path[op.length - 1] += 1;
-        p.path[op.length] -= position;
+        p[op.length - 1] += 1;
+      } else if (PathUtils.isAncestor(op, p) && path[op.length] >= position) {
+        p[op.length - 1] += 1;
+        p[op.length] -= position;
       }
 
       return p;
@@ -337,26 +375,26 @@ class PathUtils {
 
         if (PathUtils.endsBefore(op, onp) && op.length < onp.length) {
           int i = min(onp.length, op.length) - 1;
-          copy.path[i] -= 1;
+          copy[i] -= 1;
         }
 
-        copy.path.addAll(p.slice(op.length).path);
+        copy.addAll(p.slice(op.length));
 
         return copy;
       } else if (PathUtils.endsBefore(onp, p) ||
           PathUtils.equals(onp, p) ||
           PathUtils.isAncestor(onp, p)) {
         if (PathUtils.endsBefore(op, p)) {
-          p.path[op.length - 1] -= 1;
+          p[op.length - 1] -= 1;
         }
 
-        p.path[onp.length - 1] += 1;
+        p[onp.length - 1] += 1;
       } else if (PathUtils.endsBefore(op, p)) {
         if (PathUtils.equals(onp, p)) {
-          p.path[onp.length - 1] += 1;
+          p[onp.length - 1] += 1;
         }
 
-        p.path[op.length - 1] -= 1;
+        p[op.length - 1] -= 1;
       }
 
       return p;
