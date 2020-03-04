@@ -43,3 +43,12 @@ class Block implements Element {
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
 }
+
+class Inline implements Element {
+  Inline({this.children = const <Node>[], this.props = const {}});
+
+  List<Node> children;
+
+  /// Custom properties that can extend the `Element` behavior
+  Map<String, dynamic> props;
+}

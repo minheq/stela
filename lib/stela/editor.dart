@@ -356,9 +356,10 @@ class EditorUtils {
 
     Path path = EditorUtils.path(editor, at);
     bool reverse = mode == Mode.lowest;
+    List<NodeEntry> levels = List.from(EditorUtils.levels(editor,
+        at: path, voids: voids, match: match, reverse: reverse));
 
-    for (NodeEntry entry in EditorUtils.levels(editor,
-        at: path, voids: voids, match: match, reverse: reverse)) {
+    for (NodeEntry entry in levels) {
       Node n = entry.node;
       Path p = entry.path;
 
@@ -656,7 +657,7 @@ class EditorUtils {
     }
 
     if (reverse) {
-      for (int i = levels.length - 1; i > 0; i--) {
+      for (int i = levels.length - 1; i >= 0; i--) {
         yield levels[i];
       }
     } else {
