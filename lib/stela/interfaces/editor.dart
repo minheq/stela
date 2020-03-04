@@ -10,8 +10,8 @@ import 'package:inday/stela/interfaces/range.dart';
 import 'package:inday/stela/interfaces/range_ref.dart';
 import 'package:inday/stela/interfaces/text.dart';
 
-Expando<List<Path>> dirtyPaths = Expando();
-// Expando<bool> _flushing = Expando();
+Expando<List<Path>> _dirtyPaths = Expando();
+Expando<bool> _flushing = Expando();
 Expando<bool> _normalizing = Expando();
 Expando<Set<PathRef>> _pathRefs = Expando();
 Expando<Set<PointRef>> _pointRefs = Expando();
@@ -43,22 +43,279 @@ class Editor implements Ancestor {
   Map<String, dynamic> marks;
 
   // Schema-specific node behaviors.
-  bool Function(Element element) isInline;
-  bool Function(Element element) isVoid;
-  void Function(NodeEntry entry) normalizeNode;
-  void Function() onChange;
+  bool isInline(Element element) {
+    return false;
+  }
+
+  bool isVoid(Element element) {
+    return false;
+  }
+
+  void onChange() {
+    return;
+  }
+
+  void normalizeNode(NodeEntry entry) {
+    const [node, path] = entry;
+
+    // There are no core normalizations for text nodes.
+    if (Text.isText(node)) {
+      return
+    }
+
+    // Ensure that block and inline nodes have at least one text child.
+    if (Element.isElement(node) && node.children.length === 0) {
+      const child = { text: '' }
+      Transforms.insertNodes(editor, child, {
+        at: path.concat(0),
+        voids: true,
+      })
+      return
+    }
+
+    // Determine whether the node should have block or inline children.
+    const shouldHaveInlines = Editor.isEditor(node)
+      ? false
+      : Element.isElement(node) &&
+        (editor.isInline(node) ||
+          node.children.length === 0 ||
+          Text.isText(node.children[0]) ||
+          editor.isInline(node.children[0]))
+
+    // Since we'll be applying operations while iterating, keep track of an
+    // index that accounts for any added/removed nodes.
+    let n = 0
+
+    for (let i = 0; i < node.children.length; i++, n++) {
+      const child = node.children[i] as Descendant
+      const prev = node.children[i - 1] as Descendant
+      const isLast = i === node.children.length - 1
+      const isInlineOrText =
+        Text.isText(child) ||
+        (Element.isElement(child) && editor.isInline(child))
+
+      // Only allow block nodes in the top-level children and parent blocks
+      // that only contain block nodes. Similarly, only allow inline nodes in
+      // other inline nodes, or parent blocks that only contain inlines and
+      // text.
+      if (isInlineOrText !== shouldHaveInlines) {
+        Transforms.removeNodes(editor, { at: path.concat(n), voids: true })
+        n--
+      } else if (Element.isElement(child)) {
+        // Ensure that inline nodes are surrounded by text nodes.
+        if (editor.isInline(child)) {
+          if (prev == null || !Text.isText(prev)) {
+            const newChild = { text: '' }
+            Transforms.insertNodes(editor, newChild, {
+              at: path.concat(n),
+              voids: true,
+            })
+            n++
+          } else if (isLast) {
+            const newChild = { text: '' }
+            Transforms.insertNodes(editor, newChild, {
+              at: path.concat(n + 1),
+              voids: true,
+            })
+            n++
+          }
+        }
+      } else {
+        // Merge adjacent text nodes that are empty or match.
+        if (prev != null && Text.isText(prev)) {
+          if (Text.equals(child, prev, { loose: true })) {
+            Transforms.mergeNodes(editor, { at: path.concat(n), voids: true })
+            n--
+          } else if (prev.text === '') {
+            Transforms.removeNodes(editor, {
+              at: path.concat(n - 1),
+              voids: true,
+            })
+            n--
+          } else if (isLast && child.text === '') {
+            Transforms.removeNodes(editor, {
+              at: path.concat(n),
+              voids: true,
+            })
+            n--
+          }
+        }
+      }
+    }
+  };
 
   // Overrideable core actions.
-  void Function(String key, dynamic value) addMark;
-  void Function(Operation op) apply;
-  void Function(Unit unit) deleteBackward;
-  void Function(Unit unit) deleteForward;
-  void Function() deleteFragment;
-  void Function() insertBreak;
-  void Function(List<Node> fragment) insertFragment;
-  void Function(Node node) insertNode;
-  void Function(String text) insertText;
-  void Function(String key) removeMark;
+  void addMark(String key, dynamic value) {
+    const { selection } = editor
+
+    if (selection) {
+      if (Range.isExpanded(selection)) {
+        Transforms.setNodes(
+          editor,
+          { [key]: value },
+          { match: Text.isText, split: true }
+        )
+      } else {
+        const marks = {
+          ...(Editor.marks(editor) || {}),
+          [key]: value,
+        }
+
+        editor.marks = marks
+        editor.onChange()
+      }
+    }
+  }
+
+  void apply(Operation op) {
+    for (PathRef ref in EditorUtils.pathRefs(this)) {
+      PathRef.transform(ref, op);
+    }
+
+    for (PointRef ref in EditorUtils.pointRefs(this)) {
+      PointRef.transform(ref, op);
+    }
+
+    for (RangeRef ref in EditorUtils.rangeRefs(this)) {
+      RangeRef.transform(ref, op);
+    }
+
+    Set cache = Set();
+    List<Path> dirtyPaths = [];
+
+    Function(Path) add = (Path path) {
+      if (path != null) {
+        String key = path.path.join(',');
+
+        if (!cache.contains(key)) {
+          cache.add(key);
+          dirtyPaths.add(path);
+        }
+      }
+    };
+
+    List<Path> oldDirtyPaths = _dirtyPaths[this] ?? [];
+    List<Path> newDirtyPaths = getDirtyPaths(op);
+
+    for (Path path in oldDirtyPaths) {
+      Path newPath = PathUtils.transform(path, op);
+      add(newPath);
+    }
+
+    for (Path path in newDirtyPaths) {
+      add(path);
+    }
+
+    _dirtyPaths[this] = dirtyPaths;
+    EditorUtils.transform(this, op);
+    this.operations.add(op);
+    EditorUtils.normalize(this);
+
+    // Clear any formats applied to the cursor if the selection changes.
+    if (op is SetSelectionOperation) {
+      this.marks = null;
+    }
+
+    if (_flushing[this] == null) {
+      _flushing[this] = true;
+
+      Future.sync(() {
+        _flushing[this] = false;
+        this.onChange();
+        this.operations = [];
+      });
+    }
+  }
+
+  void deleteBackward(Unit unit) {
+    const { selection } = editor
+
+    if (selection && Range.isCollapsed(selection)) {
+      Transforms.delete(editor, { unit, reverse: true })
+    }
+  }
+
+  void deleteForward(Unit unit) {
+    const { selection } = editor
+
+    if (selection && Range.isCollapsed(selection)) {
+      Transforms.delete(editor, { unit })
+    }
+  }
+
+  void deleteFragment() {
+    const { selection } = editor
+
+    if (selection && Range.isExpanded(selection)) {
+      Transforms.delete(editor)
+    }
+  }
+
+  void insertBreak() {
+    Transforms.splitNodes(editor, { always: true })
+  }
+
+  void insertFragment(List<Node> fragment) {
+    Transforms.insertFragment(editor, fragment)
+  }
+
+  void insertNode(Node node) {
+    Transforms.insertNodes(editor, node)
+  }
+
+  void insertText(String text) {
+    const { selection, marks } = editor
+
+    if (selection) {
+      // If the cursor is at the end of an inline, move it outside of
+      // the inline before inserting
+      if (Range.isCollapsed(selection)) {
+        const inline = Editor.above(editor, {
+          match: n => Editor.isInline(editor, n),
+          mode: 'highest',
+        })
+
+        if (inline) {
+          const [, inlinePath] = inline
+
+          if (Editor.isEnd(editor, selection.anchor, inlinePath)) {
+            const point = Editor.after(editor, inlinePath)!
+            Transforms.setSelection(editor, {
+              anchor: point,
+              focus: point,
+            })
+          }
+        }
+      }
+
+      if (marks) {
+        const node = { text, ...marks }
+        Transforms.insertNodes(editor, node)
+      } else {
+        Transforms.insertText(editor, text)
+      }
+
+      editor.marks = null
+    }
+  }
+
+  void removeMark(String key) {
+    const { selection } = editor
+
+    if (selection) {
+      if (Range.isExpanded(selection)) {
+        Transforms.unsetNodes(editor, key, {
+          match: Text.isText,
+          split: true,
+        })
+      } else {
+        const marks = { ...(Editor.marks(editor) || {}) }
+        delete marks[key]
+        editor.marks = marks
+        editor.onChange()
+      }
+    }
+  }
 }
 
 typedef NodeMatch<T extends Node> = bool Function(Node node);
@@ -359,12 +616,14 @@ class EditorUtils {
     bool voids = false,
   }) sync* {
     at = at ?? editor.selection;
-    match = match ??
-        () {
-          return true;
-        };
 
-    if (at != null) {
+    if (match == null) {
+      match = (node) {
+        return true;
+      };
+    }
+
+    if (at == null) {
       return;
     }
 
@@ -619,7 +878,7 @@ class EditorUtils {
   /// Normalize any dirty objects in the editor.
   static normalize(Editor editor, {bool force = false}) {
     List<Path> Function(Editor editor) getDirtyPaths = (Editor editor) {
-      return dirtyPaths[editor] ?? [];
+      return _dirtyPaths[editor] ?? [];
     };
 
     if (!EditorUtils.isNormalizing(editor)) {
@@ -632,7 +891,7 @@ class EditorUtils {
       for (NodeEntry node in nodes) {
         allPaths.add(node.path);
       }
-      dirtyPaths[editor] = allPaths;
+      _dirtyPaths[editor] = allPaths;
     }
 
     if (getDirtyPaths(editor).length == 0) {
@@ -1640,3 +1899,102 @@ class StringUtils {
         StringUtils.reverseText(text.substring(0, text.length - 1));
   }
 }
+
+List<Path> Function(Operation) getDirtyPaths = (Operation op) {
+  if (op is InsertTextOperation) {
+    return PathUtils.levels(op.path);
+  }
+
+  if (op is RemoveTextOperation) {
+    return PathUtils.levels(op.path);
+  }
+
+  if (op is SetNodeOperation) {
+    return PathUtils.levels(op.path);
+  }
+
+  if (op is InsertNodeOperation) {
+    Node node = op.node;
+    Path path = op.path;
+    List<Path> paths = [];
+    List<Path> levels = PathUtils.levels(path);
+    List<Path> descendants;
+
+    if (node is Text) {
+      descendants = [];
+    } else {
+      List<NodeEntry> nodes = List.from(NodeUtils.nodes(node));
+      for (NodeEntry node in nodes) {
+        descendants.add(node.path);
+      }
+    }
+
+    paths.addAll(levels);
+    paths.addAll(descendants);
+
+    return paths;
+  }
+
+  if (op is MergeNodeOperation) {
+    Path path = op.path;
+    List<Path> paths = [];
+    List<Path> ancestors = PathUtils.ancestors(path);
+    Path previousPath = PathUtils.previous(path);
+
+    paths.addAll(ancestors);
+    paths.add(previousPath);
+
+    return paths;
+  }
+
+  if (op is MoveNodeOperation) {
+    Path path = op.path;
+    Path newPath = op.newPath;
+    List<Path> paths = [];
+
+    if (PathUtils.equals(path, newPath)) {
+      return [];
+    }
+
+    List<Path> oldAncestors = [];
+    List<Path> newAncestors = [];
+
+    for (Path ancestor in PathUtils.ancestors(path)) {
+      Path p = PathUtils.transform(ancestor, op);
+      oldAncestors.add(p);
+    }
+
+    for (Path ancestor in PathUtils.ancestors(newPath)) {
+      Path p = PathUtils.transform(ancestor, op);
+      newAncestors.add(p);
+    }
+
+    paths.addAll(oldAncestors);
+    paths.addAll(newAncestors);
+
+    return paths;
+  }
+
+  if (op is RemoveNodeOperation) {
+    Path path = op.path;
+    List<Path> paths = [];
+    List<Path> ancestors = PathUtils.ancestors(path);
+
+    paths.addAll(ancestors);
+    return paths;
+  }
+
+  if (op is SplitNodeOperation) {
+    Path path = op.path;
+    List<Path> paths = [];
+    List<Path> levels = PathUtils.levels(path);
+    Path nextPath = PathUtils.next(path);
+
+    paths.addAll(levels);
+    paths.add(nextPath);
+
+    return paths;
+  }
+
+  return [];
+};

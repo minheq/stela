@@ -8,14 +8,14 @@ void main() {
     test('should succeed with valid element node list', () {
       Element element = Element(children: <Node>[]);
 
-      expect(Element.isElementList([element]), true);
+      expect(ElementUtils.isElementList([element]), true);
     });
 
     test('should fail with an text in node list', () {
       Text text = Text("string");
       Element element = Element(children: []);
 
-      expect(Element.isElementList([text, element]), false);
+      expect(ElementUtils.isElementList([text, element]), false);
     });
   });
 }

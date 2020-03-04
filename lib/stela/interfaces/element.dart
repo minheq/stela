@@ -11,7 +11,9 @@ class Element implements Ancestor, Descendant {
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
+}
 
+class ElementUtils {
   /// Check if list of nodes consist of only `Element` nodes.
   static bool isElementList(List<Node> nodes) {
     for (Node node in nodes) {
@@ -31,4 +33,13 @@ class ElementEntry {
 
   final Element element;
   final Path path;
+}
+
+class Block implements Element {
+  Block({this.children = const <Node>[], this.props = const {}});
+
+  List<Node> children;
+
+  /// Custom properties that can extend the `Element` behavior
+  Map<String, dynamic> props;
 }
