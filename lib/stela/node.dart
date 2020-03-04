@@ -89,9 +89,9 @@ class NodeUtils {
 
     while (reverse ? index >= 0 : index < ancestor.children.length) {
       Descendant child = NodeUtils.child(ancestor, index);
-      List<int> newPositions = path.toList();
-      newPositions.add(index);
-      Path childPath = Path(newPositions);
+
+      Path childPath = PathUtils.copy(path);
+      childPath.add(index);
 
       yield NodeEntry<Descendant>(child, childPath);
 
@@ -379,9 +379,9 @@ class NodeUtils {
         if (PathUtils.isAncestor(p, from)) {
           nextIndex = from[p.length];
         }
-        List<int> newPositions = p.toList();
-        newPositions.add(nextIndex);
-        p = Path(newPositions);
+        p = PathUtils.copy(p);
+        p.add(nextIndex);
+
         n = NodeUtils.get(root, p);
         continue;
       }

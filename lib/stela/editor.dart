@@ -1029,7 +1029,7 @@ class EditorUtils {
 
   /// Create a mutable ref for a `Point` object, which will stay in sync as new
   /// operations are applied to the editor.
-  PointRef pointRef(Editor editor, Point point,
+  static PointRef pointRef(Editor editor, Point point,
       {Affinity affinity = Affinity.forward}) {
     PointRef ref = PointRef(current: point, affinity: affinity);
 
