@@ -1,4 +1,4 @@
-import 'package:inday/stela/interfaces/path.dart';
+import 'package:inday/stela/path.dart';
 
 /// The `Location` interface is a union of the ways to refer to a specific
 /// location in a Slate document: paths, points or ranges.

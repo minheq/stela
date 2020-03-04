@@ -1,5 +1,5 @@
-import 'package:inday/stela/interfaces/node.dart';
-import 'package:inday/stela/interfaces/path.dart';
+import 'package:inday/stela/node.dart';
+import 'package:inday/stela/path.dart';
 
 /// `Element` objects are a type of node that contain other
 /// element nodes or text nodes. They can be either "blocks" or "inlines"

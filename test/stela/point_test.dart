@@ -1,6 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:inday/stela/interfaces/path.dart';
-import 'package:inday/stela/interfaces/point.dart';
+import 'package:inday/stela/path.dart';
+import 'package:inday/stela/point.dart';
 
 void main() {
   group("compare", () {

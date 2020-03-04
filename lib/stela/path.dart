@@ -1,8 +1,8 @@
 import 'dart:math';
 
 import 'package:flutter/foundation.dart';
-import 'package:inday/stela/interfaces/location.dart';
-import 'package:inday/stela/interfaces/operation.dart';
+import 'package:inday/stela/location.dart';
+import 'package:inday/stela/operation.dart';
 
 /// `Path` arrays are a list of indexes that describe a node's exact at in
 /// a Slate node tree. Although they are usually relative to the root `Editor`

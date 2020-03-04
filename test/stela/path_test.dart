@@ -1,5 +1,5 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:inday/stela/interfaces/path.dart';
+import 'package:inday/stela/path.dart';
 
 void main() {
   group("ancestors", () {

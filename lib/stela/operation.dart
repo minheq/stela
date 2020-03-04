@@ -1,6 +1,6 @@
-import 'package:inday/stela/interfaces/node.dart';
-import 'package:inday/stela/interfaces/path.dart';
-import 'package:inday/stela/interfaces/range.dart';
+import 'package:inday/stela/node.dart';
+import 'package:inday/stela/path.dart';
+import 'package:inday/stela/range.dart';
 
 class Operation {
   static Operation inverse(Operation op) {

@@ -1,9 +1,9 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:inday/stela/interfaces/editor.dart';
-import 'package:inday/stela/interfaces/element.dart';
-import 'package:inday/stela/interfaces/node.dart';
-import 'package:inday/stela/interfaces/path.dart';
-import 'package:inday/stela/interfaces/text.dart';
+import 'package:inday/stela/editor.dart';
+import 'package:inday/stela/element.dart';
+import 'package:inday/stela/node.dart';
+import 'package:inday/stela/path.dart';
+import 'package:inday/stela/text.dart';
 
 void main() {
   group("ancestor", () {

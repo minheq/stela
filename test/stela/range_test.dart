@@ -1,7 +1,7 @@
 import 'package:flutter_test/flutter_test.dart';
-import 'package:inday/stela/interfaces/path.dart';
-import 'package:inday/stela/interfaces/point.dart';
-import 'package:inday/stela/interfaces/range.dart';
+import 'package:inday/stela/path.dart';
+import 'package:inday/stela/point.dart';
+import 'package:inday/stela/range.dart';
 
 void main() {
   group("edges", () {

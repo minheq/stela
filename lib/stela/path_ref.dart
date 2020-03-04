@@ -1,5 +1,5 @@
-import 'package:inday/stela/interfaces/operation.dart';
-import 'package:inday/stela/interfaces/path.dart';
+import 'package:inday/stela/operation.dart';
+import 'package:inday/stela/path.dart';
 
 /// `PathRef` objects keep a specific path in a document synced over time as new
 /// operations are applied to the editor. You can access their `current` property

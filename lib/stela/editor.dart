@@ -1,14 +1,14 @@
-import 'package:inday/stela/interfaces/element.dart';
-import 'package:inday/stela/interfaces/location.dart';
-import 'package:inday/stela/interfaces/node.dart';
-import 'package:inday/stela/interfaces/operation.dart';
-import 'package:inday/stela/interfaces/path.dart';
-import 'package:inday/stela/interfaces/path_ref.dart';
-import 'package:inday/stela/interfaces/point.dart';
-import 'package:inday/stela/interfaces/point_ref.dart';
-import 'package:inday/stela/interfaces/range.dart';
-import 'package:inday/stela/interfaces/range_ref.dart';
-import 'package:inday/stela/interfaces/text.dart';
+import 'package:inday/stela/element.dart';
+import 'package:inday/stela/location.dart';
+import 'package:inday/stela/node.dart';
+import 'package:inday/stela/operation.dart';
+import 'package:inday/stela/path.dart';
+import 'package:inday/stela/path_ref.dart';
+import 'package:inday/stela/point.dart';
+import 'package:inday/stela/point_ref.dart';
+import 'package:inday/stela/range.dart';
+import 'package:inday/stela/range_ref.dart';
+import 'package:inday/stela/text.dart';
 
 Expando<List<Path>> _dirtyPaths = Expando();
 Expando<bool> _flushing = Expando();

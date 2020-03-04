@@ -1,8 +1,8 @@
 import 'dart:math';
 
-import 'package:inday/stela/interfaces/location.dart';
-import 'package:inday/stela/interfaces/operation.dart';
-import 'package:inday/stela/interfaces/path.dart';
+import 'package:inday/stela/location.dart';
+import 'package:inday/stela/operation.dart';
+import 'package:inday/stela/path.dart';
 
 /// `Point` objects refer to a specific location in a text node in a Slate
 /// document. Its path refers to the location of the node in the tree, and its

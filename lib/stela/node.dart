@@ -1,9 +1,9 @@
-import 'package:inday/stela/interfaces/editor.dart';
-import 'package:inday/stela/interfaces/element.dart';
-import 'package:inday/stela/interfaces/path.dart';
-import 'package:inday/stela/interfaces/point.dart';
-import 'package:inday/stela/interfaces/range.dart';
-import 'package:inday/stela/interfaces/text.dart';
+import 'package:inday/stela/editor.dart';
+import 'package:inday/stela/element.dart';
+import 'package:inday/stela/path.dart';
+import 'package:inday/stela/point.dart';
+import 'package:inday/stela/range.dart';
+import 'package:inday/stela/text.dart';
 
 /// The `Node` represents all of the different types of nodes that
 /// occur in a document tree.
