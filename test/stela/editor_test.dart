@@ -582,13 +582,11 @@ void main() {
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3));
       TestEditor editor = TestEditor(selection: cursor, children: <Node>[
-        Block(children: <Node>[
-          Block(children: <Node>[Text('one')])
-        ]),
+        Block(children: <Node>[Text('one')])
       ]);
 
-      expect(EditorUtils.isEdge(editor, editor.selection.anchor, Path([0])),
-          false);
+      expect(
+          EditorUtils.isEdge(editor, editor.selection.anchor, Path([0])), true);
     });
 
     test('path middle', () {
@@ -600,9 +598,7 @@ void main() {
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2));
       TestEditor editor = TestEditor(selection: cursor, children: <Node>[
-        Block(children: <Node>[
-          Block(children: <Node>[Text('one')])
-        ]),
+        Block(children: <Node>[Text('one')]),
       ]);
 
       expect(EditorUtils.isEdge(editor, editor.selection.anchor, Path([0])),
@@ -618,9 +614,7 @@ void main() {
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0));
       TestEditor editor = TestEditor(selection: cursor, children: <Node>[
-        Block(children: <Node>[
-          Block(children: <Node>[Text('one')])
-        ]),
+        Block(children: <Node>[Text('one')])
       ]);
 
       expect(
@@ -4399,6 +4393,102 @@ void main() {
             Point(Path([0, 0]), 1),
           ),
           true);
+    });
+  });
+
+  group('string', () {
+    test('block across', () {
+      // <editor>
+      //   <block>
+      //     <text>one</text>
+      //     <text>two</text>
+      //   </block>
+      //   <block>
+      //     <text>three</text>
+      //     <text>four</text>
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one'), Text('two')]),
+        Block(children: <Node>[Text('three'), Text('four')]),
+      ]);
+
+      String result = EditorUtils.string(editor, Path([]));
+
+      expect(result, 'onetwothreefour');
+    });
+
+    test('block void', () {
+      // <editor>
+      //   <void>
+      //     <text>one</text>
+      //     <text>two</text>
+      //   </void>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Void(children: <Node>[Text('one'), Text('two')]),
+      ]);
+
+      String result = EditorUtils.string(editor, Path([]));
+
+      expect(result, '');
+    });
+
+    test('block', () {
+      // <editor>
+      //   <block>
+      //     <text>one</text>
+      //     <text>two</text>
+      //   </block>
+      //   <block>
+      //     <text>three</text>
+      //     <text>four</text>
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one'), Text('two')]),
+        Block(children: <Node>[Text('three'), Text('four')]),
+      ]);
+
+      String result = EditorUtils.string(editor, Path([0]));
+
+      expect(result, 'onetwo');
+    });
+
+    test('inline', () {
+      // <editor>
+      //   <block>
+      //     one<inline>two</inline>three
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[
+          Text('one'),
+          Inline(children: <Node>[
+            Text('two'),
+          ]),
+          Text('three')
+        ]),
+      ]);
+
+      String result = EditorUtils.string(editor, Path([0, 1]));
+
+      expect(result, 'two');
+    });
+
+    test('text', () {
+      // <editor>
+      //   <block>
+      //     one<inline>two</inline>three
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one'), Text('two')]),
+      ]);
+
+      String result = EditorUtils.string(editor, Path([0, 0]));
+
+      expect(result, 'one');
     });
   });
 }
