@@ -3,7 +3,7 @@ import 'package:inday/stela/path.dart';
 import 'package:inday/stela/point.dart';
 
 void main() {
-  group("compare", () {
+  group('compare', () {
     test('path after offset after', () {
       Point point = Point(Path([0, 4]), 7);
       Point another = Point(Path([0, 1]), 3);
@@ -68,7 +68,7 @@ void main() {
     });
   });
 
-  group("equals", () {
+  group('equals', () {
     test('path after offset after', () {
       Point point = Point(Path([0, 4]), 7);
       Point another = Point(Path([0, 1]), 3);
@@ -133,7 +133,7 @@ void main() {
     });
   });
 
-  group("isAfter", () {
+  group('isAfter', () {
     test('path after offset after', () {
       Point point = Point(Path([0, 4]), 7);
       Point another = Point(Path([0, 1]), 3);
@@ -198,7 +198,7 @@ void main() {
     });
   });
 
-  group("isBefore", () {
+  group('isBefore', () {
     test('path after offset after', () {
       Point point = Point(Path([0, 4]), 7);
       Point another = Point(Path([0, 1]), 3);

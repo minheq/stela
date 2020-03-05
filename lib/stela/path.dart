@@ -19,6 +19,11 @@ class Path implements Location {
     return _path.length;
   }
 
+  @override
+  String toString() {
+    return _path.join(', ');
+  }
+
   /// Adds [position] to the end of the `Path`, extending the length by one.
   void add(int position) {
     return _path.add(position);

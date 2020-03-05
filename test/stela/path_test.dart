@@ -2,7 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inday/stela/path.dart';
 
 void main() {
-  group("ancestors", () {
+  group('ancestors', () {
     test(
         'should return valid list of paths from furthest to nearest ancestor, excluding itself',
         () {
@@ -26,7 +26,7 @@ void main() {
     });
   });
 
-  group("common", () {
+  group('common', () {
     test('should return equal ancestor path both when both paths are the same',
         () {
       Path path = Path([0, 1, 2]);
@@ -52,7 +52,7 @@ void main() {
     });
   });
 
-  group("compare", () {
+  group('compare', () {
     test('above', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0]);
@@ -96,7 +96,7 @@ void main() {
     });
   });
 
-  group("endsAfter", () {
+  group('endsAfter', () {
     test('above', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0]);
@@ -161,7 +161,7 @@ void main() {
     });
   });
 
-  group("endsAt", () {
+  group('endsAt', () {
     test('above', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0]);
@@ -219,7 +219,7 @@ void main() {
     });
   });
 
-  group("endsBefore", () {
+  group('endsBefore', () {
     test('above', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0]);
@@ -284,7 +284,7 @@ void main() {
     });
   });
 
-  group("equals", () {
+  group('equals', () {
     test('above', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0]);
@@ -328,7 +328,7 @@ void main() {
     });
   });
 
-  group("isAfter", () {
+  group('isAfter', () {
     test('above', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0]);
@@ -372,7 +372,7 @@ void main() {
     });
   });
 
-  group("isAncestor", () {
+  group('isAncestor', () {
     test('above grandparent', () {
       Path path = Path([]);
       Path another = Path([0, 1]);
@@ -416,7 +416,7 @@ void main() {
     });
   });
 
-  group("isBefore", () {
+  group('isBefore', () {
     test('above', () {
       Path path = Path([0]);
       Path another = Path([0, 1]);
@@ -453,7 +453,7 @@ void main() {
     });
   });
 
-  group("isChild", () {
+  group('isChild', () {
     test('above', () {
       Path path = Path([0]);
       Path another = Path([0, 1]);
@@ -497,7 +497,7 @@ void main() {
     });
   });
 
-  group("isDescendant", () {
+  group('isDescendant', () {
     test('above', () {
       Path path = Path([0]);
       Path another = Path([0, 1]);
@@ -541,7 +541,7 @@ void main() {
     });
   });
 
-  group("isParent", () {
+  group('isParent', () {
     test('above grandparent', () {
       Path path = Path([]);
       Path another = Path([0, 1]);
@@ -585,7 +585,7 @@ void main() {
     });
   });
 
-  group("isSibling", () {
+  group('isSibling', () {
     test('above', () {
       Path path = Path([]);
       Path another = Path([0, 1]);
@@ -636,7 +636,7 @@ void main() {
     });
   });
 
-  group("levels", () {
+  group('levels', () {
     test('success', () {
       Path path = Path([0, 1, 2]);
       List<Path> paths = PathUtils.levels(path);
@@ -658,7 +658,7 @@ void main() {
     });
   });
 
-  group("next", () {
+  group('next', () {
     test('success', () {
       Path path = Path([0, 1]);
       Path next = PathUtils.next(path);
@@ -667,7 +667,7 @@ void main() {
     });
   });
 
-  group("parent", () {
+  group('parent', () {
     test('success', () {
       Path path = Path([0, 1]);
       Path parent = PathUtils.parent(path);
@@ -676,7 +676,7 @@ void main() {
     });
   });
 
-  group("previous", () {
+  group('previous', () {
     test('success', () {
       Path path = Path([0, 1]);
       Path previous = PathUtils.previous(path);
@@ -685,7 +685,7 @@ void main() {
     });
   });
 
-  group("relative", () {
+  group('relative', () {
     test('grandparent', () {
       Path path = Path([0, 1, 2]);
       Path another = Path([0]);

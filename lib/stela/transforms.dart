@@ -169,7 +169,7 @@ class Transforms {
 
         if (path.length < 2) {
           throw Exception(
-              "Cannot lift node at a path [$path] because it has a depth of less than \`2\`.");
+              'Cannot lift node at a path [$path] because it has a depth of less than \`2\`.');
         }
 
         NodeEntry parentEntry =
@@ -306,7 +306,7 @@ class Transforms {
         props = node.props;
       } else {
         throw Exception(
-            "Cannot merge the node at path [$path] with the previous sibling because it is not the same kind: ${node.toString()} ${prevNode.toString()}");
+            'Cannot merge the node at path [$path] with the previous sibling because it is not the same kind: ${node.toString()} ${prevNode.toString()}');
       }
 
       // If the node isn't already the next sibling of the previous node, move
@@ -947,7 +947,7 @@ class Transforms {
 
     if (!RangeUtils.isRange(target)) {
       throw Exception(
-          "When setting the selection and the current selection is \`null\` you must provide at least an \`anchor\` and \`focus\`, but you passed: ${target.toString()}");
+          'When setting the selection and the current selection is \`null\` you must provide at least an \`anchor\` and \`focus\`, but you passed: ${target.toString()}');
     }
 
     editor.apply(SetSelectionOperation(selection, target));

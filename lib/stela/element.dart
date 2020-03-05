@@ -11,6 +11,17 @@ class Element implements Ancestor, Descendant {
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
+
+  @override
+  String toString() {
+    String str = '';
+
+    for (Node child in children) {
+      str += child.toString() + ', ';
+    }
+
+    return 'Element(\'children: [$str]\')';
+  }
 }
 
 class ElementUtils {
@@ -46,6 +57,15 @@ class Block implements Element {
 
 class Inline implements Element {
   Inline({this.children = const <Node>[], this.props = const {}});
+
+  List<Node> children;
+
+  /// Custom properties that can extend the `Element` behavior
+  Map<String, dynamic> props;
+}
+
+class Void implements Element {
+  Void({this.children = const <Node>[], this.props = const {}});
 
   List<Node> children;
 

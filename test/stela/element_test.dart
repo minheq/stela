@@ -4,7 +4,7 @@ import 'package:inday/stela/node.dart';
 import 'package:inday/stela/text.dart';
 
 void main() {
-  group("isElementList", () {
+  group('isElementList', () {
     test('should succeed with valid element node list', () {
       Element element = Element(children: <Node>[]);
 
@@ -12,7 +12,7 @@ void main() {
     });
 
     test('should fail with an text in node list', () {
-      Text text = Text("string");
+      Text text = Text('string');
       Element element = Element(children: []);
 
       expect(ElementUtils.isElementList([text, element]), false);

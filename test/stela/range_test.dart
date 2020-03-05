@@ -4,7 +4,7 @@ import 'package:inday/stela/point.dart';
 import 'package:inday/stela/range.dart';
 
 void main() {
-  group("edges", () {
+  group('edges', () {
     test('backward', () {
       Point anchor = Point(Path([3]), 0);
       Point focus = Point(Path([0]), 0);
@@ -45,7 +45,7 @@ void main() {
     });
   });
 
-  group("equals", () {
+  group('equals', () {
     test('equal', () {
       Point anchor = Point(Path([0, 1]), 0);
       Point focus = Point(Path([0, 1]), 0);
@@ -71,7 +71,7 @@ void main() {
     });
   });
 
-  group("includes", () {
+  group('includes', () {
     test('path after', () {
       Point anchor = Point(Path([1]), 0);
       Point focus = Point(Path([3]), 0);
@@ -193,7 +193,7 @@ void main() {
     });
   });
 
-  group("isBackward", () {
+  group('isBackward', () {
     test('backward', () {
       Point anchor = Point(Path([3]), 0);
       Point focus = Point(Path([0]), 0);
@@ -219,7 +219,7 @@ void main() {
     });
   });
 
-  group("isCollapsed", () {
+  group('isCollapsed', () {
     test('collapsed', () {
       Point anchor = Point(Path([0]), 0);
       Point focus = Point(Path([0]), 0);
@@ -237,7 +237,7 @@ void main() {
     });
   });
 
-  group("isExpanded", () {
+  group('isExpanded', () {
     test('collapsed', () {
       Point anchor = Point(Path([0]), 0);
       Point focus = Point(Path([0]), 0);
@@ -255,7 +255,7 @@ void main() {
     });
   });
 
-  group("isForward", () {
+  group('isForward', () {
     test('backward', () {
       Point anchor = Point(Path([3]), 0);
       Point focus = Point(Path([0]), 0);
@@ -281,7 +281,7 @@ void main() {
     });
   });
 
-  group("points", () {
+  group('points', () {
     test('full selection', () {
       Point anchor = Point(Path([3]), 0);
       Point focus = Point(Path([0]), 0);

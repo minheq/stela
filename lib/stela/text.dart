@@ -13,6 +13,11 @@ class Text implements Descendant {
 
   /// Custom properties that can extend the `Text` behavior
   Map<String, dynamic> props;
+
+  @override
+  String toString() {
+    return "Text('$text')";
+  }
 }
 
 class TextUtils {

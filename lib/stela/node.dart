@@ -45,7 +45,7 @@ class NodeUtils {
 
     if (node is Text) {
       throw Exception(
-          "Cannot get the ancestor node at path [$path] because it refers to a text node instead: $node");
+          "Cannot get the ancestor node at path [${path.toString()}] because it refers to a text node instead: $node");
     }
 
     return node;
@@ -140,7 +140,7 @@ class NodeUtils {
 
     if (node is Editor) {
       throw Exception(
-          "Cannot get the descendant node at path [$path] because it refers to the root editor node instead: $node");
+          "Cannot get the descendant node at path [${path.toString()}] because it refers to the root editor node instead: $node");
     }
 
     return node;
@@ -258,12 +258,12 @@ class NodeUtils {
 
       if (node is Text) {
         throw Exception(
-            "Cannot find a descendant at path [$path] because it refers to a text node instead: ${node.toString()}");
+            "Cannot find a descendant at path [${path.toString()}] because it refers to a text node instead: ${node.toString()}");
       }
 
       if ((node as Ancestor).children[p] == null) {
         throw Exception(
-            "Cannot find a descendant at path [$path] in node: ${root.toString()}");
+            "Cannot find a descendant at path [${path.toString()}] in node: ${root.toString()}");
       }
 
       node = (node as Ancestor).children[p];
@@ -323,7 +323,7 @@ class NodeUtils {
 
     if (!(node is Text)) {
       throw Exception(
-          "Cannot get the leaf node at path [$path] because it refers to a non-leaf node: ${node.toString()}");
+          "Cannot get the leaf node at path [${path.toString()}] because it refers to a non-leaf node: ${node.toString()}");
     }
 
     return node;
@@ -424,7 +424,7 @@ class NodeUtils {
 
     if (p is Text) {
       throw Exception(
-          "Cannot get the parent of path [$path] because it does not exist in the root.");
+          "Cannot get the parent of path [${path.toString()}] because it does not exist in the root.");
     }
 
     return p;
