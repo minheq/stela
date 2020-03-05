@@ -3568,64 +3568,359 @@ void main() {
       });
     });
 
-    // group('path', () {
-    //   test('block nested', () {
-    //     expect(PointUtils.equals(points[0], Point(Path([0, 0, 0]), 0),), true);
-    //     expect(PointUtils.equals(points[1], Point(Path([0, 0, 0]), 1),), true);
-    //     expect(PointUtils.equals(points[2], Point(Path([0, 0, 0]), 2),), true);
-    //     expect(PointUtils.equals(points[3], Point(Path([0, 0, 0]), 3),), true);
-    //     expect(PointUtils.equals(points[4], Point(Path([0, 1, 0]), 0),), true);
-    //     expect(PointUtils.equals(points[5], Point(Path([0, 1, 0]), 1),), true);
-    //     expect(PointUtils.equals(points[6], Point(Path([0, 1, 0]), 2),), true);
-    //     expect(PointUtils.equals(points[7], Point(Path([0, 1, 0]), 3),), true);
-    //   });
+    group('path', () {
+      test('block nested', () {
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[Text('one')]),
+            Block(children: <Node>[Text('two')]),
+          ]),
+        ]);
 
-    //   test('block reverse', () {
-    //     expect(PointUtils.equals(points[0], Point(Path([0, 0]), 3),), true);
-    //     expect(PointUtils.equals(points[1], Point(Path([0, 0]), 2),), true);
-    //     expect(PointUtils.equals(points[2], Point(Path([0, 0]), 1),), true);
-    //     expect(PointUtils.equals(points[3], Point(Path([0, 0]), 0),), true);
-    //   });
+        List<Point> points =
+            List.from(EditorUtils.positions(editor, at: Path([0])));
 
-    //   test('block', () {
-    //     expect(PointUtils.equals(points[0], Point(Path([1, 0]), 0),), true);
-    //     expect(PointUtils.equals(points[1], Point(Path([1, 0]), 1),), true);
-    //     expect(PointUtils.equals(points[2], Point(Path([1, 0]), 2),), true);
-    //     expect(PointUtils.equals(points[3], Point(Path([1, 0]), 3),), true);
-    //   });
+        expect(
+            PointUtils.equals(
+              points[0],
+              Point(Path([0, 0, 0]), 0),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[1],
+              Point(Path([0, 0, 0]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[2],
+              Point(Path([0, 0, 0]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[3],
+              Point(Path([0, 0, 0]), 3),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[4],
+              Point(Path([0, 1, 0]), 0),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[5],
+              Point(Path([0, 1, 0]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[6],
+              Point(Path([0, 1, 0]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[7],
+              Point(Path([0, 1, 0]), 3),
+            ),
+            true);
+      });
 
-    //   test('inline nested', () {
-    //     expect(PointUtils.equals(points[0], Point(Path([0, 1, 0]), 0),), true);
-    //     expect(PointUtils.equals(points[1], Point(Path([0, 1, 0]), 1),), true);
-    //     expect(PointUtils.equals(points[2], Point(Path([0, 1, 0]), 2),), true);
-    //     expect(PointUtils.equals(points[3], Point(Path([0, 1, 0]), 3),), true);
-    //     expect(PointUtils.equals(points[4], Point(Path([0, 1, 1, 0]), 0),), true);
-    //     expect(PointUtils.equals(points[5], Point(Path([0, 1, 1, 0]), 1),), true);
-    //     expect(PointUtils.equals(points[6], Point(Path([0, 1, 1, 0]), 2),), true);
-    //     expect(PointUtils.equals(points[7], Point(Path([0, 1, 1, 0]), 3),), true);
-    //     expect(PointUtils.equals(points[8], Point(Path([0, 1, 1, 0]), 4),), true);
-    //     expect(PointUtils.equals(points[9], Point(Path([0, 1, 1, 0]), 5),), true);
-    //     expect(PointUtils.equals(points[10], Point(Path([0, 1, 2]), 0),), true);
-    //     expect(PointUtils.equals(points[11], Point(Path([0, 1, 2]), 1),), true);
-    //     expect(PointUtils.equals(points[12], Point(Path([0, 1, 2]), 2),), true);
-    //     expect(PointUtils.equals(points[13], Point(Path([0, 1, 2]), 3),), true);
-    //     expect(PointUtils.equals(points[14], Point(Path([0, 1, 2]), 4),), true);
-    //   });
+      test('block reverse', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('one')]),
+          Block(children: <Node>[Text('two')]),
+        ]);
 
-    //   test('inline reverse', () {
-    //     expect(PointUtils.equals(points[0], Point(Path([0, 1, 0]), 3),), true);
-    //     expect(PointUtils.equals(points[1], Point(Path([0, 1, 0]), 2),), true);
-    //     expect(PointUtils.equals(points[2], Point(Path([0, 1, 0]), 1),), true);
-    //     expect(PointUtils.equals(points[3], Point(Path([0, 1, 0]), 0),), true);
-    //   });
+        List<Point> points = List.from(
+            EditorUtils.positions(editor, at: Path([0]), reverse: true));
 
-    //   test('inline', () {
-    //     expect(PointUtils.equals(points[0], Point(Path([0, 1, 0]), 0),), true);
-    //     expect(PointUtils.equals(points[1], Point(Path([0, 1, 0]), 1),), true);
-    //     expect(PointUtils.equals(points[2], Point(Path([0, 1, 0]), 2),), true);
-    //     expect(PointUtils.equals(points[3], Point(Path([0, 1, 0]), 3),), true);
-    //   });
-    // })
+        expect(
+            PointUtils.equals(
+              points[0],
+              Point(Path([0, 0]), 3),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[1],
+              Point(Path([0, 0]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[2],
+              Point(Path([0, 0]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[3],
+              Point(Path([0, 0]), 0),
+            ),
+            true);
+      });
+
+      test('block', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('one')]),
+          Block(children: <Node>[Text('two')]),
+        ]);
+
+        List<Point> points =
+            List.from(EditorUtils.positions(editor, at: Path([1, 0])));
+
+        expect(
+            PointUtils.equals(
+              points[0],
+              Point(Path([1, 0]), 0),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[1],
+              Point(Path([1, 0]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[2],
+              Point(Path([1, 0]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[3],
+              Point(Path([1, 0]), 3),
+            ),
+            true);
+      });
+
+      test('inline nested', () {
+        // <editor>
+        //   <block>
+        //     one
+        //     <inline>
+        //       two<inline>three</inline>four
+        //     </inline>
+        //     five
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+            Inline(children: <Node>[
+              Text('two'),
+              Inline(children: <Node>[Text('three')]),
+              Text('four')
+            ]),
+            Text('five')
+          ]),
+        ]);
+
+        List<Point> points =
+            List.from(EditorUtils.positions(editor, at: Path([0, 1])));
+
+        expect(
+            PointUtils.equals(
+              points[0],
+              Point(Path([0, 1, 0]), 0),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[1],
+              Point(Path([0, 1, 0]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[2],
+              Point(Path([0, 1, 0]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[3],
+              Point(Path([0, 1, 0]), 3),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[4],
+              Point(Path([0, 1, 1, 0]), 0),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[5],
+              Point(Path([0, 1, 1, 0]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[6],
+              Point(Path([0, 1, 1, 0]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[7],
+              Point(Path([0, 1, 1, 0]), 3),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[8],
+              Point(Path([0, 1, 1, 0]), 4),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[9],
+              Point(Path([0, 1, 1, 0]), 5),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[10],
+              Point(Path([0, 1, 2]), 0),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[11],
+              Point(Path([0, 1, 2]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[12],
+              Point(Path([0, 1, 2]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[13],
+              Point(Path([0, 1, 2]), 3),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[14],
+              Point(Path([0, 1, 2]), 4),
+            ),
+            true);
+      });
+
+      test('inline reverse', () {
+        // <editor>
+        //   <block>
+        //     one<inline>two</inline>three
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+            Inline(children: <Node>[
+              Text('two'),
+            ]),
+            Text('three')
+          ]),
+        ]);
+
+        List<Point> points = List.from(
+            EditorUtils.positions(editor, at: Path([0, 1]), reverse: true));
+
+        expect(
+            PointUtils.equals(
+              points[0],
+              Point(Path([0, 1, 0]), 3),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[1],
+              Point(Path([0, 1, 0]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[2],
+              Point(Path([0, 1, 0]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[3],
+              Point(Path([0, 1, 0]), 0),
+            ),
+            true);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     one<inline>two</inline>three
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+            Inline(children: <Node>[
+              Text('two'),
+            ]),
+            Text('three')
+          ]),
+        ]);
+
+        List<Point> points =
+            List.from(EditorUtils.positions(editor, at: Path([0, 1])));
+
+        expect(
+            PointUtils.equals(
+              points[0],
+              Point(Path([0, 1, 0]), 0),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[1],
+              Point(Path([0, 1, 0]), 1),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[2],
+              Point(Path([0, 1, 0]), 2),
+            ),
+            true);
+        expect(
+            PointUtils.equals(
+              points[3],
+              Point(Path([0, 1, 0]), 3),
+            ),
+            true);
+      });
+    });
 
     // group('range', () {
     //   test('block reverse', () {
