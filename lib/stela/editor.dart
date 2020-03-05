@@ -1031,7 +1031,7 @@ class EditorUtils {
 
       if (!(node is Text)) {
         throw Exception(
-            'Cannot get the $edge point in the node at path [$at] because it has no $edge text node.');
+            'Cannot get the ${edge.toString()} point in the node at path [${at.toString()}] because it has no ${edge.toString()} text node.');
       }
 
       return Point(path, edge == Edge.end ? (node as Text).text.length : 0);

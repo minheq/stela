@@ -14,7 +14,7 @@ class TestEditor extends Editor {
       Range selection,
       List<Operation> operations,
       Map<String, dynamic> marks,
-      Map<String, dynamic> props})
+      Map<String, dynamic> props = const {}})
       : super(
             children: children,
             selection: selection,
@@ -767,6 +767,56 @@ void main() {
     });
   });
 
+  group('isEnd', () {
+    test('path end', () {
+      // <editor>
+      //   <block>
+      //     one
+      //     <cursor />
+      //   </block>
+      // </editor>
+      Range cursor = Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3));
+      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+        Block(children: <Node>[Text('one')])
+      ]);
+
+      expect(
+          EditorUtils.isEnd(editor, editor.selection.anchor, Path([0])), true);
+    });
+
+    test('path middle', () {
+      // <editor>
+      //   <block>
+      //     on
+      //     <cursor />e
+      //   </block>
+      // </editor>
+      Range cursor = Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2));
+      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+        Block(children: <Node>[Text('one')])
+      ]);
+
+      expect(
+          EditorUtils.isEnd(editor, editor.selection.anchor, Path([0])), false);
+    });
+
+    test('path start', () {
+      // <editor>
+      //   <block>
+      //     <cursor />
+      //     one
+      //   </block>
+      // </editor>
+      Range cursor = Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0));
+      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+        Block(children: <Node>[Text('one')])
+      ]);
+
+      expect(
+          EditorUtils.isEnd(editor, editor.selection.anchor, Path([0])), false);
+    });
+  });
+
   group('isInline', () {
     test('block', () {
       // <editor>
@@ -794,6 +844,203 @@ void main() {
           EditorUtils.isInline(
               editor, (editor.children[0] as Block).children[1]),
           true);
+    });
+  });
+
+  group('isStart', () {
+    test('path end', () {
+      // <editor>
+      //   <block>
+      //     one
+      //     <cursor />
+      //   </block>
+      // </editor>
+      Range cursor = Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3));
+      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+        Block(children: <Node>[Text('one')])
+      ]);
+
+      expect(EditorUtils.isStart(editor, editor.selection.anchor, Path([0])),
+          false);
+    });
+
+    test('path middle', () {
+      // <editor>
+      //   <block>
+      //     on
+      //     <cursor />e
+      //   </block>
+      // </editor>
+      Range cursor = Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2));
+      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+        Block(children: <Node>[Text('one')])
+      ]);
+
+      expect(EditorUtils.isStart(editor, editor.selection.anchor, Path([0])),
+          false);
+    });
+
+    test('path start', () {
+      // <editor>
+      //   <block>
+      //     <cursor />
+      //     one
+      //   </block>
+      // </editor>
+      Range cursor = Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0));
+      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+        Block(children: <Node>[Text('one')])
+      ]);
+
+      expect(EditorUtils.isStart(editor, editor.selection.anchor, Path([0])),
+          true);
+    });
+  });
+
+  group('isVoid', () {
+    test('block', () {
+      // <editor>
+      //   <block>one</block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[
+          Text('one'),
+        ]),
+      ]);
+
+      expect(EditorUtils.isVoid(editor, editor.children[0]), false);
+    });
+
+    test('void', () {
+      // <editor>
+      //   <void>one</void>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Void(children: <Node>[Text('one')])
+      ]);
+
+      expect(EditorUtils.isVoid(editor, editor.children[0]), true);
+    });
+  });
+
+  group('levels', () {
+    test('match', () {
+      // <editor>
+      //   <element a>
+      //     <text a />
+      //   </element>
+      // </editor>
+      Text text = Text('one', props: {'a': true});
+      Element element = Element(children: <Node>[text], props: {'a': true});
+      TestEditor editor = TestEditor(children: <Node>[
+        element,
+      ]);
+
+      List<NodeEntry> entries =
+          List.from(EditorUtils.levels(editor, at: Path([0, 0]), match: (node) {
+        return node.props['a'] != null;
+      }));
+
+      expect(entries[0].node, element);
+      expect(PathUtils.equals(entries[0].path, Path([0])), true);
+
+      expect(entries[1].node, text);
+      expect(PathUtils.equals(entries[1].path, Path([0, 0])), true);
+    });
+
+    test('reverse', () {
+      // <editor>
+      //   <element>
+      //     <text />
+      //   </element>
+      // </editor>
+      Text text = Text('one');
+      Element element = Element(children: <Node>[text]);
+      TestEditor editor = TestEditor(children: <Node>[
+        element,
+      ]);
+
+      List<NodeEntry> entries = List.from(
+          EditorUtils.levels(editor, at: Path([0, 0]), reverse: true));
+
+      expect(entries[0].node, text);
+      expect(PathUtils.equals(entries[0].path, Path([0, 0])), true);
+
+      expect(entries[1].node, element);
+      expect(PathUtils.equals(entries[1].path, Path([0])), true);
+
+      expect(entries[2].node, editor);
+      expect(PathUtils.equals(entries[2].path, Path([])), true);
+    });
+
+    test('success', () {
+      // <editor>
+      //   <element>
+      //     <text />
+      //   </element>
+      // </editor>
+      Text text = Text('one');
+      Element element = Element(children: <Node>[text]);
+      TestEditor editor = TestEditor(children: <Node>[
+        element,
+      ]);
+
+      List<NodeEntry> entries =
+          List.from(EditorUtils.levels(editor, at: Path([0, 0])));
+
+      expect(entries[0].node, editor);
+      expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+      expect(entries[1].node, element);
+      expect(PathUtils.equals(entries[1].path, Path([0])), true);
+
+      expect(entries[2].node, text);
+      expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+    });
+
+    test('voids false', () {
+      // <editor>
+      //   <void>
+      //     <text />
+      //   </void>
+      // </editor>
+      Text text = Text('one');
+      Void v = Void(children: <Node>[text]);
+      TestEditor editor = TestEditor(children: <Node>[v]);
+
+      List<NodeEntry> entries = List.from(
+        EditorUtils.levels(editor, at: Path([0, 0])),
+      );
+
+      expect(entries[0].node, editor);
+      expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+      expect(entries[1].node, v);
+      expect(PathUtils.equals(entries[1].path, Path([0])), true);
+    });
+
+    test('voids true', () {
+      // <editor>
+      //   <void>
+      //     <text />
+      //   </void>
+      // </editor>
+      Text text = Text('one');
+      Void v = Void(children: <Node>[text]);
+      TestEditor editor = TestEditor(children: <Node>[v]);
+
+      List<NodeEntry> entries = List.from(
+        EditorUtils.levels(editor, at: Path([0, 0]), voids: true),
+      );
+
+      expect(entries[0].node, editor);
+      expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+      expect(entries[1].node, v);
+      expect(PathUtils.equals(entries[1].path, Path([0])), true);
+
+      expect(entries[2].node, text);
+      expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
     });
   });
 }

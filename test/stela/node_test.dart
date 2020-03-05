@@ -197,6 +197,19 @@ void main() {
     });
   });
 
+  group('first', () {
+    test('success', () {
+      Editor editor = Editor(children: <Node>[
+        Element(children: <Node>[Text('a'), Text('b')])
+      ]);
+
+      NodeEntry entry = NodeUtils.first(editor, Path([0]));
+
+      expect(entry.node, (editor.children[0] as Ancestor).children[0]);
+      expect(PathUtils.equals(entry.path, Path([0, 0])), true);
+    });
+  });
+
   group('get', () {
     test('root', () {
       Editor editor = Editor(children: <Node>[
@@ -234,6 +247,19 @@ void main() {
       ]);
 
       expect(NodeUtils.has(editor, Path([1])), false);
+    });
+  });
+
+  group('last', () {
+    test('success', () {
+      Editor editor = Editor(children: <Node>[
+        Element(children: <Node>[Text('a'), Text('b')])
+      ]);
+
+      NodeEntry entry = NodeUtils.last(editor, Path([0]));
+
+      expect(entry.node, (editor.children[0] as Ancestor).children[1]);
+      expect(PathUtils.equals(entry.path, Path([0, 1])), true);
     });
   });
 
