@@ -1248,7 +1248,7 @@ class EditorUtils {
 
   /// Get a range of a location.
   static Range range(Editor editor, Location at, Location to) {
-    if (at is Range && to != null) {
+    if (at is Range && to == null) {
       return at;
     }
 
