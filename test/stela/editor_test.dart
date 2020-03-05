@@ -1095,4 +1095,154 @@ void main() {
       expect(PathUtils.equals(next.path, Path([1, 0])), true);
     });
   });
+
+  group('node', () {
+    test('path', () {
+      // <editor>
+      //   <block>one</block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one')]),
+      ]);
+      NodeEntry entry = EditorUtils.node(editor, Path([0]));
+
+      expect(entry.node, editor.children[0]);
+      expect(PathUtils.equals(entry.path, Path([0])), true);
+    });
+
+    test('point', () {
+      // <editor>
+      //   <block>one</block>
+      // </editor>
+      Text text = Text('one');
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[text]),
+      ]);
+      NodeEntry entry = EditorUtils.node(editor, Point(Path([0, 0]), 1));
+
+      expect(entry.node, text);
+      expect(PathUtils.equals(entry.path, Path([0, 0])), true);
+    });
+
+    test('range end', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      Text text = Text('two');
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one')]),
+        Block(children: <Node>[text]),
+      ]);
+      NodeEntry entry = EditorUtils.node(
+          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
+          edge: Edge.end);
+
+      expect(entry.node, text);
+      expect(PathUtils.equals(entry.path, Path([1, 0])), true);
+    });
+
+    test('range start', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      Text text = Text('one');
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[text]),
+        Block(children: <Node>[Text('two')]),
+      ]);
+      NodeEntry entry = EditorUtils.node(
+          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
+          edge: Edge.start);
+
+      expect(entry.node, text);
+      expect(PathUtils.equals(entry.path, Path([0, 0])), true);
+    });
+
+    test('range', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      Text text = Text('one');
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[text]),
+        Block(children: <Node>[Text('two')]),
+      ]);
+      NodeEntry entry = EditorUtils.node(
+          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
+
+      expect(entry.node, editor);
+      expect(PathUtils.equals(entry.path, Path([])), true);
+    });
+  });
+
+  group('nodes', () {
+    group('match', () {
+      test('block', () {
+        // <editor>
+        //   <block>one</block>
+        // </editor>
+        Block block = Block(children: <Node>[Text('one')]);
+        TestEditor editor = TestEditor(children: <Node>[block]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+          match: (node) {
+            return EditorUtils.isBlock(editor, node);
+          },
+        ));
+
+        expect(entries[0].node, block);
+        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+      });
+
+      test('editor', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        //   <block>three</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('one')]),
+          Block(children: <Node>[Text('two')]),
+          Block(children: <Node>[Text('three')]),
+        ]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+          match: (node) {
+            return true;
+          },
+          mode: Mode.highest,
+        ));
+
+        expect(entries[0].node, editor);
+        expect(PathUtils.equals(entries[0].path, Path([])), true);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     one<inline>two</inline>three
+        //   </block>
+        // </editor>
+        Inline inline = Inline(children: <Node>[Text('two')]);
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('one'), inline, Text('three')])
+        ]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+          match: (node) {
+            return EditorUtils.isInline(editor, node);
+          },
+        ));
+
+        expect(entries[0].node, inline);
+        expect(PathUtils.equals(entries[0].path, Path([0, 1])), true);
+      });
+    });
+  });
 }
