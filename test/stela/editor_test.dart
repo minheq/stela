@@ -4222,4 +4222,58 @@ void main() {
       });
     });
   });
+
+  group('previous', () {
+    test('block', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one')]),
+        Block(children: <Node>[Text('two')]),
+      ]);
+      NodeEntry previous =
+          EditorUtils.previous(editor, at: Path([1]), match: (node) {
+        return EditorUtils.isBlock(editor, node);
+      });
+
+      expect(previous.node, editor.children[0]);
+      expect(PathUtils.equals(previous.path, Path([0])), true);
+    });
+
+    test('default', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one')]),
+        Block(children: <Node>[Text('two')]),
+      ]);
+      NodeEntry previous = EditorUtils.previous(editor, at: Path([1]));
+
+      expect(previous.node, editor.children[0]);
+      expect(PathUtils.equals(previous.path, Path([0])), true);
+    });
+
+    test('text', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      Text text = Text('one');
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[text]),
+        Block(children: <Node>[Text('two')]),
+      ]);
+      NodeEntry previous =
+          EditorUtils.previous(editor, at: Path([1]), match: (node) {
+        return node is Text;
+      });
+
+      expect(previous.node, text);
+      expect(PathUtils.equals(previous.path, Path([0, 0])), true);
+    });
+  });
 }
