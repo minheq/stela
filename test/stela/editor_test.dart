@@ -2081,4 +2081,111 @@ void main() {
       expect(PathUtils.equals(path, Path([])), true);
     });
   });
+
+  group('point', () {
+    test('path end', () {
+      // <editor>
+      //   <block>one</block>
+      // </editor>
+      Text text1 = Text('one');
+      Block block = Block(children: <Node>[text1]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
+
+      Point point = EditorUtils.point(editor, Path([0]), edge: Edge.end);
+
+      expect(PointUtils.equals(point, Point(Path([0, 0]), 3)), true);
+    });
+
+    test('path start', () {
+      // <editor>
+      //   <block>one</block>
+      // </editor>
+      Text text1 = Text('one');
+      Block block = Block(children: <Node>[text1]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
+
+      Point point = EditorUtils.point(editor, Path([0]), edge: Edge.start);
+
+      expect(PointUtils.equals(point, Point(Path([0, 0]), 0)), true);
+    });
+
+    test('path', () {
+      // <editor>
+      //   <block>one</block>
+      // </editor>
+      Text text1 = Text('one');
+      Block block = Block(children: <Node>[text1]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
+
+      Point point = EditorUtils.point(editor, Path([0]));
+
+      expect(PointUtils.equals(point, Point(Path([0, 0]), 0)), true);
+    });
+
+    test('point', () {
+      // <editor>
+      //   <block>one</block>
+      // </editor>
+      Text text1 = Text('one');
+      Block block = Block(children: <Node>[text1]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
+
+      Point point = EditorUtils.point(editor, Point(Path([0, 0]), 1));
+
+      expect(PointUtils.equals(point, Point(Path([0, 0]), 1)), true);
+    });
+
+    test('range end', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      Text text1 = Text('one');
+      Text text2 = Text('one');
+      Block block1 = Block(children: <Node>[text1]);
+      Block block2 = Block(children: <Node>[text2]);
+      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+
+      Point point = EditorUtils.point(
+          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
+          edge: Edge.end);
+
+      expect(PointUtils.equals(point, Point(Path([0, 1]), 2)), true);
+    });
+
+    test('range start', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      Text text1 = Text('one');
+      Text text2 = Text('one');
+      Block block1 = Block(children: <Node>[text1]);
+      Block block2 = Block(children: <Node>[text2]);
+      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+
+      Point point = EditorUtils.point(
+          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
+          edge: Edge.start);
+
+      expect(PointUtils.equals(point, Point(Path([0, 0]), 1)), true);
+    });
+
+    test('range', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      Text text1 = Text('one');
+      Text text2 = Text('one');
+      Block block1 = Block(children: <Node>[text1]);
+      Block block2 = Block(children: <Node>[text2]);
+      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+
+      Point point = EditorUtils.point(
+          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)));
+
+      expect(PointUtils.equals(point, Point(Path([0, 0]), 1)), true);
+    });
+  });
 }
