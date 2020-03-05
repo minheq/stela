@@ -1179,7 +1179,7 @@ void main() {
   });
 
   group('nodes', () {
-    group('match', () {
+    group('match function', () {
       test('block', () {
         // <editor>
         //   <block>one</block>
@@ -1242,6 +1242,262 @@ void main() {
 
         expect(entries[0].node, inline);
         expect(PathUtils.equals(entries[0].path, Path([0, 1])), true);
+      });
+    });
+
+    group('mode all', () {
+      test('block', () {
+        // <editor>
+        //   <block a>
+        //     <block a>one</block>
+        //   </block>
+        //   <block a>
+        //     <block a>two</block>
+        //   </block>
+        // </editor>
+        Block innerBlock1 =
+            Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block1 = Block(children: <Node>[innerBlock1], props: {'a': true});
+        Block innerBlock2 =
+            Block(children: <Node>[Text('two')], props: {'a': true});
+        Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['a'] != null;
+        }, mode: Mode.all));
+
+        expect(entries[0].node, block1);
+        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+
+        expect(entries[1].node, innerBlock1);
+        expect(PathUtils.equals(entries[1].path, Path([0, 0])), true);
+
+        expect(entries[2].node, block2);
+        expect(PathUtils.equals(entries[2].path, Path([1])), true);
+
+        expect(entries[3].node, innerBlock2);
+        expect(PathUtils.equals(entries[3].path, Path([1, 0])), true);
+      });
+    });
+
+    group('mode highest', () {
+      test('block', () {
+        // <editor>
+        //   <block a>
+        //     <block a>one</block>
+        //   </block>
+        //   <block a>
+        //     <block a>two</block>
+        //   </block>
+        // </editor>
+        Block innerBlock1 =
+            Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block1 = Block(children: <Node>[innerBlock1], props: {'a': true});
+        Block innerBlock2 =
+            Block(children: <Node>[Text('two')], props: {'a': true});
+        Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['a'] != null;
+        }, mode: Mode.highest));
+
+        expect(entries[0].node, block1);
+        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+
+        expect(entries[1].node, block2);
+        expect(PathUtils.equals(entries[1].path, Path([1])), true);
+      });
+    });
+
+    group('mode lowest', () {
+      test('block', () {
+        // <editor>
+        //   <block a>
+        //     <block a>one</block>
+        //   </block>
+        //   <block a>
+        //     <block a>two</block>
+        //   </block>
+        // </editor>
+        Block innerBlock1 =
+            Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block1 = Block(children: <Node>[innerBlock1], props: {'a': true});
+        Block innerBlock2 =
+            Block(children: <Node>[Text('two')], props: {'a': true});
+        Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['a'] != null;
+        }, mode: Mode.lowest));
+
+        expect(entries[0].node, innerBlock1);
+        expect(PathUtils.equals(entries[0].path, Path([0, 0])), true);
+
+        expect(entries[1].node, innerBlock2);
+        expect(PathUtils.equals(entries[1].path, Path([1, 0])), true);
+      });
+    });
+
+    group('mode universal', () {
+      test('all nested', () {
+        // <editor>
+        //   <block a>
+        //     <block a>one</block>
+        //   </block>
+        //   <block a>
+        //     <block a>two</block>
+        //   </block>
+        // </editor>
+        Block innerBlock1 =
+            Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block1 = Block(children: <Node>[innerBlock1], props: {'a': true});
+        Block innerBlock2 =
+            Block(children: <Node>[Text('two')], props: {'a': true});
+        Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['a'] != null;
+        }, mode: Mode.lowest, universal: true));
+
+        expect(entries[0].node, innerBlock1);
+        expect(PathUtils.equals(entries[0].path, Path([0, 0])), true);
+
+        expect(entries[1].node, innerBlock2);
+        expect(PathUtils.equals(entries[1].path, Path([1, 0])), true);
+      });
+
+      test('all', () {
+        // <editor>
+        //   <block a>one</block>
+        //   <block a>two</block>
+        // </editor>
+        Block block1 = Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block2 = Block(children: <Node>[Text('two')], props: {'a': true});
+
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['a'] != null;
+        }, mode: Mode.lowest, universal: true));
+
+        expect(entries[0].node, block1);
+        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+
+        expect(entries[1].node, block2);
+        expect(PathUtils.equals(entries[1].path, Path([1])), true);
+      });
+
+      test('branch nested', () {
+        // <editor>
+        //   <block a>
+        //     <block b>one</block>
+        //   </block>
+        //   <block b>
+        //     <block a>two</block>
+        //   </block>
+        // </editor>
+        Block innerBlock1 =
+            Block(children: <Node>[Text('one')], props: {'b': true});
+        Block block1 = Block(children: <Node>[innerBlock1], props: {'a': true});
+        Block innerBlock2 =
+            Block(children: <Node>[Text('two')], props: {'a': true});
+        Block block2 = Block(children: <Node>[innerBlock2], props: {'b': true});
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['a'] != null;
+        }, mode: Mode.lowest, universal: true));
+
+        expect(entries[0].node, block1);
+        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+
+        expect(entries[1].node, innerBlock2);
+        expect(PathUtils.equals(entries[1].path, Path([1, 0])), true);
+      });
+      test('none nested', () {
+        // <editor>
+        //   <block a>
+        //     <block a>one</block>
+        //   </block>
+        //   <block a>
+        //     <block a>two</block>
+        //   </block>
+        // </editor>
+        Block innerBlock1 =
+            Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block1 = Block(children: <Node>[innerBlock1], props: {'a': true});
+        Block innerBlock2 =
+            Block(children: <Node>[Text('two')], props: {'a': true});
+        Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['b'] != null;
+        }, mode: Mode.lowest, universal: true));
+
+        expect(entries.isEmpty, true);
+      });
+
+      test('none', () {
+        // <editor>
+        //   <block a>one</block>
+        //   <block a>two</block>
+        // </editor>
+        Block block1 = Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block2 = Block(children: <Node>[Text('two')], props: {'a': true});
+
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['b'] != null;
+        }, mode: Mode.lowest, universal: true));
+
+        expect(entries.isEmpty, true);
+      });
+
+      test('some nested', () {
+        // <editor>
+        //   <block a>
+        //     <block a>one</block>
+        //   </block>
+        //   <block b>
+        //     <block b>two</block>
+        //   </block>
+        // </editor>
+        Block innerBlock1 =
+            Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block1 = Block(children: <Node>[innerBlock1], props: {'a': true});
+        Block innerBlock2 =
+            Block(children: <Node>[Text('two')], props: {'b': true});
+        Block block2 = Block(children: <Node>[innerBlock2], props: {'b': true});
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['a'] != null;
+        }, mode: Mode.lowest, universal: true));
+
+        expect(entries.isEmpty, true);
+      });
+
+      test('some', () {
+        // <editor>
+        //   <block a>one</block>
+        //   <block b>two</block>
+        // </editor>
+        Block block1 = Block(children: <Node>[Text('one')], props: {'a': true});
+        Block block2 = Block(children: <Node>[Text('two')], props: {'b': true});
+
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries =
+            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
+          return node.props['a'] != null;
+        }, mode: Mode.lowest, universal: true));
+
+        expect(entries.isEmpty, true);
       });
     });
   });
