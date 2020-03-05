@@ -1043,4 +1043,56 @@ void main() {
       expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
     });
   });
+
+  group('next', () {
+    test('block', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one')]),
+        Block(children: <Node>[Text('two')]),
+      ]);
+      NodeEntry next = EditorUtils.next(editor, at: Path([0]), match: (node) {
+        return EditorUtils.isBlock(editor, node);
+      });
+
+      expect(next.node, editor.children[1]);
+      expect(PathUtils.equals(next.path, Path([1])), true);
+    });
+
+    test('default', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one')]),
+        Block(children: <Node>[Text('two')]),
+      ]);
+      NodeEntry next = EditorUtils.next(editor, at: Path([0]));
+
+      expect(next.node, editor.children[1]);
+      expect(PathUtils.equals(next.path, Path([1])), true);
+    });
+
+    test('text', () {
+      // <editor>
+      //   <block>one</block>
+      //   <block>two</block>
+      // </editor>
+      Text text = Text('two');
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[Text('one')]),
+        Block(children: <Node>[text]),
+      ]);
+      NodeEntry next = EditorUtils.next(editor, at: Path([0]), match: (node) {
+        return node is Text;
+      });
+
+      expect(next.node, text);
+      expect(PathUtils.equals(next.path, Path([1, 0])), true);
+    });
+  });
 }

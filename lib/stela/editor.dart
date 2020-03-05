@@ -781,7 +781,7 @@ class EditorUtils {
   }
 
   /// Get the node at a location.
-  static NodeEntry node(
+  static NodeEntry<T> node<T extends Node>(
     Editor editor,
     Location at, {
     int depth,
@@ -948,7 +948,7 @@ class EditorUtils {
   }) {
     Path path = EditorUtils.path(editor, at, edge: edge, depth: depth);
     Path parentPath = PathUtils.parent(path);
-    NodeEntry<Ancestor> entry = EditorUtils.node(editor, parentPath);
+    NodeEntry<Ancestor> entry = EditorUtils.node<Ancestor>(editor, parentPath);
     return entry;
   }
 
