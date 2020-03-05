@@ -795,7 +795,7 @@ class EditorUtils {
 
   /// Iterate through all of the nodes in the Editor.
   ///
-  /// [universal] ??
+  /// [universal] ensures that the match occurs in every branch
   static Iterable<NodeEntry<T>> nodes<T extends Node>(
     Editor editor, {
     Location at,

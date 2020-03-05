@@ -1500,5 +1500,199 @@ void main() {
         expect(entries.isEmpty, true);
       });
     });
+
+    group('no match', () {
+      test('block multiple', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        Text text1 = Text('one');
+        Block block1 = Block(children: <Node>[text1]);
+        Text text2 = Text('two');
+        Block block2 = Block(children: <Node>[text2]);
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+        ));
+
+        expect(entries[0].node, editor);
+        expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+        expect(entries[1].node, block1);
+        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+
+        expect(entries[2].node, text1);
+        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+
+        expect(entries[3].node, block2);
+        expect(PathUtils.equals(entries[3].path, Path([1])), true);
+
+        expect(entries[4].node, text2);
+        expect(PathUtils.equals(entries[4].path, Path([1, 0])), true);
+      });
+
+      test('block multiple', () {
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //   </block>
+        //   <block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        Text text1 = Text('one');
+        Block innerBlock1 = Block(children: <Node>[text1]);
+        Block block1 = Block(children: <Node>[innerBlock1]);
+        Text text2 = Text('two');
+        Block innerBlock2 = Block(children: <Node>[text2]);
+        Block block2 = Block(children: <Node>[innerBlock2]);
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+        ));
+
+        expect(entries[0].node, editor);
+        expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+        expect(entries[1].node, block1);
+        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+
+        expect(entries[2].node, innerBlock1);
+        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+
+        expect(entries[3].node, text1);
+        expect(PathUtils.equals(entries[3].path, Path([0, 0, 0])), true);
+
+        expect(entries[4].node, block2);
+        expect(PathUtils.equals(entries[4].path, Path([1])), true);
+
+        expect(entries[5].node, innerBlock2);
+        expect(PathUtils.equals(entries[5].path, Path([1, 0])), true);
+
+        expect(entries[6].node, text2);
+        expect(PathUtils.equals(entries[6].path, Path([1, 0, 0])), true);
+      });
+
+      test('block reverse', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        Text text1 = Text('one');
+        Block block1 = Block(children: <Node>[text1]);
+        Text text2 = Text('two');
+        Block block2 = Block(children: <Node>[text2]);
+        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+          reverse: true,
+        ));
+
+        expect(entries[0].node, editor);
+        expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+        expect(entries[1].node, block2);
+        expect(PathUtils.equals(entries[1].path, Path([1])), true);
+
+        expect(entries[2].node, text2);
+        expect(PathUtils.equals(entries[2].path, Path([1, 0])), true);
+
+        expect(entries[3].node, block1);
+        expect(PathUtils.equals(entries[3].path, Path([0])), true);
+
+        expect(entries[4].node, text1);
+        expect(PathUtils.equals(entries[4].path, Path([0, 0])), true);
+      });
+
+      test('block void', () {
+        // <editor>
+        //   <void>one</void>
+        // </editor>
+        Void v = Void(children: <Node>[Text('one')]);
+        TestEditor editor = TestEditor(children: <Node>[v]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+        ));
+
+        expect(entries[0].node, editor);
+        expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+        expect(entries[1].node, v);
+        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+      });
+
+      test('block', () {
+        // <editor>
+        //   <block>one</block>
+        // </editor>
+        Text text = Text('one');
+        Block block = Block(children: <Node>[text]);
+        TestEditor editor = TestEditor(children: <Node>[block]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+        ));
+
+        expect(entries[0].node, editor);
+        expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+        expect(entries[1].node, block);
+        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+
+        expect(entries[2].node, text);
+        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+      });
+
+      test('inline multiple', () {
+        // <editor>
+        //   <block>
+        //     one<inline>two</inline>three<inline>four</inline>five
+        //   </block>
+        // </editor>
+        Text text1 = Text('one');
+        Text text2 = Text('two');
+        Inline inline2 = Inline(children: <Node>[text2]);
+        Text text3 = Text('three');
+        Text text4 = Text('four');
+        Inline inline4 = Inline(children: <Node>[text4]);
+        Text text5 = Text('five');
+        Block block =
+            Block(children: <Node>[text1, inline2, text3, inline4, text5]);
+        TestEditor editor = TestEditor(children: <Node>[block]);
+        List<NodeEntry> entries = List.from(EditorUtils.nodes(
+          editor,
+          at: Path([]),
+        ));
+
+        expect(entries[0].node, editor);
+        expect(PathUtils.equals(entries[0].path, Path([])), true);
+
+        expect(entries[1].node, text1);
+        expect(PathUtils.equals(entries[1].path, Path([0, 0])), true);
+
+        expect(entries[2].node, inline2);
+        expect(PathUtils.equals(entries[2].path, Path([0, 1])), true);
+
+        expect(entries[3].node, text2);
+        expect(PathUtils.equals(entries[3].path, Path([0, 1, 0])), true);
+
+        expect(entries[4].node, text3);
+        expect(PathUtils.equals(entries[4].path, Path([0, 2])), true);
+
+        expect(entries[5].node, inline4);
+        expect(PathUtils.equals(entries[5].path, Path([0, 3])), true);
+
+        expect(entries[6].node, text4);
+        expect(PathUtils.equals(entries[6].path, Path([0, 3, 0])), true);
+
+        expect(entries[7].node, text4);
+        expect(PathUtils.equals(entries[7].path, Path([0, 4])), true);
+      });
+    });
   });
 }
