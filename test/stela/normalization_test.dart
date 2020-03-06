@@ -78,29 +78,29 @@ void main() {
       expect((block.children[0] as Text).text, 'one');
     });
 
-    // test('remove inline', () {
-    //   // <editor>
-    //   //   <block>
-    //   //     <text>one</text>
-    //   //     <inline>two</inline>
-    //   //   </block>
-    //   // </editor>
-    //   Block block = Block(children: <Node>[
-    //     Text('one'),
-    //     Inline(children: <Node>[Text('two')])
-    //   ]);
-    //   TestEditor editor = TestEditor(children: <Node>[block]);
+    test('remove inline', () {
+      // <editor>
+      //   <block>
+      //     <block>one</block>
+      //     <inline>two</inline>
+      //   </block>
+      // </editor>
+      Block block = Block(children: <Node>[
+        Block(children: <Node>[Text('one')]),
+        Inline(children: <Node>[Text('two')])
+      ]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
 
-    //   EditorUtils.normalize(editor, force: true);
+      EditorUtils.normalize(editor, force: true);
 
-    //   // <editor>
-    //   //   <block>
-    //   //     <text>one</text>
-    //   //   </block>
-    //   // </editor>
-    //   expect(block.children.length, 1);
-    //   expect(block.children[0] is Text, true);
-    //   expect((block.children[0] as Text).text, 'one');
-    // });
+      // <editor>
+      //   <block>
+      //     <block>one</block>
+      //   </block>
+      // </editor>
+      Block innerBlock = block.children[0];
+      expect(block.children.length, 1);
+      expect((innerBlock.children[0] as Text).text, 'one');
+    });
   });
 }

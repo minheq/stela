@@ -102,8 +102,8 @@ class Editor implements Ancestor {
         : (node is Element) &&
             (isInline(node) ||
                 node.children.isEmpty ||
-                (node.children[0] is Text) ||
-                isInline(node.children[0]));
+                (node.children.first is Text) ||
+                isInline(node.children.first));
 
     // Since we'll be applying operations while iterating, keep track of an
     // index that accounts for any added/removed nodes.
