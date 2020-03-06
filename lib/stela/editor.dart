@@ -152,7 +152,7 @@ class Editor implements Ancestor {
       } else {
         // Merge adjacent text nodes that are empty or match.
         if (prev != null && (prev is Text)) {
-          if (TextUtils.equals(child, prev)) {
+          if (TextUtils.propsEquals(child, prev)) {
             Path at = PathUtils.copy(path);
             at.add(n);
             Transforms.mergeNodes(this, at: at, voids: true);
@@ -255,7 +255,7 @@ class Editor implements Ancestor {
     if (_flushing[this] == null) {
       _flushing[this] = true;
 
-      Future.sync(() {
+      Future.microtask(() {
         _flushing[this] = false;
         this.onChange();
         this.operations = [];

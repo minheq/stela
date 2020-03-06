@@ -219,4 +219,122 @@ void main() {
       expect((block.children[2] as Text).text, '');
     });
   });
+
+  group('text', () {
+    test('merge adjacent empty', () {
+      // <editor>
+      //   <block>
+      //     <text />
+      //     <text />
+      //   </block>
+      // </editor>
+      Block block = Block(children: <Node>[
+        Text(''),
+        Text(''),
+      ]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
+
+      EditorUtils.normalize(editor, force: true);
+
+      // <editor>
+      //   <block>
+      //     <text />
+      //   </block>
+      // </editor>
+      expect(block.children.length, 1);
+      expect((block.children[0] as Text).text, '');
+    });
+
+    test('merge adjacent match empty', () {
+      // <editor>
+      //   <block>
+      //     <text>1</text>
+      //     <text>2</text>
+      //   </block>
+      // </editor>
+      Block block = Block(children: <Node>[
+        Text('1'),
+        Text('2'),
+      ]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
+
+      EditorUtils.normalize(editor, force: true);
+
+      // <editor>
+      //   <block>
+      //     <text>12</text>
+      //   </block>
+      // </editor>
+      expect(block.children.length, 1);
+      expect((block.children[0] as Text).text, '12');
+    });
+
+    test('merge adjacent match', () {
+      // <editor>
+      //   <block>
+      //     <text a>1</text>
+      //     <text a>2</text>
+      //   </block>
+      // </editor>
+      Block block = Block(children: <Node>[
+        Text('1', props: {'a': true}),
+        Text('2', props: {'a': true}),
+      ]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
+
+      EditorUtils.normalize(editor, force: true);
+
+      // <editor>
+      //   <block>
+      //     <text>12</text>
+      //   </block>
+      // </editor>
+      expect(block.children.length, 1);
+      expect((block.children[0] as Text).text, '12');
+    });
+  });
+
+  group('void', () {
+    test('block insert text', () {
+      // <editor>
+      //   <void />
+      // </editor>
+      Void v = Void(children: <Node>[]);
+      TestEditor editor = TestEditor(children: <Node>[v]);
+
+      EditorUtils.normalize(editor, force: true);
+
+      // <editor>
+      //   <void>
+      //     <text />
+      //   </void>
+      // </editor>
+      expect(v.children.length, 1);
+      expect((v.children[0] as Text).text, '');
+    });
+
+    test('inline insert text', () {
+      // <editor>
+      //   <text />
+      //   <void />
+      //   <text />
+      // </editor>
+      Void v = Void(children: <Node>[]);
+      TestEditor editor = TestEditor(children: <Node>[Text(''), v, Text('')]);
+
+      EditorUtils.normalize(editor, force: true);
+
+      // <editor>
+      //   <block>
+      //     <text />
+      //     <void>
+      //       <text />
+      //     </void>
+      //     <text />
+      //   </block>
+      // </editor>
+      expect(v.children.length, 1);
+      expect((v.children[0] as Text).text, '');
+    });
+  });
 }

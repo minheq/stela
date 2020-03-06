@@ -26,6 +26,23 @@ class TextUtils {
     return text.text == another.text;
   }
 
+  /// Check if two `Text` props are equal
+  static bool propsEquals(Text text, Text another) {
+    for (String key in text.props.keys) {
+      if (text.props[key] != another.props[key]) {
+        return false;
+      }
+    }
+
+    for (String key in another.props.keys) {
+      if (text.props[key] != another.props[key]) {
+        return false;
+      }
+    }
+
+    return true;
+  }
+
   /// Check if list of nodes consist of only `Text` nodes.
   static bool isTextList(List<Node> nodes) {
     for (Node node in nodes) {

@@ -249,8 +249,8 @@ class Transforms {
         }
       }
 
-      List<NodeEntry> currentNodes = EditorUtils.nodes(editor,
-          at: at, match: match, voids: voids, mode: mode);
+      List<NodeEntry> currentNodes = List.from(EditorUtils.nodes(editor,
+          at: at, match: match, voids: voids, mode: mode));
       NodeEntry current = currentNodes.first;
       NodeEntry prev = EditorUtils.previous(editor,
           at: at, match: match, voids: voids, mode: mode);
@@ -273,14 +273,15 @@ class Transforms {
       bool isPreviousSibling = PathUtils.isSibling(path, prevPath);
 
       List<NodeEntry> entries = List.from(EditorUtils.levels(editor, at: path));
-      entries = entries.sublist(commonPath.length);
-      List<Node> levels;
+      List<Node> levels = [];
 
-      for (int i = 0; i < entries.length - 2; i++) {
+      for (int i = 0; i < entries.length - 1; i++) {
         NodeEntry entry = entries[i];
-        Node node = entry.node;
-        levels.add(node);
+        levels.add(entry.node);
       }
+
+      levels = levels.sublist(commonPath.length);
+      levels.removeLast();
 
       // Determine if the merge will leave an ancestor of the path empty as a
       // result, in which case we'll want to remove it after merging.
