@@ -60,8 +60,8 @@ class Transforms {
 
           Transforms.delete(editor, at: at);
 
-          Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-          at = pointRef.unref(pointRefs);
+          Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
+          at = pointRef.unref(editorPointRefs);
         }
       }
 
@@ -94,8 +94,8 @@ class Transforms {
           Transforms.splitNodes(editor,
               at: at, match: match, mode: mode, voids: voids);
 
-          Set<PathRef> pathRefs = EditorUtils.pathRefs(editor);
-          Path path = pathRef.unref(pathRefs);
+          Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
+          Path path = pathRef.unref(editorPathRefs);
           at = isAtEnd ? PathUtils.next(path) : path;
         } else {
           return;
@@ -240,8 +240,8 @@ class Transforms {
           Point end = edge.end;
           PointRef pointRef = EditorUtils.pointRef(editor, end);
           Transforms.delete(editor, at: at);
-          Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-          at = pointRef.unref(pointRefs);
+          Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
+          at = pointRef.unref(editorPointRefs);
 
           if (at == null) {
             Transforms.select(editor, at);
@@ -333,8 +333,8 @@ class Transforms {
       }
 
       if (emptyRef != null) {
-        Set<PathRef> pathRefs = EditorUtils.pathRefs(editor);
-        emptyRef.unref(pathRefs);
+        Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
+        emptyRef.unref(editorPathRefs);
       }
     });
   }
@@ -375,7 +375,7 @@ class Transforms {
         Path path = pathRef.unref(editorPathRefs);
         Path newPath = toRef.current;
 
-        if (path.length != 0) {
+        if (path.isNotEmpty) {
           editor.apply(MoveNodeOperation(path, newPath));
         }
       }
@@ -420,8 +420,10 @@ class Transforms {
         pathRefs.add(pathRef);
       }
 
+      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
+
       for (PathRef pathRef in pathRefs) {
-        Path path = pathRef.unref(pathRefs);
+        Path path = pathRef.unref(editorPathRefs);
 
         if (path != null) {
           NodeEntry entry = EditorUtils.node(editor, path);
@@ -478,8 +480,8 @@ class Transforms {
         Transforms.splitNodes(editor,
             at: start, match: match, mode: splitMode, voids: voids);
 
-        Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(editor);
-        at = rangeRef.unref(rangeRefs);
+        Set<RangeRef> editorRangeRefs = EditorUtils.rangeRefs(editor);
+        at = rangeRef.unref(editorRangeRefs);
 
         if (at == null) {
           Transforms.select(editor, at);
@@ -510,7 +512,7 @@ class Transforms {
           }
         }
 
-        if (newProps.keys.length != 0) {
+        if (newProps.keys.isNotEmpty) {
           editor.apply(SetNodeOperation(path, props, newProps));
         }
       }
@@ -636,9 +638,9 @@ class Transforms {
         Transforms.select(editor, point);
       }
 
-      Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-      beforeRef.unref(pointRefs);
-      afterRef.unref(pointRefs);
+      Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
+      beforeRef.unref(editorPointRefs);
+      afterRef.unref(editorPointRefs);
     });
   }
 
@@ -732,10 +734,10 @@ class Transforms {
         );
       }
 
-      Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(editor);
+      Set<RangeRef> editorRangeRefs = EditorUtils.rangeRefs(editor);
 
       if (rangeRef != null) {
-        rangeRef.unref(rangeRefs);
+        rangeRef.unref(editorRangeRefs);
       }
     });
   }
@@ -778,8 +780,8 @@ class Transforms {
             EditorUtils.rangeRef(editor, at, affinity: Affinity.inward);
         Transforms.splitNodes(editor, at: end, match: match, voids: voids);
         Transforms.splitNodes(editor, at: start, match: match, voids: voids);
-        Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(editor);
-        at = rangeRef.unref(rangeRefs);
+        Set<RangeRef> editorRangeRefs = EditorUtils.rangeRefs(editor);
+        at = rangeRef.unref(editorRangeRefs);
 
         if (at == null) {
           Transforms.select(editor, at);
@@ -1162,8 +1164,10 @@ class Transforms {
         editor.apply(RemoveTextOperation(path, offset, text));
       }
 
+      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
+
       for (PathRef pathRef in pathRefs) {
-        Path path = pathRef.unref(pathRefs);
+        Path path = pathRef.unref(editorPathRefs);
         Transforms.removeNodes(editor, at: path, voids: voids);
       }
 
@@ -1191,8 +1195,9 @@ class Transforms {
         );
       }
 
-      Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-      Point point = endRef.unref(pointRefs) ?? startRef.unref(pointRefs);
+      Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
+      Point point =
+          endRef.unref(editorPointRefs) ?? startRef.unref(editorPointRefs);
 
       if (at == null && point != null) {
         Transforms.select(editor, point);
@@ -1230,8 +1235,8 @@ class Transforms {
           PointRef pointRef = EditorUtils.pointRef(editor, end);
           Transforms.delete(editor, at: at);
 
-          Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-          at = pointRef.unref(pointRefs);
+          Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
+          at = pointRef.unref(editorPointRefs);
         }
       } else if (at is Path) {
         at = EditorUtils.start(editor, at);
@@ -1395,11 +1400,11 @@ class Transforms {
         Transforms.select(editor, end);
       }
 
-      Set<PathRef> pathRefs = EditorUtils.pathRefs(editor);
+      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
 
-      startRef.unref(pathRefs);
-      middleRef.unref(pathRefs);
-      endRef.unref(pathRefs);
+      startRef.unref(editorPathRefs);
+      middleRef.unref(editorPathRefs);
+      endRef.unref(editorPathRefs);
     });
   }
 
@@ -1429,8 +1434,8 @@ class Transforms {
 
           PointRef pointRef = EditorUtils.pointRef(editor, end);
           Transforms.delete(editor, at: at, voids: voids);
-          Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-          at = pointRef.unref(pointRefs);
+          Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
+          at = pointRef.unref(editorPointRefs);
           Transforms.setSelection(editor, Range(at, at));
         }
       }
@@ -1458,8 +1463,8 @@ Point Function(Editor editor, Range range) deleteRange =
     PointRef pointRef = EditorUtils.pointRef(editor, end);
     Transforms.delete(editor, at: range);
 
-    Set<PointRef> pointRefs = EditorUtils.pointRefs(editor);
-    return pointRef.unref(pointRefs);
+    Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
+    return pointRef.unref(editorPointRefs);
   }
 };
 

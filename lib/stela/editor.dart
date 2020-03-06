@@ -22,11 +22,16 @@ Expando<Set<RangeRef>> _rangeRefs = Expando();
 /// by plugins that wish to add their own helpers and implement new behaviors.
 class Editor implements Ancestor {
   Editor(
-      {this.children = const <Node>[],
-      this.selection,
-      this.operations,
-      this.marks,
-      this.props = const {}});
+      {List<Node> children,
+      Range selection,
+      List<Operation> operations,
+      Map<String, dynamic> marks,
+      Map<String, dynamic> props})
+      : children = children ?? [],
+        selection = selection,
+        operations = operations ?? [],
+        marks = marks ?? {},
+        props = props ?? {};
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
@@ -51,7 +56,7 @@ class Editor implements Ancestor {
       str += child.toString() + ', ';
     }
 
-    return 'Editor(\'children: [$str]\')';
+    return 'Editor(children:[$str])';
   }
 
   // Schema-specific node behaviors.
@@ -77,7 +82,7 @@ class Editor implements Ancestor {
     }
 
     // Ensure that block and inline nodes have at least one text child.
-    if ((node is Element) && node.children.length == 0) {
+    if ((node is Element) && node.children.isEmpty) {
       Text child = Text('');
       Path at = PathUtils.copy(path);
       at.add(0);
@@ -96,7 +101,7 @@ class Editor implements Ancestor {
         ? false
         : (node is Element) &&
             (isInline(node) ||
-                node.children.length == 0 ||
+                node.children.isEmpty ||
                 (node.children[0] is Text) ||
                 isInline(node.children[0]));
 
@@ -106,7 +111,7 @@ class Editor implements Ancestor {
 
     for (int i = 0; i < (node as Ancestor).children.length; i++, n++) {
       Descendant child = (node as Ancestor).children[i];
-      Descendant prev = (node as Ancestor).children[i - 1];
+      Descendant prev = i - 1 >= 0 ? (node as Ancestor).children[i - 1] : null;
 
       bool isLast = i == (node as Ancestor).children.length - 1;
       bool isInlineOrText =
@@ -900,7 +905,7 @@ class EditorUtils {
   }
 
   /// Normalize any dirty objects in the editor.
-  static normalize(Editor editor, {bool force = false}) {
+  static void normalize(Editor editor, {bool force = false}) {
     List<Path> Function(Editor editor) getDirtyPaths = (Editor editor) {
       return _dirtyPaths[editor] ?? [];
     };
@@ -927,7 +932,7 @@ class EditorUtils {
       int max = getDirtyPaths(editor).length * 42;
       int m = 0;
 
-      while (getDirtyPaths(editor).length != 0) {
+      while (getDirtyPaths(editor).isNotEmpty) {
         if (m > max) {
           throw Exception(
               'Could not completely normalize the editor after $max iterations! This is usually due to incorrect normalization logic that leaves a node in an invalid state.');
@@ -1331,8 +1336,7 @@ class EditorUtils {
   }
 
   /// Transform the editor by an operation.
-  static void transform(Editor prevEditor, Operation op) {
-    Editor editor = NodeUtils.copy(prevEditor);
+  static void transform(Editor editor, Operation op) {
     Range selection = editor.selection;
 
     if (op is InsertNodeOperation) {

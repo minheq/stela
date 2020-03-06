@@ -19,6 +19,14 @@ class Path implements Location {
     return _path.length;
   }
 
+  bool get isEmpty {
+    return _path.isEmpty;
+  }
+
+  bool get isNotEmpty {
+    return _path.isNotEmpty;
+  }
+
   @override
   String toString() {
     return _path.join(', ');

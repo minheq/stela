@@ -20,7 +20,7 @@ class Element implements Ancestor, Descendant {
       str += child.toString() + ', ';
     }
 
-    return 'Element(\'children: [$str]\')';
+    return 'Element(children:[$str])';
   }
 }
 
@@ -53,6 +53,17 @@ class Block implements Element {
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
+
+  @override
+  String toString() {
+    String str = '';
+
+    for (Node child in children) {
+      str += child.toString() + ', ';
+    }
+
+    return 'Block(children:[$str])';
+  }
 }
 
 class Inline implements Element {
@@ -62,6 +73,17 @@ class Inline implements Element {
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
+
+  @override
+  String toString() {
+    String str = '';
+
+    for (Node child in children) {
+      str += child.toString() + ', ';
+    }
+
+    return 'Inline(children:[$str])';
+  }
 }
 
 class Void implements Element {

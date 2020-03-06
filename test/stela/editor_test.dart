@@ -14,7 +14,7 @@ class TestEditor extends Editor {
       Range selection,
       List<Operation> operations,
       Map<String, dynamic> marks,
-      Map<String, dynamic> props = const {}})
+      Map<String, dynamic> props})
       : super(
             children: children,
             selection: selection,

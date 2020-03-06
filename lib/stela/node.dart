@@ -119,6 +119,18 @@ class NodeUtils {
       copiedChildren.add(NodeUtils.copy(node));
     }
 
+    if (root is Void) {
+      return Void(children: copiedChildren);
+    }
+
+    if (root is Inline) {
+      return Void(children: copiedChildren);
+    }
+
+    if (root is Block) {
+      return Block(children: copiedChildren);
+    }
+
     if (root is Element) {
       return Element(children: copiedChildren);
     }
@@ -154,7 +166,7 @@ class NodeUtils {
       bool Function(NodeEntry entry) pass}) sync* {
     for (NodeEntry node in NodeUtils.nodes(root,
         from: from, to: to, reverse: reverse, pass: pass)) {
-      if (node.path.length != 0) {
+      if (node.path.isNotEmpty) {
         node = NodeEntry<Descendant>(node.node, node.path);
         // NOTE: we have to coerce here because checking the path's length does
         // guarantee that `node` is not a `Editor`, but TypeScript doesn't know.
@@ -191,7 +203,7 @@ class NodeUtils {
         break;
       }
 
-      if ((n as Ancestor).children.length == 0) {
+      if ((n as Ancestor).children.isEmpty) {
         break;
       }
 
@@ -261,7 +273,8 @@ class NodeUtils {
             "Cannot find a descendant at path [${path.toString()}] because it refers to a text node instead: ${node.toString()}");
       }
 
-      if ((node as Ancestor).children[p] == null) {
+      if ((node as Ancestor).children.length - 1 < p ||
+          (node as Ancestor).children[p] == null) {
         throw Exception(
             "Cannot find a descendant at path [${path.toString()}] in node: ${root.toString()}");
       }
@@ -305,7 +318,7 @@ class NodeUtils {
         break;
       }
 
-      if ((n as Ancestor).children.length == 0) {
+      if ((n as Ancestor).children.isEmpty) {
         break;
       }
 
@@ -371,7 +384,7 @@ class NodeUtils {
       // If we're allowed to go downward and we haven't descended yet, do.
       if (!visited.contains(n) &&
           !(n is Text) &&
-          (n as Ancestor).children.length != 0 &&
+          (n as Ancestor).children.isNotEmpty &&
           (pass == null || pass(NodeEntry(n, p)) == false)) {
         visited.add(n);
         int nextIndex = reverse ? (n as Ancestor).children.length - 1 : 0;
