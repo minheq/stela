@@ -238,7 +238,7 @@ class NodeUtils {
       if (!RangeUtils.includes(range, path)) {
         Ancestor parent = NodeUtils.parent(newRoot, path);
         int index = path[path.length - 1];
-        parent.children = parent.children.sublist(index, 1);
+        parent.children.removeAt(index);
       }
 
       if (PathUtils.equals(path, end.path)) {

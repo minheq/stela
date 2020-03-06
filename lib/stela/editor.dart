@@ -73,8 +73,8 @@ class Editor implements Ancestor {
   }
 
   void normalizeNode(NodeEntry entry) {
-    Node node = NodeUtils.copy(entry.node);
-    Path path = Path(entry.path.toList());
+    Node node = entry.node;
+    Path path = entry.path;
 
     // There are no core normalizations for text nodes.
     if (node is Text) {

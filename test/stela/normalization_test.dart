@@ -180,5 +180,43 @@ void main() {
       expect(((block.children[3] as Inline).children[0] as Text).text, 'two');
       expect((block.children[4] as Text).text, '');
     });
+
+    test('remove block', () {
+      // <editor>
+      //   <block>
+      //     <text />
+      //     <inline>
+      //       <block>one</block>
+      //       <text>two</text>
+      //     </inline>
+      //     <text />
+      //   </block>
+      // </editor>
+      Block block = Block(children: <Node>[
+        Text(''),
+        Inline(children: <Node>[
+          Block(children: <Node>[Text('one')]),
+          Text('two'),
+        ]),
+        Text(''),
+      ]);
+      TestEditor editor = TestEditor(children: <Node>[block]);
+
+      EditorUtils.normalize(editor, force: true);
+
+      // <editor>
+      //   <block>
+      //     <text />
+      //     <inline>
+      //       <text>two</text>
+      //     </inline>
+      //     <text />
+      //   </block>
+      // </editor>
+      expect(block.children.length, 3);
+      expect((block.children[0] as Text).text, '');
+      expect(((block.children[1] as Inline).children[0] as Text).text, 'two');
+      expect((block.children[2] as Text).text, '');
+    });
   });
 }
