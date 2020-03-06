@@ -3,8 +3,6 @@ import 'package:inday/stela/editor.dart';
 import 'package:inday/stela/element.dart';
 import 'package:inday/stela/node.dart';
 import 'package:inday/stela/operation.dart';
-import 'package:inday/stela/path.dart';
-import 'package:inday/stela/point.dart';
 import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
 

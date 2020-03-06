@@ -313,8 +313,8 @@ class PathUtils {
     Path p = PathUtils.copy(path);
 
     // PERF: Exit early if the operation is guaranteed not to have an effect.
-    if (path.length == 0) {
-      return null;
+    if (path.isEmpty) {
+      return path;
     }
 
     if (operation is InsertNodeOperation) {
@@ -333,7 +333,7 @@ class PathUtils {
       Path op = operation.path;
 
       if (PathUtils.equals(op, p) || PathUtils.isAncestor(op, p)) {
-        return null;
+        return path;
       } else if (PathUtils.endsBefore(op, p)) {
         p[op.length - 1] -= 1;
       }
@@ -365,7 +365,7 @@ class PathUtils {
         } else if (affinity == Affinity.backward) {
           // Nothing, because it still refers to the right path.
         } else {
-          return null;
+          return path;
         }
       } else if (PathUtils.endsBefore(op, p)) {
         p[op.length - 1] += 1;
@@ -383,7 +383,7 @@ class PathUtils {
 
       // If the old and new path are the same, it's a no-op.
       if (PathUtils.equals(op, onp)) {
-        return null;
+        return path;
       }
 
       if (PathUtils.isAncestor(op, p) || PathUtils.equals(op, p)) {

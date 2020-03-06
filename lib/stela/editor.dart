@@ -1355,10 +1355,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection = Range(PointUtils.transform(point, op), selection.focus);
+            selection.anchor = PointUtils.transform(point, op);
           } else {
-            selection =
-                Range(selection.anchor, PointUtils.transform(point, op));
+            selection.focus = PointUtils.transform(point, op);
           }
         }
       }
@@ -1378,10 +1377,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection = Range(PointUtils.transform(point, op), selection.focus);
+            selection.anchor = PointUtils.transform(point, op);
           } else {
-            selection =
-                Range(selection.anchor, PointUtils.transform(point, op));
+            selection.focus = PointUtils.transform(point, op);
           }
         }
       }
@@ -1411,10 +1409,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection = Range(PointUtils.transform(point, op), selection.focus);
+            selection.anchor = PointUtils.transform(point, op);
           } else {
-            selection =
-                Range(selection.anchor, PointUtils.transform(point, op));
+            selection.focus = PointUtils.transform(point, op);
           }
         }
       }
@@ -1451,10 +1448,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection = Range(PointUtils.transform(point, op), selection.focus);
+            selection.anchor = PointUtils.transform(point, op);
           } else {
-            selection =
-                Range(selection.anchor, PointUtils.transform(point, op));
+            selection.focus = PointUtils.transform(point, op);
           }
         }
       }
@@ -1476,9 +1472,9 @@ class EditorUtils {
 
           if (selection != null && result != null) {
             if (type == PointType.anchor) {
-              selection = Range(result, selection.focus);
+              editor.selection = Range(result, selection.focus);
             } else {
-              selection = Range(selection.anchor, result);
+              editor.selection = Range(selection.anchor, result);
             }
           } else {
             NodeEntry<Text> prev;
@@ -1502,7 +1498,7 @@ class EditorUtils {
               point.path = next.path;
               point.offset = 0;
             } else {
-              selection = null;
+              editor.selection = null;
             }
           }
         }
@@ -1523,10 +1519,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection = Range(PointUtils.transform(point, op), selection.focus);
+            selection.anchor = PointUtils.transform(point, op);
           } else {
-            selection =
-                Range(selection.anchor, PointUtils.transform(point, op));
+            selection.focus = PointUtils.transform(point, op);
           }
         }
       }
@@ -1557,11 +1552,11 @@ class EditorUtils {
       Range newSelection = op.newSelection;
 
       if (newSelection == null) {
-        selection = newSelection;
+        editor.selection = newSelection;
       } else if (selection == null) {
-        selection = newSelection;
+        editor.selection = newSelection;
       } else {
-        selection.props.addAll(newSelection.props);
+        editor.selection.props.addAll(newSelection.props);
       }
     }
 
@@ -1603,10 +1598,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection = Range(PointUtils.transform(point, op), selection.focus);
+            selection.anchor = PointUtils.transform(point, op);
           } else {
-            selection =
-                Range(selection.anchor, PointUtils.transform(point, op));
+            selection.focus = PointUtils.transform(point, op);
           }
         }
       }
