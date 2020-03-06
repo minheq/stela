@@ -105,6 +105,54 @@ void main() {
 
         expectEqual(editor, expected);
       });
+
+      test('inline middle reverse', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wor📛
+        //       <cursor />d
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 5), Point(Path([0, 1, 0]), 5)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('wor📛d')]),
+                Text(''),
+              ])
+            ]);
+
+        Transforms.delete(editor, unit: Unit.character, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wor
+        //       <cursor />d
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 3), Point(Path([0, 1, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ])
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }
