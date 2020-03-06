@@ -73,8 +73,8 @@ class Editor implements Ancestor {
   }
 
   void normalizeNode(NodeEntry entry) {
-    Node node = entry.node;
-    Path path = entry.path;
+    Node node = NodeUtils.copy(entry.node);
+    Path path = Path(entry.path.toList());
 
     // There are no core normalizations for text nodes.
     if (node is Text) {
@@ -923,7 +923,7 @@ class EditorUtils {
       _dirtyPaths[editor] = allPaths;
     }
 
-    if (getDirtyPaths(editor).length == 0) {
+    if (getDirtyPaths(editor).isEmpty) {
       return null;
     }
 
@@ -1337,7 +1337,11 @@ class EditorUtils {
 
   /// Transform the editor by an operation.
   static void transform(Editor editor, Operation op) {
-    Range selection = editor.selection;
+    Range selection;
+
+    if (editor.selection != null) {
+      selection = editor.selection;
+    }
 
     if (op is InsertNodeOperation) {
       Path path = op.path;

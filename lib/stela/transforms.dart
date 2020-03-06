@@ -118,7 +118,7 @@ class Transforms {
         editor.apply(InsertNodeOperation(path, node));
       }
 
-      if (select != null) {
+      if (select != false) {
         Point point = EditorUtils.end(editor, at);
 
         if (point != null) {

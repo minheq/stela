@@ -124,7 +124,7 @@ class NodeUtils {
     }
 
     if (root is Inline) {
-      return Void(children: copiedChildren);
+      return Inline(children: copiedChildren);
     }
 
     if (root is Block) {
