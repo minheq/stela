@@ -29,7 +29,7 @@ class Path implements Location {
 
   @override
   String toString() {
-    return _path.join(', ');
+    return "Path([${_path.join(', ')}])";
   }
 
   /// Adds [position] to the end of the `Path`, extending the length by one.

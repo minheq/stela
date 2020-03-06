@@ -44,7 +44,9 @@ void Function(Node, Node) expectEqual = (Node node, Node another) {
 
   if (node is Editor) {
     expect(
-        RangeUtils.equals(node.selection, (another as Editor).selection), true);
+        RangeUtils.equals(node.selection, (another as Editor).selection), true,
+        reason:
+            "expected: ${(another as Editor).selection.toString()}, received: ${node.selection.toString()}");
   }
 
   for (var i = 0; i < (node as Ancestor).children.length; i++) {
@@ -143,6 +145,56 @@ void main() {
         TestEditor expected = TestEditor(
             selection:
                 Range(Point(Path([0, 1, 0]), 3), Point(Path([0, 1, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ])
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline middle', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wo
+        //       <cursor />
+        //       📛rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('wo📛rd')]),
+                Text(''),
+              ])
+            ]);
+
+        Transforms.delete(editor, unit: Unit.character);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wo
+        //       <cursor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
                 Text(''),

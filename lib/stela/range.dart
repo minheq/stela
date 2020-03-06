@@ -14,6 +14,11 @@ class Range implements Location {
 
   /// Custom properties that can extend the `Range` behavior for e.g. decorations or selections
   Map<String, dynamic> props;
+
+  @override
+  String toString() {
+    return "Range(${anchor.toString()}, ${focus.toString()})";
+  }
 }
 
 class Edges {

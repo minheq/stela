@@ -16,6 +16,11 @@ class Point implements Location {
 
   /// Custom properties that can extend the `Point` behavior
   Map<String, dynamic> props;
+
+  @override
+  String toString() {
+    return "Point(${path.toString()}, $offset)";
+  }
 }
 
 enum PointType { anchor, focus }
