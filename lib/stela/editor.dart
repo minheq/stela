@@ -1717,7 +1717,7 @@ class StringUtils {
 
         offset += 2;
         prev = modifier ? Prev.MOD : Prev.SURR;
-        charCode = text.codeUnitAt(offset);
+        charCode = text.length - 1 < offset ? null : text.codeUnitAt(offset);
         // Absolutely fine to `continue` without any checks because if `charCode` is NaN (which
         // is the case when out of `text` range), next `while` loop won't execute and we're done.
         continue;
