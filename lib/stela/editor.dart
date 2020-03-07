@@ -1419,7 +1419,7 @@ class EditorUtils {
 
       if (node is Text && prev is Text) {
         prev.text += node.text;
-      } else if (!(node is Text) && !(prev is Text)) {
+      } else if (node is Text == false && prev is Text == false) {
         (prev as Ancestor).children.addAll((node as Ancestor).children);
       } else {
         throw Exception(
@@ -1496,9 +1496,9 @@ class EditorUtils {
 
           if (selection != null && result != null) {
             if (type == PointType.anchor) {
-              editor.selection = Range(result, selection.focus);
+              selection.anchor = result;
             } else {
-              editor.selection = Range(selection.anchor, result);
+              selection.focus = result;
             }
           } else {
             NodeEntry<Text> prev;

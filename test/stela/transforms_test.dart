@@ -582,6 +582,163 @@ void main() {
 
         expectEqual(editor, expected);
       });
+
+      test('inline before reverse', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>
+        //     <cursor />
+        //     two
+        //     <inline>three</inline>
+        //     four
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('one')]),
+              Block(children: <Node>[
+                Text('two'),
+                Inline(children: <Node>[Text('three')]),
+                Text('four'),
+              ])
+            ]);
+
+        Transforms.delete(editor, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     one
+        //     <cursor />
+        //     two
+        //     <inline>three</inline>
+        //     four
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('onetwo'),
+                Inline(children: <Node>[Text('three')]),
+                Text('four'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline before', () {
+        // <editor>
+        //   <block>
+        //     word
+        //     <cursor />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <void>
+        //       <text />
+        //     </void>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[Text('word')]),
+              Block(children: <Node>[
+                Text(''),
+                Void(children: <Node>[Text('')]),
+                Text(''),
+              ])
+            ]);
+
+        Transforms.delete(editor);
+
+        // <editor>
+        //   <block>
+        //     word
+        //     <cursor />
+        //     <void>
+        //       <text />
+        //     </void>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+                Void(children: <Node>[Text('')]),
+                Text('four'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline inside reverse', () {
+        // <editor>
+        //   <block>
+        //     one
+        //     <inline>two</inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       three
+        //     </inline>
+        //     four
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([1, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+                Inline(children: <Node>[Text('two')]),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('three')]),
+                Text('four'),
+              ])
+            ]);
+
+        Transforms.delete(editor, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     one
+        //     <inline>two</inline>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       three
+        //     </inline>
+        //     four
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 3, 0]), 0), Point(Path([0, 3, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+                Inline(children: <Node>[Text('two')]),
+                Text(''),
+                Inline(children: <Node>[Text('three')]),
+                Text('four'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }
