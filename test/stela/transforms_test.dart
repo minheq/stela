@@ -30,7 +30,7 @@ class TestEditor extends Editor {
 
   @override
   bool isVoid(Element element) {
-    return element is Void;
+    return element.isVoid;
   }
 }
 
@@ -636,9 +636,9 @@ void main() {
         //   </block>
         //   <block>
         //     <text />
-        //     <void>
+        //     <inline void>
         //       <text />
-        //     </void>
+        //     </inline>
         //     <text />
         //   </block>
         // </editor>
@@ -648,7 +648,7 @@ void main() {
               Block(children: <Node>[Text('word')]),
               Block(children: <Node>[
                 Text(''),
-                Void(children: <Node>[Text('')]),
+                Inline(children: <Node>[Text('')], isVoid: true),
                 Text(''),
               ])
             ]);
@@ -659,9 +659,9 @@ void main() {
         //   <block>
         //     word
         //     <cursor />
-        //     <void>
+        //     <inline void>
         //       <text />
-        //     </void>
+        //     </inline>
         //     <text />
         //   </block>
         // </editor>
@@ -670,8 +670,8 @@ void main() {
             children: <Node>[
               Block(children: <Node>[
                 Text('word'),
-                Void(children: <Node>[Text('')]),
-                Text('four'),
+                Inline(children: <Node>[Text('')], isVoid: true),
+                Text(''),
               ]),
             ]);
 
@@ -734,6 +734,58 @@ void main() {
                 Text(''),
                 Inline(children: <Node>[Text('three')]),
                 Text('four'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline void reverse', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('')], isVoid: true),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text('word'),
+              ])
+            ]);
+
+        Transforms.delete(editor, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text />
+        //     </inline>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('')], isVoid: true),
+                Text('word'),
               ]),
             ]);
 

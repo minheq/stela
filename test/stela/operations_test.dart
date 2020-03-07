@@ -29,7 +29,7 @@ class TestEditor extends Editor {
 
   @override
   bool isVoid(Element element) {
-    return element is Void;
+    return element.isVoid;
   }
 }
 

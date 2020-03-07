@@ -119,10 +119,6 @@ class NodeUtils {
       copiedChildren.add(NodeUtils.copy(node));
     }
 
-    if (root is Void) {
-      return Void(children: copiedChildren);
-    }
-
     if (root is Inline) {
       return Inline(children: copiedChildren);
     }

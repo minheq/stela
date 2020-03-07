@@ -29,7 +29,7 @@ class TestEditor extends Editor {
 
   @override
   bool isVoid(Element element) {
-    return element is Void;
+    return element.isVoid;
   }
 }
 
@@ -659,12 +659,12 @@ void main() {
 
     test('block void', () {
       // <editor>
-      //   <void>
+      //   <block void>
       //     <text />
-      //   </void>
+      //   </block>
       // </editor>
       TestEditor editor = TestEditor(children: <Node>[
-        Void(children: <Node>[Text('')])
+        Block(children: <Node>[Text('')], isVoid: true)
       ]);
 
       expect(EditorUtils.isEmpty(editor, editor.children[0]), false);
@@ -740,16 +740,16 @@ void main() {
       // <editor>
       //   <block>
       //     one
-      //     <void>
+      //     <inline void>
       //       <text />
-      //     </void>
+      //     </inline>
       //     three
       //   </block>
       // </editor>
       TestEditor editor = TestEditor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
-          Void(children: <Node>[Text('')]),
+          Inline(children: <Node>[Text('')], isVoid: true),
           Text('three'),
         ])
       ]);
@@ -892,6 +892,19 @@ void main() {
   });
 
   group('isVoid', () {
+    test('block void', () {
+      // <editor>
+      //   <block void>one</block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[
+          Text('one'),
+        ], isVoid: true),
+      ]);
+
+      expect(EditorUtils.isVoid(editor, editor.children[0]), true);
+    });
+
     test('block', () {
       // <editor>
       //   <block>one</block>
@@ -905,15 +918,44 @@ void main() {
       expect(EditorUtils.isVoid(editor, editor.children[0]), false);
     });
 
-    test('void', () {
+    test('inline void', () {
       // <editor>
-      //   <void>one</void>
+      //   <block>
+      //     one<inline void>two</inline>three
+      //   </block>
       // </editor>
       TestEditor editor = TestEditor(children: <Node>[
-        Void(children: <Node>[Text('one')])
+        Block(children: <Node>[
+          Text('one'),
+          Inline(children: <Node>[Text('two')], isVoid: true),
+          Text('three'),
+        ])
       ]);
 
-      expect(EditorUtils.isVoid(editor, editor.children[0]), true);
+      expect(
+          EditorUtils.isVoid(
+              editor, (editor.children[0] as Ancestor).children[1]),
+          true);
+    });
+
+    test('inline void', () {
+      // <editor>
+      //   <block>
+      //     one<inline>two</inline>three
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(children: <Node>[
+        Block(children: <Node>[
+          Text('one'),
+          Inline(children: <Node>[Text('two')]),
+          Text('three'),
+        ])
+      ]);
+
+      expect(
+          EditorUtils.isVoid(
+              editor, (editor.children[0] as Ancestor).children[1]),
+          false);
     });
   });
 
@@ -994,13 +1036,13 @@ void main() {
 
     test('voids false', () {
       // <editor>
-      //   <void>
+      //   <element void>
       //     <text />
-      //   </void>
+      //   </element>
       // </editor>
       Text text = Text('one');
-      Void v = Void(children: <Node>[text]);
-      TestEditor editor = TestEditor(children: <Node>[v]);
+      Element element = Element(children: <Node>[text], isVoid: true);
+      TestEditor editor = TestEditor(children: <Node>[element]);
 
       List<NodeEntry> entries = List.from(
         EditorUtils.levels(editor, at: Path([0, 0])),
@@ -1009,19 +1051,19 @@ void main() {
       expect(entries[0].node, editor);
       expect(PathUtils.equals(entries[0].path, Path([])), true);
 
-      expect(entries[1].node, v);
+      expect(entries[1].node, element);
       expect(PathUtils.equals(entries[1].path, Path([0])), true);
     });
 
     test('voids true', () {
       // <editor>
-      //   <void>
+      //   <element void>
       //     <text />
-      //   </void>
+      //   </element void>
       // </editor>
       Text text = Text('one');
-      Void v = Void(children: <Node>[text]);
-      TestEditor editor = TestEditor(children: <Node>[v]);
+      Element element = Element(children: <Node>[text], isVoid: true);
+      TestEditor editor = TestEditor(children: <Node>[element]);
 
       List<NodeEntry> entries = List.from(
         EditorUtils.levels(editor, at: Path([0, 0]), voids: true),
@@ -1030,7 +1072,7 @@ void main() {
       expect(entries[0].node, editor);
       expect(PathUtils.equals(entries[0].path, Path([])), true);
 
-      expect(entries[1].node, v);
+      expect(entries[1].node, element);
       expect(PathUtils.equals(entries[1].path, Path([0])), true);
 
       expect(entries[2].node, text);
@@ -1605,10 +1647,10 @@ void main() {
 
       test('block void', () {
         // <editor>
-        //   <void>one</void>
+        //   <block void>one</block>
         // </editor>
-        Void v = Void(children: <Node>[Text('one')]);
-        TestEditor editor = TestEditor(children: <Node>[v]);
+        Block block = Block(children: <Node>[Text('one')], isVoid: true);
+        TestEditor editor = TestEditor(children: <Node>[block]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
           at: Path([]),
@@ -1617,7 +1659,7 @@ void main() {
         expect(entries[0].node, editor);
         expect(PathUtils.equals(entries[0].path, Path([])), true);
 
-        expect(entries[1].node, v);
+        expect(entries[1].node, block);
         expect(PathUtils.equals(entries[1].path, Path([0])), true);
       });
 
@@ -1792,17 +1834,17 @@ void main() {
         expect(PathUtils.equals(entries[8].path, Path([0, 0])), true);
       });
 
-      test('void', () {
+      test('inline void', () {
         // <editor>
         //   <block>
-        //     one<void>two</void>three
+        //     one<inline void>two</inline>three
         //   </block>
         // </editor>
         Text text1 = Text('one');
         Text text2 = Text('two');
         Text text3 = Text('three');
-        Void v = Void(children: <Node>[text2]);
-        Block block = Block(children: <Node>[text1, v, text3]);
+        Inline inline = Inline(children: <Node>[text2], isVoid: true);
+        Block block = Block(children: <Node>[text1, inline, text3]);
         TestEditor editor = TestEditor(children: <Node>[block]);
 
         List<NodeEntry> entries =
@@ -1817,7 +1859,7 @@ void main() {
         expect(entries[2].node, text1);
         expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
 
-        expect(entries[3].node, v);
+        expect(entries[3].node, inline);
         expect(PathUtils.equals(entries[3].path, Path([0, 1])), true);
 
         expect(entries[4].node, text3);
@@ -1863,11 +1905,11 @@ void main() {
     group('voids true', () {
       test('block', () {
         // <editor>
-        //   <void>one</void>
+        //   <block void>one</block>
         // </editor>
         Text text1 = Text('one');
-        Void v = Void(children: <Node>[text1]);
-        TestEditor editor = TestEditor(children: <Node>[v]);
+        Block block = Block(children: <Node>[text1], isVoid: true);
+        TestEditor editor = TestEditor(children: <Node>[block]);
 
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
@@ -1881,14 +1923,14 @@ void main() {
       test('inline', () {
         // <editor>
         //   <block>
-        //     one<void>two</void>three
+        //     one<inline void>two</inline>three
         //   </block>
         // </editor>
         Text text1 = Text('one');
         Text text2 = Text('two');
         Text text3 = Text('three');
-        Void v = Void(children: <Node>[text2]);
-        Block block = Block(children: <Node>[text1, v, text3]);
+        Inline inline = Inline(children: <Node>[text2], isVoid: true);
+        Block block = Block(children: <Node>[text1, inline, text3]);
         TestEditor editor = TestEditor(children: <Node>[block]);
 
         List<NodeEntry> entries =
@@ -4420,13 +4462,13 @@ void main() {
 
     test('block void', () {
       // <editor>
-      //   <void>
+      //   <block void>
       //     <text>one</text>
       //     <text>two</text>
-      //   </void>
+      //   </block>
       // </editor>
       TestEditor editor = TestEditor(children: <Node>[
-        Void(children: <Node>[Text('one'), Text('two')]),
+        Block(children: <Node>[Text('one'), Text('two')], isVoid: true),
       ]);
 
       String result = EditorUtils.string(editor, Path([]));

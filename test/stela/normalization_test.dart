@@ -27,7 +27,7 @@ class TestEditor extends Editor {
 
   @override
   bool isVoid(Element element) {
-    return element is Void;
+    return element.isVoid;
   }
 }
 
@@ -295,10 +295,10 @@ void main() {
   group('void', () {
     test('block insert text', () {
       // <editor>
-      //   <void />
+      //   <block void />
       // </editor>
-      Void v = Void(children: <Node>[]);
-      TestEditor editor = TestEditor(children: <Node>[v]);
+      Block block = Block(children: <Node>[], isVoid: true);
+      TestEditor editor = TestEditor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -307,32 +307,33 @@ void main() {
       //     <text />
       //   </void>
       // </editor>
-      expect(v.children.length, 1);
-      expect((v.children[0] as Text).text, '');
+      expect(block.children.length, 1);
+      expect((block.children[0] as Text).text, '');
     });
 
     test('inline insert text', () {
       // <editor>
       //   <text />
-      //   <void />
+      //   <inline void />
       //   <text />
       // </editor>
-      Void v = Void(children: <Node>[]);
-      TestEditor editor = TestEditor(children: <Node>[Text(''), v, Text('')]);
+      Inline inline = Inline(children: <Node>[], isVoid: true);
+      TestEditor editor =
+          TestEditor(children: <Node>[Text(''), inline, Text('')]);
 
       EditorUtils.normalize(editor, force: true);
 
       // <editor>
       //   <block>
       //     <text />
-      //     <void>
+      //     <inline void>
       //       <text />
-      //     </void>
+      //     </inline>
       //     <text />
       //   </block>
       // </editor>
-      expect(v.children.length, 1);
-      expect((v.children[0] as Text).text, '');
+      expect(inline.children.length, 1);
+      expect((inline.children[0] as Text).text, '');
     });
   });
 }

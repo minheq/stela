@@ -5,12 +5,14 @@ import 'package:inday/stela/path.dart';
 /// element nodes or text nodes. They can be either "blocks" or "inlines"
 /// depending on the editor's configuration.
 class Element implements Ancestor, Descendant {
-  Element({this.children = const <Node>[], this.props = const {}});
+  Element({this.children = const <Node>[], this.props = const {}, this.isVoid = false});
 
   List<Node> children;
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
+
+  bool isVoid;
 
   @override
   String toString() {
@@ -47,12 +49,17 @@ class ElementEntry {
 }
 
 class Block implements Element {
-  Block({this.children = const <Node>[], this.props = const {}});
+  Block(
+      {this.children = const <Node>[],
+      this.props = const {},
+      this.isVoid = false});
 
   List<Node> children;
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
+
+  bool isVoid;
 
   @override
   String toString() {
@@ -67,12 +74,17 @@ class Block implements Element {
 }
 
 class Inline implements Element {
-  Inline({this.children = const <Node>[], this.props = const {}});
+  Inline(
+      {this.children = const <Node>[],
+      this.props = const {},
+      this.isVoid = false});
 
   List<Node> children;
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
+
+  bool isVoid;
 
   @override
   String toString() {
@@ -84,13 +96,4 @@ class Inline implements Element {
 
     return 'Inline(children:[$str])';
   }
-}
-
-class Void implements Element {
-  Void({this.children = const <Node>[], this.props = const {}});
-
-  List<Node> children;
-
-  /// Custom properties that can extend the `Element` behavior
-  Map<String, dynamic> props;
 }
