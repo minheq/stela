@@ -416,6 +416,6 @@ class PathUtils {
       return p;
     }
 
-    return null;
+    return path;
   }
 }
