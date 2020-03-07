@@ -19,7 +19,7 @@ class PathRef {
   }
 
   /// Transform the path ref's current value by an operation.
-  static void transform(Set<PathRef> pathRefs, PathRef ref, Operation op) {
+  static Path transform(Set<PathRef> pathRefs, PathRef ref, Operation op) {
     if (ref.current == null) {
       return null;
     }
@@ -27,8 +27,6 @@ class PathRef {
     Path path = PathUtils.transform(ref.current, op, affinity: ref.affinity);
     ref.current = path;
 
-    if (path == null) {
-      ref.unref(pathRefs);
-    }
+    return path;
   }
 }

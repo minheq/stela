@@ -477,5 +477,111 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('point', () {
+      test('basic reverse', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>
+        //     <cursor />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('one')]),
+              Block(children: <Node>[Text('two')]),
+            ]);
+
+        Transforms.delete(editor, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     one
+        //     <cursor />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[Text('onetwo')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('basic', () {
+        // <editor>
+        //   <block>
+        //     word
+        //     <cursor />
+        //   </block>
+        //   <block>another</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[Text('word')]),
+              Block(children: <Node>[Text('another')]),
+            ]);
+
+        Transforms.delete(editor);
+
+        // <editor>
+        //   <block>
+        //     word
+        //     <cursor />
+        //     another
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[Text('wordanother')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('depths reverse', () {
+        // <editor>
+        //   <block>Hello</block>
+        //   <block>
+        //     <block>
+        //       <cursor />
+        //       world!
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([1, 0, 0]), 0), Point(Path([1, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('Hello')]),
+              Block(children: <Node>[
+                Block(children: <Node>[Text('world!')])
+              ]),
+            ]);
+
+        Transforms.delete(editor, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     Hello
+        //     <cursor />
+        //     world!
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 5)),
+            children: <Node>[
+              Block(children: <Node>[Text('Helloworld!')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }

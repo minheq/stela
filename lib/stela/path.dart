@@ -333,7 +333,7 @@ class PathUtils {
       Path op = operation.path;
 
       if (PathUtils.equals(op, p) || PathUtils.isAncestor(op, p)) {
-        return path;
+        return null;
       } else if (PathUtils.endsBefore(op, p)) {
         p[op.length - 1] -= 1;
       }
@@ -365,7 +365,7 @@ class PathUtils {
         } else if (affinity == Affinity.backward) {
           // Nothing, because it still refers to the right path.
         } else {
-          return path;
+          return null;
         }
       } else if (PathUtils.endsBefore(op, p)) {
         p[op.length - 1] += 1;

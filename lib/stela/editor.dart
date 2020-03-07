@@ -203,17 +203,41 @@ class Editor implements Ancestor {
     Set<PathRef> pathRefs = EditorUtils.pathRefs(this);
     Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(this);
     Set<PointRef> pointRefs = EditorUtils.pointRefs(this);
+    Set<PathRef> unrefPathRefs = Set();
+    Set<RangeRef> unrefRangeRefs = Set();
+    Set<PointRef> unrefPointRefs = Set();
 
     for (PathRef ref in pathRefs) {
-      PathRef.transform(pathRefs, ref, op);
+      Path path = PathRef.transform(pathRefs, ref, op);
+      if (path == null) {
+        unrefPathRefs.add(ref);
+      }
+    }
+
+    for (PathRef unrefPath in unrefPathRefs) {
+      unrefPath.unref(pathRefs);
     }
 
     for (PointRef ref in pointRefs) {
-      PointRef.transform(pointRefs, ref, op);
+      Point point = PointRef.transform(pointRefs, ref, op);
+      if (point == null) {
+        unrefPointRefs.add(ref);
+      }
+    }
+
+    for (PointRef unrefPoint in unrefPointRefs) {
+      unrefPoint.unref(pointRefs);
     }
 
     for (RangeRef ref in rangeRefs) {
-      RangeRef.transform(rangeRefs, ref, op);
+      Range range = RangeRef.transform(rangeRefs, ref, op);
+      if (range == null) {
+        unrefRangeRefs.add(ref);
+      }
+    }
+
+    for (RangeRef unrefRange in unrefRangeRefs) {
+      unrefRange.unref(rangeRefs);
     }
 
     Set cache = Set();

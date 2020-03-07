@@ -19,7 +19,7 @@ class PointRef {
   }
 
   /// Transform the point ref's current value by an operation.
-  static void transform(Set<PointRef> pointRefs, PointRef ref, Operation op) {
+  static Point transform(Set<PointRef> pointRefs, PointRef ref, Operation op) {
     if (ref.current == null) {
       return null;
     }
@@ -27,8 +27,6 @@ class PointRef {
     Point point = PointUtils.transform(ref.current, op, affinity: ref.affinity);
     ref.current = point;
 
-    if (point == null) {
-      ref.unref(pointRefs);
-    }
+    return point;
   }
 }

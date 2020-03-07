@@ -275,7 +275,7 @@ class Transforms {
       List<NodeEntry> entries = List.from(EditorUtils.levels(editor, at: path));
       List<Node> levels = [];
 
-      for (int i = 0; i < entries.length - 1; i++) {
+      for (int i = 0; i < entries.length; i++) {
         NodeEntry entry = entries[i];
         levels.add(entry.node);
       }
@@ -365,7 +365,7 @@ class Transforms {
       PathRef toRef = EditorUtils.pathRef(editor, to);
       List<NodeEntry> targets = List.from(EditorUtils.nodes(editor,
           at: at, match: match, mode: mode, voids: voids));
-      List<PathRef> pathRefs;
+      List<PathRef> pathRefs = [];
 
       for (NodeEntry entry in targets) {
         pathRefs.add(EditorUtils.pathRef(editor, entry.path));

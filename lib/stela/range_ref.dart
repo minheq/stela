@@ -19,7 +19,7 @@ class RangeRef {
   }
 
   /// Transform the range ref's current value by an operation.
-  static void transform(Set<RangeRef> rangeRefs, RangeRef ref, Operation op) {
+  static Range transform(Set<RangeRef> rangeRefs, RangeRef ref, Operation op) {
     if (ref.current == null) {
       return null;
     }
@@ -27,8 +27,6 @@ class RangeRef {
     Range range = RangeUtils.transform(ref.current, op, affinity: ref.affinity);
     ref.current = range;
 
-    if (range == null) {
-      ref.unref(rangeRefs);
-    }
+    return range;
   }
 }
