@@ -49,6 +49,10 @@ void Function(Node, Node) expectEqual = (Node node, Node another) {
             "expected: ${(another as Editor).selection.toString()}, received: ${node.selection.toString()}");
   }
 
+  if (node is Element && another is Element) {
+    expect(node.isVoid, another.isVoid);
+  }
+
   for (var i = 0; i < (node as Ancestor).children.length; i++) {
     Node n = (node as Ancestor).children[i];
     Node an = (another as Ancestor).children[i];
@@ -3813,6 +3817,82 @@ void main() {
                 Text('onetwo'),
               ]),
             ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+
+    group('voids true', () {
+      test('across blocks', () {
+        // <editor>
+        //   <block void>
+        //     <text>
+        //       on
+        //       <anchor />e
+        //     </text>
+        //   </block>
+        //   <block void>
+        //     <text>
+        //       t<focus />
+        //       wo
+        //     </text>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 1)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ], isVoid: true),
+              Block(children: <Node>[
+                Text('two'),
+              ], isVoid: true),
+            ]);
+
+        Transforms.delete(editor, voids: true);
+
+        // <editor>
+        //   <block void>
+        //     on
+        //     <cursor />
+        //     wo
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('onwo'),
+              ], isVoid: true),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('path', () {
+        // <editor>
+        //   <block void>
+        //     <text>one</text>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+          ], isVoid: true),
+        ]);
+
+        Transforms.delete(editor, at: Path([0, 0]), voids: true);
+
+        // <editor>
+        //   <block void>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+          ], isVoid: true),
+        ]);
 
         expectEqual(editor, expected);
       });
