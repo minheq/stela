@@ -6,7 +6,7 @@ import 'package:inday/stela/range.dart';
 /// document along with any formatting properties. They are always leaf
 /// nodes in the document tree as they cannot contain any children.
 class Text implements Descendant {
-  Text(this.text, {this.props = const {}});
+  Text(this.text, {Map<String, dynamic> props}) : props = props ?? {};
 
   /// Text content
   String text;

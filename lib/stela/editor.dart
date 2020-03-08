@@ -1576,10 +1576,18 @@ class EditorUtils {
       Range newSelection = op.newSelection;
 
       if (newSelection == null) {
-        editor.selection = newSelection;
+        editor.selection = null;
       } else if (selection == null) {
         editor.selection = newSelection;
       } else {
+        if (newSelection.anchor != null) {
+          editor.selection.anchor = newSelection.anchor;
+        }
+
+        if (newSelection.focus != null) {
+          editor.selection.focus = newSelection.focus;
+        }
+
         editor.selection.props.addAll(newSelection.props);
       }
     }

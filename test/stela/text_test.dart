@@ -1,5 +1,6 @@
 import 'package:flutter_test/flutter_test.dart';
 import 'package:inday/stela/element.dart';
+import 'package:inday/stela/node.dart';
 import 'package:inday/stela/path.dart';
 import 'package:inday/stela/point.dart';
 import 'package:inday/stela/text.dart';
@@ -91,8 +92,9 @@ void main() {
     test('should fail with an element in node list', () {
       Text text = Text('string');
       Element element = Element(children: []);
+      List<Node> nodes = [text, element];
 
-      expect(TextUtils.isTextList([text, element]), false);
+      expect(TextUtils.isTextList(nodes), false);
     });
   });
 

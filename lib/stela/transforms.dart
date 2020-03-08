@@ -1004,21 +1004,17 @@ class Transforms {
     }
 
     for (String key in newSelection.props.keys) {
-      if ((key == 'anchor' &&
-              newSelection.anchor != null &&
-              !PointUtils.equals(newSelection.anchor, selection.anchor)) ||
-          (key == 'focus' &&
-              newSelection.focus != null &&
-              !PointUtils.equals(newSelection.focus, selection.focus)) ||
-          (key != 'anchor' &&
-              key != 'focus' &&
-              newSelection.props[key] != selection.props[key])) {
+      if (newSelection.props[key] != selection.props[key]) {
         oldProps[key] = selection.props[key];
         newProps[key] = newSelection.props[key];
       }
     }
 
-    if (oldProps.length > 0) {
+    bool hasSelectionChanges = oldProps.length > 0 ||
+        !PointUtils.equals(selection.anchor, newSelection.anchor) ||
+        !PointUtils.equals(selection.focus, newSelection.focus);
+
+    if (hasSelectionChanges) {
       selection = Range(selection.anchor, selection.focus, props: oldProps);
       newSelection =
           Range(newSelection.anchor, newSelection.focus, props: newProps);
@@ -1038,6 +1034,7 @@ class Transforms {
       bool hanging = false,
       bool voids = false}) {
     EditorUtils.withoutNormalizing(editor, () {
+      Location prevAt = at;
       at = at ?? editor.selection;
 
       if (at == null) {
@@ -1200,7 +1197,7 @@ class Transforms {
       Point point =
           endRef.unref(editorPointRefs) ?? startRef.unref(editorPointRefs);
 
-      if (at == null && point != null) {
+      if (prevAt == null && point != null) {
         Transforms.select(editor, point);
       }
     });

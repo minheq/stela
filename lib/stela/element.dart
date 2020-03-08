@@ -5,7 +5,10 @@ import 'package:inday/stela/path.dart';
 /// element nodes or text nodes. They can be either "blocks" or "inlines"
 /// depending on the editor's configuration.
 class Element implements Ancestor, Descendant {
-  Element({this.children = const <Node>[], this.props = const {}, this.isVoid = false});
+  Element({List<Node> children, Map<String, dynamic> props, bool isVoid})
+      : children = children ?? [],
+        props = props ?? {},
+        isVoid = isVoid ?? false;
 
   List<Node> children;
 
@@ -49,10 +52,10 @@ class ElementEntry {
 }
 
 class Block implements Element {
-  Block(
-      {this.children = const <Node>[],
-      this.props = const {},
-      this.isVoid = false});
+  Block({List<Node> children, Map<String, dynamic> props, bool isVoid})
+      : children = children ?? [],
+        props = props ?? {},
+        isVoid = isVoid ?? false;
 
   List<Node> children;
 
@@ -74,10 +77,10 @@ class Block implements Element {
 }
 
 class Inline implements Element {
-  Inline(
-      {this.children = const <Node>[],
-      this.props = const {},
-      this.isVoid = false});
+  Inline({List<Node> children, Map<String, dynamic> props, bool isVoid})
+      : children = children ?? [],
+        props = props ?? {},
+        isVoid = isVoid ?? false;
 
   List<Node> children;
 

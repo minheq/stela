@@ -1203,6 +1203,54 @@ void main() {
 
         expectEqual(editor, expected);
       });
+
+      test('block hanging multiple', () {
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     one
+        //   </block>
+        //   <block>two</block>
+        //   <block>
+        //     <focus />
+        //     three
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([2, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        Transforms.delete(editor);
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        //   <block>three</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }

@@ -14,8 +14,9 @@ void main() {
     test('should fail with an text in node list', () {
       Text text = Text('string');
       Element element = Element(children: []);
+      List<Node> nodes = [text, element];
 
-      expect(ElementUtils.isElementList([text, element]), false);
+      expect(ElementUtils.isElementList(nodes), false);
     });
   });
 }

@@ -9,7 +9,8 @@ import 'package:inday/stela/path.dart';
 /// offset refers to the distance into the node's string of text. Points can
 /// only refer to `Text` nodes.
 class Point implements Location {
-  Point(this.path, this.offset, {this.props = const {}});
+  Point(this.path, this.offset, {Map<String, dynamic> props})
+      : props = props ?? {};
 
   Path path;
   int offset;
