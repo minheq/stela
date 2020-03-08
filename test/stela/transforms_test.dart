@@ -4097,6 +4097,206 @@ void main() {
 
         expectEqual(editor, expected);
       });
+
+      test('block nested', () {
+        // <editor>
+        //   <block>
+        //     <block>
+        //       word
+        //       <cursor />
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 4), Point(Path([0, 0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('word'),
+                ]),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <block>one</block>
+        //   <block>two</block>
+        //   <block>three</block>
+        // </fragment>
+        List<Node> fragment = [
+          Block(children: <Node>[Text('one')]),
+          Block(children: <Node>[Text('two')]),
+          Block(children: <Node>[Text('three')]),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     <block>wordone</block>
+        //     <block>two</block>
+        //     <block>
+        //       three
+        //       <cursor />
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 2, 0]), 5), Point(Path([0, 2, 0]), 5)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('wordone'),
+                ]),
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+                Block(children: <Node>[
+                  Text('three'),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block start', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <block>one</block>
+        //   <block>two</block>
+        //   <block>three</block>
+        // </fragment>
+        List<Node> fragment = [
+          Block(children: <Node>[Text('one')]),
+          Block(children: <Node>[Text('two')]),
+          Block(children: <Node>[Text('three')]),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        //   <block>
+        //     three
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([2, 0]), 5), Point(Path([2, 0]), 5)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('threeword'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('with inline', () {
+        // <editor>
+        //   <block>
+        //     wo
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <block>
+        //     one<inline>two</inline>three
+        //   </block>
+        //   <block>
+        //     four<inline>five</inline>six
+        //   </block>
+        //   <block>
+        //     seven<inline>eight</inline>nine
+        //   </block>
+        // </fragment>
+        List<Node> fragment = [
+          Block(children: <Node>[
+            Text('one'),
+            Inline(children: <Node>[Text('two')]),
+            Text('three'),
+          ]),
+          Block(children: <Node>[
+            Text('four'),
+            Inline(children: <Node>[Text('five')]),
+            Text('six'),
+          ]),
+          Block(children: <Node>[
+            Text('7'),
+            Inline(children: <Node>[Text('eight')]),
+            Text('nine'),
+          ]),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     woone<inline>two</inline>three
+        //   </block>
+        //   <block>
+        //     four<inline>five</inline>six
+        //   </block>
+        //   <block>
+        //     seven<inline>eight</inline>nine
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([2, 2]), 4), Point(Path([2, 2]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('woone'),
+                Inline(children: <Node>[Text('two')]),
+                Text('three'),
+              ]),
+              Block(children: <Node>[
+                Text('four'),
+                Inline(children: <Node>[Text('five')]),
+                Text('six'),
+              ]),
+              Block(children: <Node>[
+                Text('7'),
+                Inline(children: <Node>[Text('eight')]),
+                Text('ninerd'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }
