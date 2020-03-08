@@ -1620,7 +1620,7 @@ class EditorUtils {
         List<Node> after = (node as Ancestor).children.sublist(position);
         (node as Ancestor).children = before;
 
-        newNode = Element(children: after, props: newProps);
+        newNode = Block(children: after, props: newProps);
       }
 
       parent.children.insert(index + 1, newNode);

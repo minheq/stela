@@ -840,7 +840,7 @@ class Transforms {
           Ancestor commonNode = common.node;
           int depth = commonPath.length + 1;
           Path wrapperPath = PathUtils.next(lastPath.slice(0, depth));
-          Element wrapper = Element(children: [], props: element.props);
+          Block wrapper = Block(children: [], props: element.props);
           Transforms.insertNodes(editor, [wrapper],
               at: wrapperPath, voids: voids);
 
@@ -1218,14 +1218,14 @@ class Transforms {
       Location prevAt = at;
       at = at ?? editor.selection;
 
-      if (fragment.length == 0) {
+      if (fragment.isEmpty) {
         return;
       }
 
       if (at == null) {
         return;
       } else if (at is Range) {
-        if (!hanging) {
+        if (hanging == false) {
           at = EditorUtils.unhangRange(editor, at);
         }
 
