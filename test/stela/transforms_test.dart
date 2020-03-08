@@ -1448,6 +1448,112 @@ void main() {
 
         expectEqual(editor, expected);
       });
+
+      test('block join inline', () {
+        // <editor>
+        //   <block>
+        //     one
+        //     <anchor />
+        //   </block>
+        //   <block>
+        //     <focus />
+        //     two<inline>three</inline>four
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 3), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+                Inline(children: <Node>[Text('three')]),
+                Text('four'),
+              ]),
+            ]);
+
+        Transforms.delete(editor);
+
+        // <editor>
+        //   <block>
+        //     one
+        //     <cursor />
+        //     two<inline>three</inline>four
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('onetwo'),
+                Inline(children: <Node>[Text('three')]),
+                Text('four'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block join nested', () {
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         word
+        //         <anchor />
+        //       </block>
+        //       <block>
+        //         <focus />
+        //         another
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 4), Point(Path([0, 0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('word'),
+                  ]),
+                  Block(children: <Node>[
+                    Text('another'),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        Transforms.delete(editor);
+
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         word
+        //         <cursor />
+        //         another
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 4), Point(Path([0, 0, 0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('wordanother'),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }
