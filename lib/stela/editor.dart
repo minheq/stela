@@ -1935,12 +1935,11 @@ List<Path> Function(Operation) getDirtyPaths = (Operation op) {
     Path path = op.path;
     List<Path> paths = [];
     List<Path> levels = PathUtils.levels(path);
-    List<Path> descendants;
+    List<Path> descendants = [];
 
-    if (node is Text) {
-      descendants = [];
-    } else {
+    if (node is Text == false) {
       List<NodeEntry> nodes = List.from(NodeUtils.nodes(node));
+
       for (NodeEntry node in nodes) {
         descendants.add(node.path);
       }

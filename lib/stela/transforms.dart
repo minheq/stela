@@ -24,6 +24,10 @@ class Transforms {
     bool voids = false,
   }) {
     EditorUtils.withoutNormalizing(editor, () {
+      if (nodes.isEmpty) {
+        return;
+      }
+
       Node node = nodes.first;
 
       // By default, use the selection as the target location. But if there is
@@ -208,6 +212,7 @@ class Transforms {
       bool hanging = false,
       bool voids = false}) {
     EditorUtils.withoutNormalizing(editor, () {
+      Location prevAt = at;
       at = at ?? editor.selection;
 
       if (at == null) {
@@ -243,7 +248,7 @@ class Transforms {
           Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
           at = pointRef.unref(editorPointRefs);
 
-          if (at == null) {
+          if (prevAt == null) {
             Transforms.select(editor, at);
           }
         }
@@ -445,6 +450,7 @@ class Transforms {
       bool split = false,
       bool voids = false}) {
     EditorUtils.withoutNormalizing(editor, () {
+      Location prevAt = at;
       at = at ?? editor.selection;
 
       if (at == null) {
@@ -484,7 +490,7 @@ class Transforms {
         Set<RangeRef> editorRangeRefs = EditorUtils.rangeRefs(editor);
         at = rangeRef.unref(editorRangeRefs);
 
-        if (at == null) {
+        if (prevAt == null) {
           Transforms.select(editor, at);
         }
       }
@@ -531,6 +537,7 @@ class Transforms {
     bool voids = false,
   }) {
     EditorUtils.withoutNormalizing(editor, () {
+      Location prevAt = at;
       at = at ?? editor.selection;
 
       if (match == null) {
@@ -564,8 +571,8 @@ class Transforms {
 
       PointRef beforeRef =
           EditorUtils.pointRef(editor, at, affinity: Affinity.backward);
-      List<NodeEntry> entries = EditorUtils.nodes(editor,
-          at: at, match: match, mode: mode, voids: voids);
+      List<NodeEntry> entries = List.from(EditorUtils.nodes(editor,
+          at: at, match: match, mode: mode, voids: voids));
       NodeEntry highest = entries.first;
 
       if (highest == null) {
@@ -634,7 +641,7 @@ class Transforms {
         position = path[path.length - 1] + (split || isEnd ? 1 : 0);
       }
 
-      if (at == null) {
+      if (prevAt == null) {
         Point point = afterRef.current ?? EditorUtils.end(editor, Path([]));
         Transforms.select(editor, point);
       }
@@ -752,6 +759,7 @@ class Transforms {
       bool split = false,
       bool voids = false}) {
     EditorUtils.withoutNormalizing(editor, () {
+      Location prevAt = at;
       at = at ?? editor.selection;
 
       if (at == null) {
@@ -784,7 +792,7 @@ class Transforms {
         Set<RangeRef> editorRangeRefs = EditorUtils.rangeRefs(editor);
         at = rangeRef.unref(editorRangeRefs);
 
-        if (at == null) {
+        if (prevAt == null) {
           Transforms.select(editor, at);
         }
       }
@@ -1207,6 +1215,7 @@ class Transforms {
   static void insertFragment(Editor editor, List<Node> fragment,
       {Location at, bool hanging = false, bool voids = false}) {
     EditorUtils.withoutNormalizing(editor, () {
+      Location prevAt = at;
       at = at ?? editor.selection;
 
       if (fragment.length == 0) {
@@ -1323,7 +1332,7 @@ class Transforms {
       for (NodeEntry entry in matches) {
         Node node = entry.node;
 
-        if ((node is Element) && !editor.isInline(node)) {
+        if (node is Element && editor.isInline(node) == false) {
           starting = false;
           hasBlocks = true;
           middles.add(node);
@@ -1383,7 +1392,7 @@ class Transforms {
         return (n is Text) || EditorUtils.isInline(editor, n);
       }, mode: Mode.highest, voids: voids);
 
-      if (at == null) {
+      if (prevAt == null) {
         Path path;
 
         if (ends.length > 0) {

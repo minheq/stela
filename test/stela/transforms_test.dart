@@ -3898,4 +3898,92 @@ void main() {
       });
     });
   });
+
+  group('deselect', () {
+    test('path', () {
+      // <editor>
+      //   <block>
+      //     <cursor />
+      //     one
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(
+          selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+          children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]);
+
+      Transforms.deselect(editor);
+
+      // <editor>
+      //   <block>one</block>
+      // </editor>
+      TestEditor expected = TestEditor(children: <Node>[
+        Block(children: <Node>[
+          Text('one'),
+        ]),
+      ]);
+
+      expectEqual(editor, expected);
+    });
+  });
+
+  group('insertFragment', () {
+    group('of block', () {
+      test('block end', () {
+        // <editor>
+        //   <block>
+        //     word
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <block>one</block>
+        //   <block>two</block>
+        //   <block>three</block>
+        // </fragment>
+        List<Node> fragment = [
+          Block(children: <Node>[Text('one')]),
+          Block(children: <Node>[Text('two')]),
+          Block(children: <Node>[Text('three')]),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>wordone</block>
+        //   <block>two</block>
+        //   <block>
+        //     three
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([2, 0]), 5), Point(Path([2, 0]), 5)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('wordone'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }
