@@ -1100,6 +1100,109 @@ void main() {
 
         expectEqual(editor, expected);
       });
+
+      test('block depths nested', () {
+        // <editor>
+        //   <block>
+        //     <block>
+        //       one
+        //       <anchor />
+        //     </block>
+        //   </block>
+        //   <block>
+        //     <focus />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0, 0]), 3), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('one'),
+                ]),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        Transforms.delete(editor);
+
+        // <editor>
+        //   <block>
+        //     <block>
+        //       one
+        //       <cursor />
+        //       two
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 3), Point(Path([0, 0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('onetwo'),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block depths', () {
+        // <editor>
+        //   <block>
+        //     wo
+        //     <anchor />
+        //     rd
+        //   </block>
+        //   <block>
+        //     <block>middle</block>
+        //     <block>
+        //       an
+        //       <focus />
+        //       other
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('middle'),
+                ]),
+                Block(children: <Node>[
+                  Text('another'),
+                ]),
+              ]),
+            ]);
+
+        Transforms.delete(editor);
+
+        // <editor>
+        //   <block>
+        //     wo
+        //     <cursor />
+        //     other
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('woother'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }
