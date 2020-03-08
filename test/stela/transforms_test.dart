@@ -1988,7 +1988,7 @@ void main() {
               ]),
             ]);
 
-        Transforms.delete(editor);
+        Transforms.delete(editor, unit: Unit.character);
 
         // <editor>
         //   <block>
@@ -2022,7 +2022,7 @@ void main() {
               ]),
             ]);
 
-        Transforms.delete(editor, reverse: true, unit: Unit.character);
+        Transforms.delete(editor, unit: Unit.character, reverse: true);
 
         // <editor>
         //   <block>
@@ -2055,7 +2055,7 @@ void main() {
               ]),
             ]);
 
-        Transforms.delete(editor, reverse: true);
+        Transforms.delete(editor, unit: Unit.character, reverse: true);
 
         // <editor>
         //   <block>
@@ -2087,7 +2087,7 @@ void main() {
               ]),
             ]);
 
-        Transforms.delete(editor);
+        Transforms.delete(editor, unit: Unit.character);
 
         // <editor>
         //   <block>
@@ -2339,7 +2339,7 @@ void main() {
               ]),
             ]);
 
-        Transforms.delete(editor);
+        Transforms.delete(editor, unit: Unit.character);
 
         // <editor>
         //   <block>
@@ -2468,7 +2468,7 @@ void main() {
               ]),
             ]);
 
-        Transforms.delete(editor);
+        Transforms.delete(editor, unit: Unit.character);
 
         // <editor>
         //   <block>
@@ -2692,6 +2692,41 @@ void main() {
             children: <Node>[
               Block(children: <Node>[
                 Text('d'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+
+    group('unit line', () {
+      test('text end reverse', () {
+        // <editor>
+        //   <block>
+        //     one two three
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 13), Point(Path([0, 0]), 13)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.delete(editor, unit: Unit.line, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
               ]),
             ]);
 
