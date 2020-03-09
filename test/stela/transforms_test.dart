@@ -8090,5 +8090,146 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('selection', () {
+      test('block full', () {
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <anchor />
+        //       one
+        //     </block>
+        //     <block>two</block>
+        //     <block>three</block>
+        //     <block>four</block>
+        //     <block>five</block>
+        //     <block>
+        //       six
+        //       <focus />
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 5, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[Text('one')]),
+                Block(children: <Node>[Text('two')]),
+                Block(children: <Node>[Text('three')]),
+                Block(children: <Node>[Text('four')]),
+                Block(children: <Node>[Text('five')]),
+                Block(children: <Node>[Text('six')]),
+              ]),
+            ]);
+
+        Transforms.liftNodes(editor);
+
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     one
+        //   </block>
+        //   <block>two</block>
+        //   <block>three</block>
+        //   <block>four</block>
+        //   <block>five</block>
+        //   <block>
+        //     six
+        //     <focus />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([5, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[Text('one')]),
+              Block(children: <Node>[Text('two')]),
+              Block(children: <Node>[Text('three')]),
+              Block(children: <Node>[Text('four')]),
+              Block(children: <Node>[Text('five')]),
+              Block(children: <Node>[Text('six')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block nested', () {
+        // <editor>
+        //   <block a>
+        //     <block b>
+        //       <block c>
+        //         <cursor />
+        //         one
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[Text('one')], props: {'c': true})
+                ], props: {
+                  'b': true
+                }),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.liftNodes(editor, match: (node) {
+          return node.props['c'] != null;
+        });
+
+        // <editor>
+        //   <block a>
+        //     <block c>
+        //       <cursor />
+        //       one
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[Text('one')], props: {'c': true}),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+
+    group('voids true', () {
+      test('block', () {
+        // <editor>
+        //   <block void>
+        //     <block>word</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[Text('word')])
+          ], isVoid: true),
+        ]);
+
+        Transforms.liftNodes(editor, at: Path([0, 0]), voids: true);
+
+        // <editor>
+        //   <block>word</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }

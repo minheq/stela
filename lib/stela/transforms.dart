@@ -143,6 +143,8 @@ class Transforms {
       Mode mode = Mode.lowest,
       bool voids = false}) {
     EditorUtils.withoutNormalizing(editor, () {
+      at = at ?? editor.selection;
+
       if (match == null) {
         match = (at is Path)
             ? matchPath(editor, at)
