@@ -4844,7 +4844,7 @@ void main() {
         expectEqual(editor, expected);
       });
 
-      test('inline with multiple', () {
+      test('with multiple', () {
         // <editor>
         //   <block>
         //     <text />
@@ -4914,6 +4914,57 @@ void main() {
                 Text(''),
                 Inline(children: <Node>[Text('rd')]),
                 Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('with text', () {
+        // <editor>
+        //   <block>
+        //     wo
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        // <fragment>
+        //   one
+        //   <inline>two</inline>
+        //   three
+        // </fragment>
+        List<Node> fragment = [
+          Text('one'),
+          Inline(children: <Node>[Text('two')]),
+          Text('three'),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     woone
+        //     <inline>two</inline>
+        //     three
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 2]), 5), Point(Path([0, 2]), 5)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('woone'),
+                Inline(children: <Node>[Text('two')]),
+                Text('threerd'),
               ]),
             ]);
 
