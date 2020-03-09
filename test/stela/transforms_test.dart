@@ -6087,4 +6087,274 @@ void main() {
       });
     });
   });
+
+  group('insertNodes', () {
+    group('block', () {
+      test('block empty', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        //   <block>not empty</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('')]),
+              Block(children: <Node>[Text('not empty')]),
+            ]);
+
+        // <block>
+        //   <text />
+        // </block>
+        List<Node> nodes = [
+          Block(children: <Node>[Text('')])
+        ];
+
+        Transforms.insertNodes(editor, nodes);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        //   <block>not empty</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('')]),
+              Block(children: <Node>[Text('')]),
+              Block(children: <Node>[Text('not empty')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block end', () {
+        // <editor>
+        //   <block>
+        //     word
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[Text('word')]),
+            ]);
+
+        // <block>
+        //   <text />
+        // </block>
+        List<Node> nodes = [
+          Block(children: <Node>[Text('')])
+        ];
+
+        Transforms.insertNodes(editor, nodes);
+
+        // <editor>
+        //   <block>word</block>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('word')]),
+              Block(children: <Node>[Text('')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block middle', () {
+        // <editor>
+        //   <block>
+        //     wo
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[Text('word')]),
+            ]);
+
+        // <block>
+        //   <text />
+        // </block>
+        List<Node> nodes = [
+          Block(children: <Node>[Text('')])
+        ];
+
+        Transforms.insertNodes(editor, nodes);
+
+        // <editor>
+        //   <block>wo</block>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        //   <block>rd</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('wo')]),
+              Block(children: <Node>[Text('')]),
+              Block(children: <Node>[Text('rd')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block start', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('word')]),
+            ]);
+
+        // <block>
+        //   <text />
+        // </block>
+        List<Node> nodes = [
+          Block(children: <Node>[Text('')])
+        ];
+
+        Transforms.insertNodes(editor, nodes);
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        //   <block>word</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('')]),
+              Block(children: <Node>[Text('word')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block void', () {
+        // <editor>
+        //   <block void>
+        //     text
+        //     <cursor />
+        //   </block>
+        //   <block>text</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[Text('text')], isVoid: true),
+              Block(children: <Node>[Text('text')]),
+            ]);
+
+        // <block>
+        //   <text />
+        // </block>
+        List<Node> nodes = [
+          Block(children: <Node>[Text('')])
+        ];
+
+        Transforms.insertNodes(editor, nodes);
+
+        // <editor>
+        //   <block void>text</block>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        //   <block>text</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('text')], isVoid: true),
+              Block(children: <Node>[Text('')]),
+              Block(children: <Node>[Text('text')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline void', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <cursor />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('')], isVoid: true),
+                Text(''),
+              ]),
+            ]);
+
+        // <block>
+        //   <text />
+        // </block>
+        List<Node> nodes = [
+          Block(children: <Node>[Text('')])
+        ];
+
+        Transforms.insertNodes(editor, nodes);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        //   <block>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('')], isVoid: true),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }
