@@ -13,6 +13,9 @@ import 'package:inday/stela/text.dart';
 
 class Transforms {
   /// Insert nodes at a specific location in the Editor.
+  ///
+  /// [select] when true, after inserting the nodes the user selection
+  /// will be moved to the inserted nodes
   static void insertNodes(
     Editor editor,
     List<Node> nodes, {
