@@ -421,7 +421,7 @@ class EditorUtils {
 
   /// Get the point after a location.
   static Point after(Editor editor, Location at,
-      {int distance = 1, Unit unit}) {
+      {int distance = 1, Unit unit = Unit.offset}) {
     Point anchor = EditorUtils.point(editor, at, edge: Edge.end);
     Point focus = EditorUtils.end(editor, Path([]));
     Range range = Range(anchor, focus);
@@ -444,12 +444,8 @@ class EditorUtils {
   }
 
   /// Get the point before a location.
-  static Point before(
-    Editor editor,
-    Location at, {
-    int distance = 1,
-    Unit unit,
-  }) {
+  static Point before(Editor editor, Location at,
+      {int distance = 1, Unit unit = Unit.offset}) {
     Point anchor = EditorUtils.start(editor, Path([]));
     Point focus = EditorUtils.point(editor, at, edge: Edge.start);
     Range range = Range(anchor, focus);
@@ -1111,12 +1107,10 @@ class EditorUtils {
   static Iterable<Point> positions(
     Editor editor, {
     Location at,
-    Unit unit,
-    bool reverse,
+    Unit unit = Unit.offset,
+    bool reverse = false,
   }) sync* {
     at = at ?? editor.selection;
-    unit = unit ?? Unit.offset;
-    reverse = reverse ?? false;
 
     if (at == null) {
       return;
