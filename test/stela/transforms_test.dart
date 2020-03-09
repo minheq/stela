@@ -5963,6 +5963,7 @@ void main() {
 
         Transforms.insertFragment(editor, fragment);
 
+        // TODO: argument to made that fragment should go into the inline
         // <editor>
         //   <block>
         //     <text />
@@ -5982,6 +5983,103 @@ void main() {
                 Text(''),
                 Inline(children: <Node>[Text('word')], isVoid: true),
                 Text('')
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+
+    group('void true', () {
+      test('block', () {
+        // <editor>
+        //   <block void>
+        //     wo
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[Text('word')], isVoid: true),
+            ]);
+
+        // <fragment>fragment</fragment>
+        List<Node> fragment = [
+          Text('fragment'),
+        ];
+
+        Transforms.insertFragment(editor, fragment, voids: true);
+
+        // <editor>
+        //   <block void>
+        //     wo
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 10)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('wofragmentrd'),
+              ], isVoid: true),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       wo
+        //       <cursor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')], isVoid: true),
+                Text('')
+              ]),
+            ]);
+
+        // <fragment>fragment</fragment>
+        List<Node> fragment = [
+          Text('fragment'),
+        ];
+
+        Transforms.insertFragment(editor, fragment, voids: true);
+
+        // TODO: argument to made that fragment should go into the inline
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>wo</inline>
+        //     fragment
+        //     <cursor />
+        //     <inline void>rd</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('wo')], isVoid: true),
+                Text('fragment'),
+                Inline(children: <Node>[Text('rd')], isVoid: true),
+                Text(''),
               ]),
             ]);
 
