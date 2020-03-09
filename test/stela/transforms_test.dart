@@ -4971,5 +4971,382 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('of lists', () {
+      test('merge lists', () {
+        // <editor>
+        //   <block>
+        //     <block>1</block>
+        //     <block>
+        //       2<cursor />
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 1]), 1), Point(Path([0, 1]), 1)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('1'),
+                ]),
+                Block(children: <Node>[
+                  Text('2'),
+                ]),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <block>3</block>
+        //   <block>4</block>
+        // </fragment>
+        List<Node> fragment = [
+          Block(children: <Node>[
+            Text('3'),
+          ]),
+          Block(children: <Node>[
+            Text('4'),
+          ]),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     <block>1</block>
+        //     <block>23</block>
+        //     <block>
+        //       4<cursor />
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 2]), 5), Point(Path([0, 2]), 5)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('woone'),
+                Inline(children: <Node>[Text('two')]),
+                Text('threerd'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      }, skip: 'failure');
+    });
+
+    group('of tables', () {
+      test('merge cells with nested blocks', () {
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         <block>
+        //           <block>
+        //             <cursor />
+        //           </block>
+        //         </block>
+        //         <block>
+        //           <block>
+        //             <text />
+        //           </block>
+        //         </block>
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0, 0, 0, 0, 0]), 0),
+                Point(Path([0, 0, 0, 0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Block(children: <Node>[
+                      Block(children: <Node>[
+                        Text(''),
+                      ]),
+                    ]),
+                    Block(children: <Node>[
+                      Block(children: <Node>[
+                        Text(''),
+                      ]),
+                    ]),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         <block>1</block>
+        //       </block>
+        //       <block>
+        //         <block>2</block>
+        //       </block>
+        //     </block>
+        //   </block>
+        // </fragment>
+        List<Node> fragment = [
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('1'),
+                ]),
+              ]),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('2'),
+                ]),
+              ]),
+            ]),
+          ]),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         <block>
+        //           <block>1</block>
+        //           <block>
+        //             <block>
+        //               2<cursor />
+        //             </block>
+        //           </block>
+        //         </block>
+        //         <block>
+        //           <block>
+        //             <text />
+        //           </block>
+        //         </block>
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0, 0, 0, 1, 0, 0]), 1),
+                Point(Path([0, 0, 0, 0, 1, 0, 0]), 1)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Block(children: <Node>[
+                      Block(children: <Node>[
+                        Text('1'),
+                      ]),
+                      Block(children: <Node>[
+                        Block(children: <Node>[
+                          Text('2'),
+                        ]),
+                      ]),
+                    ]),
+                    Block(children: <Node>[
+                      Block(children: <Node>[
+                        Text(''),
+                      ]),
+                    ]),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      },
+          skip:
+              'Surely this is the wrong behavior. Ideally, paragraph with "2" goes into second cell');
+
+      test('merge into empty cells', () {
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         <block>
+        //           <cursor />
+        //         </block>
+        //         <block>
+        //           <text />
+        //         </block>
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0, 0, 0, 0, 0]), 0),
+                Point(Path([0, 0, 0, 0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Block(children: <Node>[
+                      Block(children: <Node>[
+                        Text(''),
+                      ]),
+                    ]),
+                    Block(children: <Node>[
+                      Text(''),
+                    ]),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <block>
+        //     <block>
+        //       <block>1</block>
+        //       <block>2</block>
+        //     </block>
+        //   </block>
+        // </fragment>
+        List<Node> fragment = [
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Block(children: <Node>[
+                Text('1'),
+              ]),
+              Block(children: <Node>[
+                Text('2'),
+              ]),
+            ]),
+          ]),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         <block>1</block>
+        //         <block>
+        //           2<cursor />
+        //         </block>
+        //         <block>
+        //           <text />
+        //         </block>
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0, 0, 0, 1, 0]), 0),
+                Point(Path([0, 0, 0, 0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Block(children: <Node>[
+                      Text('1'),
+                    ]),
+                    Block(children: <Node>[
+                      Text('2'),
+                    ]),
+                    Block(children: <Node>[
+                      Text(''),
+                    ]),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      }, skip: 'Paste "2" into second cell instead of creating new one?');
+
+      test('merge into full cells', () {
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         <block>
+        //           Existing 1
+        //           <cursor />
+        //         </block>
+        //         <block>Existing 2</block>
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0, 0, 0, 0, 0]), 0),
+                Point(Path([0, 0, 0, 0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Block(children: <Node>[
+                      Text('Existing 1'),
+                    ]),
+                    Block(children: <Node>[
+                      Text('Existing 2'),
+                    ]),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <block>
+        //     <block>
+        //       <block>New 1</block>
+        //       <block>New 2</block>
+        //     </block>
+        //   </block>
+        // </fragment>
+        List<Node> fragment = [
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Block(children: <Node>[
+                Text('New 1'),
+              ]),
+              Block(children: <Node>[
+                Text('New 2'),
+              ]),
+            ]),
+          ]),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         <block>Existing 1 New 1</block>
+        //         <block>
+        //           New 2<cursor />
+        //         </block>
+        //         <block>Existing 2</block>
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0, 0, 1, 0]), 4),
+                Point(Path([0, 0, 0, 1, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Block(children: <Node>[
+                      Text('Existing 1 New 1'),
+                    ]),
+                    Block(children: <Node>[
+                      Text('New 2'),
+                    ]),
+                    Block(children: <Node>[
+                      Text('Existing 2'),
+                    ]),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      }, skip: 'Paste "Existing 2" before / after "New 2" in second cell?');
+    });
   });
 }
