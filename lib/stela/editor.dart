@@ -1111,10 +1111,12 @@ class EditorUtils {
   static Iterable<Point> positions(
     Editor editor, {
     Location at,
-    Unit unit = Unit.offset,
-    bool reverse = false,
+    Unit unit,
+    bool reverse,
   }) sync* {
     at = at ?? editor.selection;
+    unit = unit ?? Unit.offset;
+    reverse = reverse ?? false;
 
     if (at == null) {
       return;
