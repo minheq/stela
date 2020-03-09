@@ -1380,6 +1380,10 @@ class EditorUtils {
 
   /// Transform the editor by an operation.
   static void transform(Editor editor, Operation op) {
+    // Note that in original Slate's code, it used immer to produce
+    // a new copy of the editor's nodes. This had an effect on `normalizeNode` function
+    // where it seemingly allowed concurrent modification of the nodes.
+    // We work around that by using batched transforms in `normalizeNode`.
     Range selection;
 
     if (editor.selection != null) {
