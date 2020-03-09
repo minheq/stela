@@ -7874,5 +7874,89 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('voids false', () {
+      test('block', () {
+        // <editor>
+        //   <block void>word</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')], isVoid: true),
+        ]);
+
+        Transforms.insertText(editor, 'x', at: Path([0]));
+
+        // <editor>
+        //   <block void>word</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text', () {
+        // <editor>
+        //   <block void>word</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')], isVoid: true),
+        ]);
+
+        Transforms.insertText(editor, 'x', at: Path([0, 0]));
+
+        // <editor>
+        //   <block void>word</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+
+    group('voids true', () {
+      test('block', () {
+        // <editor>
+        //   <block void>word</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')], isVoid: true),
+        ]);
+
+        Transforms.insertText(editor, 'x', at: Path([0]), voids: true);
+
+        // <editor>
+        //   <block void>x</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('x')], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text', () {
+        // <editor>
+        //   <block void>x</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')], isVoid: true),
+        ]);
+
+        Transforms.insertText(editor, 'x', at: Path([0, 0]), voids: true);
+
+        // <editor>
+        //   <block void>x</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('x')], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
