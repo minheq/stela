@@ -19,6 +19,14 @@ class Path implements Location {
     return _path.length;
   }
 
+  int get first {
+    return _path.first;
+  }
+
+  int get last {
+    return _path.last;
+  }
+
   bool get isEmpty {
     return _path.isEmpty;
   }

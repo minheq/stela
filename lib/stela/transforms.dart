@@ -107,7 +107,7 @@ class Transforms {
       }
 
       Path parentPath = PathUtils.parent(at);
-      int index = (at as Path)[(at as Path).length - 1];
+      int index = (at as Path).last;
 
       if (!voids && EditorUtils.matchVoid(editor, at: parentPath) != null) {
         return;
