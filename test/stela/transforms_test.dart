@@ -8232,4 +8232,159 @@ void main() {
       });
     });
   });
+
+  group('mergeNodes', () {
+    group('depth block', () {
+      test('block', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>
+        //     <cursor />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[Text('one')]),
+              Block(children: <Node>[Text('two')])
+            ]);
+
+        Transforms.mergeNodes(editor, match: (node) {
+          return EditorUtils.isBlock(editor, node);
+        });
+
+        // <editor>
+        //   <block>
+        //     one
+        //     <cursor />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[Text('onetwo')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+
+    group('path', () {
+      test('block nested', () {
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //   </block>
+        //   <block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[Text('one')])
+          ]),
+          Block(children: <Node>[
+            Block(children: <Node>[Text('two')])
+          ])
+        ]);
+
+        Transforms.mergeNodes(editor, at: Path([1]));
+
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[Text('one')]),
+            Block(children: <Node>[Text('two')])
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('one')]),
+          Block(children: <Node>[Text('two')])
+        ]);
+
+        Transforms.mergeNodes(editor, at: Path([1]));
+
+        // <editor>
+        //   <block>
+        //     onetwo
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('onetwo')]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text across', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('one')]),
+          Block(children: <Node>[Text('two')])
+        ]);
+
+        Transforms.mergeNodes(editor, at: Path([1, 0]), match: (node) {
+          return node is Text;
+        });
+
+        // <editor>
+        //   <block>
+        //     onetwo
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('onetwo')]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+
+    group('voids true', () {
+      test('block', () {
+        // <editor>
+        //   <block void>
+        //     <text>one</text>
+        //     <text>two</text>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+            Text('two'),
+          ], isVoid: true),
+        ]);
+
+        Transforms.mergeNodes(editor, at: Path([0, 1]), voids: true);
+
+        // <editor>
+        //   <block void>onetwo</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('onetwo')], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }
