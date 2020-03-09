@@ -89,21 +89,21 @@ class Transforms {
         List<NodeEntry> entries = List.from(EditorUtils.nodes(editor,
             at: (at as Point).path, match: match, mode: mode, voids: voids));
 
-        NodeEntry entry = entries.first;
-
-        if (entry != null) {
-          Path matchPath = entry.path;
-          PathRef pathRef = EditorUtils.pathRef(editor, matchPath);
-          bool isAtEnd = EditorUtils.isEnd(editor, at, matchPath);
-          Transforms.splitNodes(editor,
-              at: at, match: match, mode: mode, voids: voids);
-
-          Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
-          Path path = pathRef.unref(editorPathRefs);
-          at = isAtEnd ? PathUtils.next(path) : path;
-        } else {
+        if (entries.isEmpty) {
           return;
         }
+
+        NodeEntry entry = entries.first;
+
+        Path matchPath = entry.path;
+        PathRef pathRef = EditorUtils.pathRef(editor, matchPath);
+        bool isAtEnd = EditorUtils.isEnd(editor, at, matchPath);
+        Transforms.splitNodes(editor,
+            at: at, match: match, mode: mode, voids: voids);
+
+        Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
+        Path path = pathRef.unref(editorPathRefs);
+        at = isAtEnd ? PathUtils.next(path) : path;
       }
 
       Path parentPath = PathUtils.parent(at);
