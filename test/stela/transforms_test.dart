@@ -5546,6 +5546,351 @@ void main() {
 
         expectEqual(editor, expected);
       });
+
+      test('inline after', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>word</inline>
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ]),
+            ]);
+
+        // <fragment>fragment</fragment>
+        List<Node> fragment = [
+          Text('fragment'),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>word</inline>
+        //     fragment
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text('fragment'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline before', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     <inline>word</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ]),
+            ]);
+
+        // <fragment>fragment</fragment>
+        List<Node> fragment = [
+          Text('fragment'),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     fragment
+        //     <cursor />
+        //     <inline>word</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('fragment'),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline empty', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('')]),
+                Text(''),
+              ]),
+            ]);
+
+        // <fragment>fragment</fragment>
+        List<Node> fragment = [
+          Text('fragment'),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // TODO: argument to made that fragment should go into the inline
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <text />
+        //     </inline>
+        //     fragment
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('')]),
+                Text('fragment'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline end', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       word
+        //       <cursor />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 4), Point(Path([0, 1, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ]),
+            ]);
+
+        // <fragment>fragment</fragment>
+        List<Node> fragment = [
+          Text('fragment'),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>word</inline>
+        //     fragment
+        //     <cursor />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text('fragment'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline middle', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wo
+        //       <cursor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ]),
+            ]);
+
+        // <fragment>fragment</fragment>
+        List<Node> fragment = [
+          Text('fragment'),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // TODO: argument to made that fragment should go into the inline
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>wo</inline>
+        //     fragment
+        //     <cursor />
+        //     <inline>rd</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('wo')]),
+                Text('fragment'),
+                Inline(children: <Node>[Text('rd')]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline start', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ]),
+            ]);
+
+        // <fragment>fragment</fragment>
+        List<Node> fragment = [
+          Text('fragment'),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     fragment
+        //     <cursor />
+        //     <inline>word</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('fragment'),
+                Inline(children: <Node>[Text('word')]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('with multiple', () {
+        // <editor>
+        //   <block>
+        //     wo
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        // <fragment>
+        //   <text>one</text>
+        //   <text>two</text>
+        // </fragment>
+        List<Node> fragment = [
+          Text('one'),
+          Text('two'),
+        ];
+
+        Transforms.insertFragment(editor, fragment);
+
+        // <editor>
+        //   <block>
+        //     woonetwo
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('woonetword'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }
