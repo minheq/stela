@@ -110,9 +110,10 @@ class Editor implements Ancestor {
     int n = 0;
 
     // We want to batch the transforms first before executing them.
-    // The reason is that we each transform mutates editor,
-    // and we should not allow simultaneous mutation and iteration of the its nodes.
-    // By batching it, we avoid concurrent modification errors
+    // The reason is that each transform mutates the editor,
+    // but we should not allow simultaneous mutation and iteration of the its nodes.
+    // By first iterating and collecting mutations and executing them one by one at the end
+    // we avoid concurrent modification errors
     List<void Function()> transforms = [];
 
     for (int i = 0; i < (node as Ancestor).children.length; i++, n++) {
