@@ -109,6 +109,12 @@ class Editor implements Ancestor {
     // index that accounts for any added/removed nodes.
     int n = 0;
 
+    // We want to batch the transforms first before executing them.
+    // The reason is that we each transform mutates editor,
+    // and we should not allow simultaneous mutation and iteration of the its nodes.
+    // By batching it, we avoid concurrent modification errors
+    List<void Function()> transforms = [];
+
     for (int i = 0; i < (node as Ancestor).children.length; i++, n++) {
       Descendant child = (node as Ancestor).children[i];
       Descendant prev = i - 1 >= 0 ? (node as Ancestor).children[i - 1] : null;
@@ -125,7 +131,9 @@ class Editor implements Ancestor {
         Path at = PathUtils.copy(path);
         at.add(n);
 
-        Transforms.removeNodes(this, at: at, voids: true);
+        transforms.add(() {
+          Transforms.removeNodes(this, at: at, voids: true);
+        });
         n--;
       } else if (child is Element) {
         // Ensure that inline nodes are surrounded by text nodes.
@@ -134,18 +142,22 @@ class Editor implements Ancestor {
             Path at = PathUtils.copy(path);
             at.add(n);
             Text newChild = Text('');
-            Transforms.insertNodes(this, [newChild], at: at, voids: true);
+            transforms.add(() {
+              Transforms.insertNodes(this, [newChild], at: at, voids: true);
+            });
             n++;
           } else if (isLast) {
             Path at = PathUtils.copy(path);
             at.add(n + 1);
             Text newChild = Text('');
-            Transforms.insertNodes(
-              this,
-              [newChild],
-              at: at,
-              voids: true,
-            );
+            transforms.add(() {
+              Transforms.insertNodes(
+                this,
+                [newChild],
+                at: at,
+                voids: true,
+              );
+            });
             n++;
           }
         }
@@ -155,29 +167,39 @@ class Editor implements Ancestor {
           if (TextUtils.propsEquals(child, prev)) {
             Path at = PathUtils.copy(path);
             at.add(n);
-            Transforms.mergeNodes(this, at: at, voids: true);
+            transforms.add(() {
+              Transforms.mergeNodes(this, at: at, voids: true);
+            });
             n--;
           } else if (prev.text == '') {
             Path at = PathUtils.copy(path);
             at.add(n - 1);
-            Transforms.removeNodes(
-              this,
-              at: at,
-              voids: true,
-            );
+            transforms.add(() {
+              Transforms.removeNodes(
+                this,
+                at: at,
+                voids: true,
+              );
+            });
             n--;
           } else if (isLast && (child as Text).text == '') {
             Path at = PathUtils.copy(path);
             at.add(n);
-            Transforms.removeNodes(
-              this,
-              at: at,
-              voids: true,
-            );
+            transforms.add(() {
+              Transforms.removeNodes(
+                this,
+                at: at,
+                voids: true,
+              );
+            });
             n--;
           }
         }
       }
+    }
+
+    for (void Function() transform in transforms) {
+      transform();
     }
   }
 
