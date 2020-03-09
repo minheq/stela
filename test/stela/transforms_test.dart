@@ -7245,4 +7245,48 @@ void main() {
       });
     });
   });
+
+  group('insertText', () {
+    group('path', () {
+      test('block', () {
+        // <editor>
+        //   <block>word</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')]),
+        ]);
+
+        Transforms.insertText(editor, 'x', at: Path([0]));
+
+        // <editor>
+        //   <block>x</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('x')]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text', () {
+        // <editor>
+        //   <block>word</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('word')]),
+        ]);
+
+        Transforms.insertText(editor, 'x', at: Path([0, 0]));
+
+        // <editor>
+        //   <block>x</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[Text('x')]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }
