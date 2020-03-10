@@ -868,21 +868,20 @@ class Transforms {
   // selection transforms
 
   /// Collapse the selection.
-  static void collapse(Editor editor,
-      {SelectionEdge edge = SelectionEdge.anchor}) {
+  static void collapse(Editor editor, {Edge edge = Edge.anchor}) {
     Range selection = editor.selection;
 
     if (selection = null) {
       return;
-    } else if (edge == SelectionEdge.anchor) {
+    } else if (edge == Edge.anchor) {
       Transforms.select(editor, selection.anchor);
-    } else if (edge == SelectionEdge.focus) {
+    } else if (edge == Edge.focus) {
       Transforms.select(editor, selection.focus);
-    } else if (edge == SelectionEdge.start) {
+    } else if (edge == Edge.start) {
       Edges edges = RangeUtils.edges(selection);
       Point start = edges.start;
       Transforms.select(editor, start);
-    } else if (edge == SelectionEdge.end) {
+    } else if (edge == Edge.end) {
       Edges edges = RangeUtils.edges(selection);
       Point end = edges.end;
       Transforms.select(editor, end);
@@ -904,7 +903,7 @@ class Transforms {
     int distance = 1,
     Unit unit = Unit.character,
     bool reverse = false,
-    SelectionEdge edge,
+    Edge edge,
   }) {
     Range selection = editor.selection;
 
@@ -912,43 +911,39 @@ class Transforms {
       return;
     }
 
-    if (edge == SelectionEdge.start) {
-      edge = RangeUtils.isBackward(selection)
-          ? SelectionEdge.focus
-          : SelectionEdge.anchor;
+    if (edge == Edge.start) {
+      edge = RangeUtils.isBackward(selection) ? Edge.focus : Edge.anchor;
     }
 
-    if (edge == SelectionEdge.end) {
-      edge = RangeUtils.isBackward(selection)
-          ? SelectionEdge.anchor
-          : SelectionEdge.focus;
+    if (edge == Edge.end) {
+      edge = RangeUtils.isBackward(selection) ? Edge.anchor : Edge.focus;
     }
 
     Point anchor = selection.anchor;
     Point focus = selection.focus;
-    Range props;
+    Range newSelection = Range(null, null);
 
-    if (edge == null || edge == SelectionEdge.anchor) {
+    if (edge == null || edge == Edge.anchor) {
       Point point = reverse
           ? EditorUtils.before(editor, anchor, distance: distance, unit: unit)
           : EditorUtils.after(editor, anchor, distance: distance, unit: unit);
 
       if (point != null) {
-        props.anchor = point;
+        newSelection.anchor = point;
       }
     }
 
-    if (edge == null || edge == SelectionEdge.focus) {
+    if (edge == null || edge == Edge.focus) {
       Point point = reverse
           ? EditorUtils.before(editor, focus, distance: distance, unit: unit)
           : EditorUtils.after(editor, focus, distance: distance, unit: unit);
 
       if (point != null) {
-        props.focus = point;
+        newSelection.focus = point;
       }
     }
 
-    Transforms.setSelection(editor, props);
+    Transforms.setSelection(editor, newSelection);
   }
 
   /// Set the selection to a new value.
@@ -973,7 +968,7 @@ class Transforms {
   static void setPoint(
     Editor editor,
     Map<String, dynamic> props, {
-    SelectionEdge edge,
+    Edge edge,
   }) {
     Range selection = editor.selection;
 
@@ -981,25 +976,21 @@ class Transforms {
       return;
     }
 
-    if (edge == SelectionEdge.start) {
-      edge = RangeUtils.isBackward(selection)
-          ? SelectionEdge.focus
-          : SelectionEdge.anchor;
+    if (edge == Edge.start) {
+      edge = RangeUtils.isBackward(selection) ? Edge.focus : Edge.anchor;
     }
 
-    if (edge == SelectionEdge.end) {
-      edge = RangeUtils.isBackward(selection)
-          ? SelectionEdge.anchor
-          : SelectionEdge.focus;
+    if (edge == Edge.end) {
+      edge = RangeUtils.isBackward(selection) ? Edge.anchor : Edge.focus;
     }
 
     Point anchor = selection.anchor;
     Point focus = selection.focus;
-    Point point = edge == SelectionEdge.anchor ? anchor : focus;
+    Point point = edge == Edge.anchor ? anchor : focus;
     Point newPoint = Point(point.path, point.offset, props: point.props);
     newPoint.props.addAll(props);
 
-    if (edge == SelectionEdge.anchor) {
+    if (edge == Edge.anchor) {
       Transforms.setSelection(editor, Range(newPoint, null));
     } else {
       Transforms.setSelection(editor, Range(null, newPoint));

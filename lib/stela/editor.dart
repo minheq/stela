@@ -401,8 +401,7 @@ enum Unit {
   block,
 }
 
-enum Edge { start, end }
-enum SelectionEdge { anchor, focus, start, end }
+enum Edge { anchor, focus, start, end }
 
 class EditorUtils {
   /// Get the ancestor above a location in the document.
@@ -451,7 +450,10 @@ class EditorUtils {
     int d = 0;
     Point target;
 
-    for (Point p in EditorUtils.positions(editor, at: range, unit: unit)) {
+    List<Point> positions =
+        List.from(EditorUtils.positions(editor, at: range, unit: unit));
+
+    for (Point p in positions) {
       if (d > distance) {
         break;
       }
@@ -1174,8 +1176,10 @@ class EditorUtils {
       distance = available >= 0 ? null : 0 - available;
     };
 
-    for (NodeEntry entry
-        in EditorUtils.nodes(editor, at: at, reverse: reverse)) {
+    List<NodeEntry> entries =
+        List.from(EditorUtils.nodes(editor, at: at, reverse: reverse));
+
+    for (NodeEntry entry in entries) {
       Path path = entry.path;
       Node node = entry.node;
 

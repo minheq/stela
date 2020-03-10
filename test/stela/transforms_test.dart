@@ -8387,4 +8387,76 @@ void main() {
       });
     });
   });
+
+  group('move', () {
+    group('anchor', () {
+      test('backward', () {
+        // <editor>
+        //   <block>
+        //     one <anchor />
+        //     two th
+        //     <focus />
+        //     ree
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 10)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.move(editor, edge: Edge.anchor);
+
+        // <editor>
+        //   <block>
+        //     one t<anchor />
+        //     wo th
+        //     <focus />
+        //     ree
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 10)),
+            children: <Node>[
+              Block(children: <Node>[Text('one two three')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('basic', () {
+        // <editor>
+        //   <block>
+        //     one <anchor />
+        //     tw
+        //     <focus />o three
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.move(editor, edge: Edge.anchor);
+
+        // <editor>
+        //   <block>
+        //     one t<anchor />w<focus />o three
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 6)),
+            children: <Node>[
+              Block(children: <Node>[Text('one two three')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }

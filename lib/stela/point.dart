@@ -53,6 +53,14 @@ class PointUtils {
   /// Check if a point is exactly equal to another.
   static bool equals(Point point, Point another) {
     // PERF: ensure the offsets are equal first since they are cheaper to check.
+    if (point != null && another == null) {
+      return false;
+    }
+
+    if (point == null && another != null) {
+      return false;
+    }
+
     return (point.offset == another.offset &&
         PathUtils.equals(point.path, another.path));
   }
