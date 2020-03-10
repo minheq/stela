@@ -1639,9 +1639,11 @@ class EditorUtils {
 
         // TODO: Figure out how to create new node with any class inherting from either
         if (node is Block) {
-          newNode = Block(children: after, props: newProps);
+          newNode =
+              Block(children: after, props: newProps, isVoid: node.isVoid);
         } else if (node is Inline) {
-          newNode = Inline(children: after, props: newProps);
+          newNode =
+              Inline(children: after, props: newProps, isVoid: node.isVoid);
         }
       }
 
