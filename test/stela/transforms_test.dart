@@ -13042,5 +13042,173 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('point', () {
+      test('block void', () {
+        // <editor>
+        //   <block void>
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ], isVoid: true),
+        ]);
+
+        Transforms.splitNodes(editor, at: Point(Path([0, 0]), 2));
+
+        // <editor>
+        //   <block void>
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block', () {
+        // <editor>
+        //   <block>
+        //     <text>word</text>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Point(Path([0, 0]), 2),
+            match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>wo</block>
+        //   <block>rd</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('wo'),
+          ]),
+          Block(children: <Node>[
+            Text('rd'),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline void', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text>word</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ], isVoid: true),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Point(Path([0, 1, 0]), 2));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text>word</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ], isVoid: true),
+            Text(''),
+          ]),
+          Block(children: <Node>[
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <text>word</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Point(Path([0, 1, 0]), 2),
+            match: (node) {
+          return node is Inline;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <text>wo</text>
+        //     </inline>
+        //     <text />
+        //     <inline>
+        //       <text>rd</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('wo'),
+            ]),
+            Text(''),
+            Inline(children: <Node>[
+              Text('rd'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
