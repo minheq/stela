@@ -10833,5 +10833,116 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('select', () {
+      test('block only void', () {
+        // <editor>
+        //   <block void>
+        //     <cursor />
+        //     one
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+          ], isVoid: true),
+        ]);
+
+        Transforms.removeNodes(editor, at: Path([0]));
+
+        // <editor />
+        TestEditor expected = TestEditor(children: <Node>[]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block void multiple texts', () {
+        // <editor>
+        //   <block void>
+        //     <text>
+        //       <cursor />
+        //       one
+        //     </text>
+        //     <text>two</text>
+        //   </block>
+        //   <block>three</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+                Text('two'),
+              ], isVoid: true),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        Transforms.removeNodes(editor, at: Path([0]));
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     three
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block void', () {
+        // <editor>
+        //   <block void>
+        //     <cursor />
+        //     one
+        //   </block>
+        //   <block>two</block>
+        //   <block>three</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ], isVoid: true),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        Transforms.removeNodes(editor, at: Path([0]));
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     two
+        //   </block>
+        //   <block>three</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
