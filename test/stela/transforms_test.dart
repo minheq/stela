@@ -11439,5 +11439,416 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('inline', () {
+      test('inline across', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <anchor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       another
+        //       <focus />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 1, 0]), 7)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('another'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.setNodes(editor, {'key': true}, match: (node) {
+          return node is Inline;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline key>
+        //       <anchor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline key>
+        //       another
+        //       <focus />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 1, 0]), 7)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ], props: {
+                  'key': true
+                }),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('another'),
+                ], props: {
+                  'key': true
+                }),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline block hanging', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <anchor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <focus />
+        //       another
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('another'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.setNodes(editor, {'key': true}, match: (node) {
+          return node is Inline;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline key>
+        //       <anchor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <focus />
+        //       another
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ], props: {
+                  'key': true
+                }),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('another'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline hanging', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <anchor />
+        //       word
+        //     </inline>
+        //     <focus />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.setNodes(editor, {'key': true}, match: (node) {
+          return node is Inline;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline key>
+        //       <anchor />
+        //       word
+        //     </inline>
+        //     <focus />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ], props: {
+                  'key': true
+                }),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline nested', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <text />
+        //       <inline>
+        //         <cursor />
+        //         word
+        //       </inline>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 1, 1, 0]), 0), Point(Path([0, 1, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text(''),
+                  Inline(children: <Node>[
+                    Text('word'),
+                  ]),
+                  Text(''),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.setNodes(editor, {'key': true}, match: (node) {
+          return node is Inline;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <text />
+        //       <inline key>
+        //         <cursor />
+        //         word
+        //       </inline>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(
+                Point(Path([0, 1, 1, 0]), 0), Point(Path([0, 1, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text(''),
+                  Inline(children: <Node>[
+                    Text('word'),
+                  ], props: {
+                    'key': true
+                  }),
+                  Text(''),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline void', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <cursor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ], isVoid: true),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.setNodes(editor, {'key': true}, match: (node) {
+          return node is Inline;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void key>
+        //       <cursor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(
+                    children: <Node>[
+                      Text('word'),
+                    ],
+                    isVoid: true,
+                    props: {'key': true}),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.setNodes(editor, {'key': true}, match: (node) {
+          return node is Inline;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline key>
+        //       <cursor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ], props: {
+                  'key': true
+                }),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
