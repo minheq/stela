@@ -12212,4 +12212,256 @@ void main() {
       });
     });
   });
+
+  group('splitNodes', () {
+    group('always', () {
+      test('after inline void', () {
+        // <editor>
+        //   <block>
+        //     one
+        //     <inline void>
+        //       <text />
+        //     </inline>
+        //     <cursor />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+                Inline(children: <Node>[Text('')], isVoid: true),
+                Text('two'),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, always: true, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>
+        //     one
+        //     <inline void>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <cursor />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([01, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+                Inline(children: <Node>[Text('')], isVoid: true),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('after inline', () {
+        // <editor>
+        //   <block>
+        //     word
+        //     <inline>hyperlink</inline>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+                Inline(children: <Node>[Text('hyperlink')]),
+                Text('word'),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, always: true, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>
+        //     word
+        //     <inline>hyperlink</inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+                Inline(children: <Node>[Text('hyperlink')]),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('before inline', () {
+        // <editor>
+        //   <block>
+        //     word
+        //     <cursor />
+        //     <inline>hyperlink</inline>
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+                Inline(children: <Node>[Text('hyperlink')]),
+                Text('word'),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, always: true, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>word</block>
+        //   <block>
+        //     <cursor />
+        //     <inline>hyperlink</inline>
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[Text('hyperlink')]),
+                Text('word'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block end', () {
+        // <editor>
+        //   <block>
+        //     word
+        //     <cursor />
+        //   </block>
+        //   <block>another</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+              Block(children: <Node>[
+                Text('another'),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, always: true, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>word</block>
+        //   <block>
+        //     <cursor />
+        //   </block>
+        //   <block>another</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text('another'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block start', () {
+        // <editor>
+        //   <block>word</block>
+        //   <block>
+        //     <cursor />
+        //     another
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+              Block(children: <Node>[
+                Text('another'),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, always: true, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>word</block>
+        //   <block>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <cursor />
+        //     another
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([2, 0]), 0), Point(Path([2, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text('another'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }
