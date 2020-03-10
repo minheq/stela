@@ -10944,5 +10944,82 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('selection', () {
+      test('block across', () {
+        // <editor>
+        //   <block>
+        //     on
+        //     <anchor />e
+        //   </block>
+        //   <block>
+        //     t<focus />
+        //     wo
+        //   </block>
+        //   <block>three</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 1)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        Transforms.removeNodes(editor);
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     three
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block all', () {
+        // <editor>
+        //   <block>
+        //     on
+        //     <anchor />e
+        //   </block>
+        //   <block>
+        //     t<focus />
+        //     wo
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 1)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        Transforms.removeNodes(editor);
+
+        // <editor />
+        TestEditor expected = TestEditor(children: <Node>[]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
