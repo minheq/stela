@@ -11850,5 +11850,107 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('path', () {
+      test('block', () {
+        // <editor>
+        //   <block>
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ]),
+        ]);
+
+        Transforms.setNodes(editor, {'key': true}, at: Path([0]));
+
+        // <editor>
+        //   <block key>
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ], props: {
+            'key': true
+          }),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>word</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.setNodes(editor, {'key': true}, at: Path([0, 1]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline key="a">word</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ], props: {
+              'key': true
+            }),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text', () {
+        // <editor>
+        //   <block>
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ]),
+        ]);
+
+        Transforms.setNodes(editor, {'key': true}, at: Path([0, 0]));
+
+        // <editor>
+        //   <block>
+        //     <text key>word</text>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word', props: {'key': true}),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
