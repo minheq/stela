@@ -34,28 +34,34 @@ class TestEditor extends Editor {
   }
 }
 
-void Function(Node, Node) expectEqual = (Node node, Node another) {
-  expect(node.runtimeType, another.runtimeType);
+void Function(Node, Node) expectEqual = (Node node, Node expected) {
+  expect(node.runtimeType, expected.runtimeType);
 
   if (node is Text) {
-    expect(node.text, (another as Text).text);
+    expect(node.text, (expected as Text).text);
     return;
   }
 
   if (node is Editor && node.selection != null) {
     expect(
-        RangeUtils.equals(node.selection, (another as Editor).selection), true,
+        RangeUtils.equals(node.selection, (expected as Editor).selection), true,
         reason:
-            "expected: ${(another as Editor).selection.toString()}, received: ${node.selection.toString()}");
+            "expected: ${(expected as Editor).selection.toString()}, received: ${node.selection.toString()}");
   }
 
-  if (node is Element && another is Element) {
-    expect(node.isVoid, another.isVoid);
+  if (node is Element && expected is Element) {
+    expect(node.isVoid, expected.isVoid);
+
+    for (String key in expected.props.keys) {
+      dynamic value = node.props[key];
+      dynamic expectedValue = expected.props[key];
+      expect(value, expectedValue);
+    }
   }
 
   for (var i = 0; i < (node as Ancestor).children.length; i++) {
     Node n = (node as Ancestor).children[i];
-    Node an = (another as Ancestor).children[i];
+    Node an = (expected as Ancestor).children[i];
 
     expectEqual(n, an);
   }
@@ -11197,6 +11203,64 @@ void main() {
           ]);
 
       expectEqual(editor, expected);
+    });
+  });
+
+  group('setNodes', () {
+    group('block', () {
+      test('block across', () {
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     word
+        //   </block>
+        //   <block>
+        //     a<focus />
+        //     nother
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 1)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+              Block(children: <Node>[
+                Text('another'),
+              ]),
+            ]);
+
+        Transforms.setNodes(editor, {'key': true}, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block key>
+        //     <anchor />
+        //     word
+        //   </block>
+        //   <block key>
+        //     a<focus />
+        //     nother
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 1)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ], props: {
+                'key': true
+              }),
+              Block(children: <Node>[
+                Text('another'),
+              ], props: {
+                'key': true
+              }),
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }

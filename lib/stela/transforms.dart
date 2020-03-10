@@ -500,6 +500,8 @@ class Transforms {
         }
       }
 
+      Map<String, dynamic> argProps = props;
+
       for (NodeEntry entry in EditorUtils.nodes(
         editor,
         at: at,
@@ -517,10 +519,10 @@ class Transforms {
           continue;
         }
 
-        for (String k in props.keys) {
-          if (props[k] != node.props[k]) {
+        for (String k in argProps.keys) {
+          if (argProps[k] != node.props[k]) {
             props[k] = node.props[k];
-            newProps[k] = props[k];
+            newProps[k] = argProps[k];
           }
         }
 
