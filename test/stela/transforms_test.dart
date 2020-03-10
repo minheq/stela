@@ -12140,5 +12140,76 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('voids true', () {
+      test('block', () {
+        // <editor>
+        //   <block void>word</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ], isVoid: true),
+        ]);
+
+        Transforms.setNodes(editor, {'key': true},
+            at: Path([0, 0]), voids: true);
+
+        // <editor>
+        //   <block void>
+        //     <text key>word</text>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 1)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word', props: {'key': true}),
+              ], isVoid: true),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>word</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[Text('word')]),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.setNodes(editor, {'key': true}, at: Path([0, 1]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline key>word</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ], props: {
+              'key': true
+            }),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
