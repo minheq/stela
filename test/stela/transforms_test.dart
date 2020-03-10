@@ -11092,4 +11092,111 @@ void main() {
       });
     });
   });
+
+  group('select', () {
+    test('path', () {
+      // <editor>
+      //   <block>
+      //     <cursor />
+      //     one
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(
+          selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+          children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]);
+
+      Transforms.select(editor, Path([0, 0]));
+
+      // <editor>
+      //   <block>
+      //     <anchor />
+      //     one
+      //     <focus />
+      //   </block>
+      // </editor>
+      TestEditor expected = TestEditor(
+          selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3)),
+          children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]);
+
+      expectEqual(editor, expected);
+    });
+
+    test('point', () {
+      // <editor>
+      //   <block>
+      //     <cursor />
+      //     one
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(
+          selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+          children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]);
+
+      Transforms.select(editor, Point(Path([0, 0]), 1));
+
+      // <editor>
+      //   <block>
+      //     o<cursor />
+      //     ne
+      //   </block>
+      // </editor>
+      TestEditor expected = TestEditor(
+          selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
+          children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]);
+
+      expectEqual(editor, expected);
+    });
+
+    test('range', () {
+      // <editor>
+      //   <block>
+      //     <cursor />
+      //     one
+      //   </block>
+      // </editor>
+      TestEditor editor = TestEditor(
+          selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+          children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]);
+
+      Transforms.select(
+          editor, Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3)));
+
+      // <editor>
+      //   <block>
+      //     <anchor />
+      //     one
+      //     <focus />
+      //   </block>
+      // </editor>
+      TestEditor expected = TestEditor(
+          selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3)),
+          children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]);
+
+      expectEqual(editor, expected);
+    });
+  });
 }
