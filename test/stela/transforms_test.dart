@@ -12686,5 +12686,360 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('match inline', () {
+      test('inline middle', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wo
+        //       <cursor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, match: (node) {
+          return node is Inline;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>wo</inline>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 3, 0]), 0), Point(Path([0, 3, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('wo'),
+                ]),
+                Text(''),
+                Inline(children: <Node>[
+                  Text('rd'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+
+    group('path', () {
+      test('block inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>one</inline>
+        //     <text />
+        //     <inline>two</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('one'),
+            ]),
+            Text(''),
+            Inline(children: <Node>[
+              Text('two'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Path([0, 2]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>one</inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline>two</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('one'),
+            ]),
+            Text(''),
+          ]),
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('two'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block void nested', () {
+        // <editor>
+        //   <block>
+        //     <block void>one</block>
+        //     <block void>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ], isVoid: true),
+            Block(children: <Node>[
+              Text('two'),
+            ], isVoid: true),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Path([0, 1]));
+
+        // <editor>
+        //   <block>
+        //     <block void>one</block>
+        //   </block>
+        //   <block>
+        //     <block void>two</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ], isVoid: true),
+          ]),
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('two'),
+            ], isVoid: true),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block nested', () {
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //     <block>two</block>
+        //     <block>three</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+            Block(children: <Node>[
+              Text('three'),
+            ]),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Path([0, 1]));
+
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //   </block>
+        //   <block>
+        //     <block>two</block>
+        //     <block>three</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]),
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+            Block(children: <Node>[
+              Text('three'),
+            ]),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block void', () {
+        // <editor>
+        //   <block void>
+        //     <block>one</block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ], isVoid: true),
+        ]);
+
+        Transforms.splitNodes(editor, at: Path([0, 1]));
+
+        // <editor>
+        //   <block void>
+        //     <block>one</block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline void', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text>word</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ], isVoid: true),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Path([0, 1, 0]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text>word</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ], isVoid: true),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <text>word</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Path([0, 1, 0]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //     <inline>
+        //       <text>word</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text(''),
+            ]),
+            Text(''),
+            Inline(children: <Node>[
+              Text('word'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
