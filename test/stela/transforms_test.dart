@@ -12463,5 +12463,74 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('match any', () {
+      test('zero', () {
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         wo
+        //         <cursor />
+        //         rd
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 2), Point(Path([0, 0, 0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('word'),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, mode: Mode.highest, match: (node) {
+          return true;
+        });
+
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <block>wo</block>
+        //     </block>
+        //   </block>
+        //   <block>
+        //     <block>
+        //       <block>
+        //         <cursor />
+        //         rd
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(
+                Point(Path([1, 0, 0, 0]), 0), Point(Path([1, 0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('wo'),
+                  ]),
+                ]),
+              ]),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('rd'),
+                  ]),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
