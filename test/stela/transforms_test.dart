@@ -12532,5 +12532,159 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('match block', () {
+      test('block middle multiple texts', () {
+        // <editor>
+        //   <block>
+        //     <text>
+        //       one
+        //       <cursor />
+        //     </text>
+        //     <text>two</text>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+                Text('two'),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>
+        //     one
+        //     <cursor />
+        //   </block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block middle', () {
+        // <editor>
+        //   <block>
+        //     wo
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>wo</block>
+        //   <block>
+        //     <cursor />
+        //     rd
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('wo'),
+              ]),
+              Block(children: <Node>[
+                Text('rd'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline middle', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wo
+        //       <cursor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.splitNodes(editor, match: (node) {
+          return node is Block;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>wo</inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([1, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('wo'),
+                ]),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('rd'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }

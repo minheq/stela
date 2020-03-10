@@ -1647,7 +1647,12 @@ class EditorUtils {
         List<Node> after = (node as Ancestor).children.sublist(position);
         (node as Ancestor).children = before;
 
-        newNode = Block(children: after, props: newProps);
+        // TODO: Figure out how to create new node with any class inherting from either
+        if (node is Block) {
+          newNode = Block(children: after, props: newProps);
+        } else if (node is Inline) {
+          newNode = Inline(children: after, props: newProps);
+        }
       }
 
       parent.children.insert(index + 1, newNode);
