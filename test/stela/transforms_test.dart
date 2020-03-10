@@ -8457,6 +8457,209 @@ void main() {
 
         expectEqual(editor, expected);
       });
+
+      test('collapsed', () {
+        // <editor>
+        //   <block>
+        //     one two t<cursor />
+        //     hree
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.move(editor, edge: Edge.anchor);
+
+        // <editor>
+        //   <block>
+        //     one two t<focus />h<anchor />
+        //     ree
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 9)),
+            children: <Node>[
+              Block(children: <Node>[Text('one two three')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('distance', () {
+        // <editor>
+        //   <block>
+        //     one <anchor />
+        //     two thr
+        //     <focus />
+        //     ee
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 11)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.move(editor, edge: Edge.anchor, distance: 3);
+
+        // <editor>
+        //   <block>
+        //     one two
+        //     <anchor /> thr
+        //     <focus />
+        //     ee
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 7), Point(Path([0, 0]), 11)),
+            children: <Node>[
+              Block(children: <Node>[Text('one two three')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('reverse backward', () {
+        // <editor>
+        //   <block>
+        //     one <focus />
+        //     two th
+        //     <anchor />
+        //     ree
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.move(editor, edge: Edge.anchor, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     one <focus />
+        //     two t<anchor />
+        //     hree
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 4)),
+            children: <Node>[
+              Block(children: <Node>[Text('one two three')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('reverse basic', () {
+        // <editor>
+        //   <block>
+        //     one <anchor />
+        //     tw
+        //     <focus />o three
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.move(editor, edge: Edge.anchor, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     one
+        //     <anchor /> tw
+        //     <focus />o three
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 6)),
+            children: <Node>[
+              Block(children: <Node>[Text('one two three')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('reverse collapsed', () {
+        // <editor>
+        //   <block>
+        //     one two t<cursor />
+        //     hree
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.move(editor, edge: Edge.anchor, reverse: true);
+
+        // <editor>
+        //   <block>
+        //     one two <anchor />t<focus />
+        //     hree
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 9)),
+            children: <Node>[
+              Block(children: <Node>[Text('one two three')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('reverse distance', () {
+        // <editor>
+        //   <block>
+        //     one <anchor />
+        //     tw
+        //     <focus />o three
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one two three'),
+              ]),
+            ]);
+
+        Transforms.move(editor, edge: Edge.anchor, reverse: true, distance: 3);
+
+        // <editor>
+        //   <block>
+        //     o<anchor />
+        //     ne tw
+        //     <focus />o three
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 6)),
+            children: <Node>[
+              Block(children: <Node>[Text('one two three')]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
     });
   });
 }
