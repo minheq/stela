@@ -10676,4 +10676,162 @@ void main() {
       });
     });
   });
+
+  group('removeNodes', () {
+    group('path', () {
+      test('block nested', () {
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //   </block>
+        //   <block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]),
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ]),
+        ]);
+
+        Transforms.removeNodes(editor, at: Path([0, 0]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+          ]),
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+          ]),
+          Block(children: <Node>[
+            Text('two'),
+          ]),
+        ]);
+
+        Transforms.removeNodes(editor, at: Path([0]));
+
+        // <editor>
+        //   <block>two</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('two'),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>one</inline>
+        //     <text />
+        //     <inline>two</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('one'),
+            ]),
+            Text(''),
+            Inline(children: <Node>[
+              Text('two'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.removeNodes(editor, at: Path([0, 1]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>two</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('two'),
+            ]),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+          ]),
+          Block(children: <Node>[
+            Text('two'),
+          ]),
+        ]);
+
+        Transforms.removeNodes(editor, at: Path([1, 0]));
+
+        // <editor>
+        //   <block>one</block>
+        //   <block>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+          ]),
+          Block(children: <Node>[
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }
