@@ -9985,4 +9985,419 @@ void main() {
       });
     });
   });
+
+  group('moveNodes', () {
+    group('path', () {
+      test('block', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     one
+        //   </block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        Transforms.moveNodes(editor, at: Path([0]), to: Path([1]));
+
+        // <editor>
+        //   <block>two</block>
+        //   <block>
+        //     <cursor />
+        //     one
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       one
+        //     </inline>
+        //     <text />
+        //     <inline>two</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('one'),
+                ]),
+                Text(''),
+                Inline(children: <Node>[
+                  Text('two'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.moveNodes(editor, at: Path([0, 1]), to: Path([0, 3]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>two</inline>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       one
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 3, 0]), 0), Point(Path([0, 3, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('two'),
+                ]),
+                Text(''),
+                Inline(children: <Node>[
+                  Text('one'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inside next', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     one
+        //   </block>
+        //   <block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+              ]),
+            ]);
+
+        Transforms.moveNodes(editor, at: Path([0]), to: Path([1, 1]));
+
+        // <editor>
+        //   <block>
+        //     <block>two</block>
+        //     <block>
+        //       <cursor />
+        //       one
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+                Block(children: <Node>[
+                  Text('one'),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('nested', () {
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //   </block>
+        //   <block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ]),
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ]),
+        ]);
+
+        Transforms.moveNodes(editor, at: Path([0, 0]), to: Path([1, 0]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <block>one</block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+          ]),
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('noop equal', () {
+        // <editor>
+        //   <block>1</block>
+        //   <block>2</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('1'),
+          ]),
+          Block(children: <Node>[
+            Text('2'),
+          ]),
+        ]);
+
+        Transforms.moveNodes(editor, at: Path([1]), to: Path([1]));
+
+        // <editor>
+        //   <block>1</block>
+        //   <block>2</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('1'),
+          ]),
+          Block(children: <Node>[
+            Text('2'),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('sibling swap', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     one
+        //   </block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        Transforms.moveNodes(editor, at: Path([0]), to: Path([1]));
+
+        // <editor>
+        //   <block>two</block>
+        //   <block>
+        //     <cursor />
+        //     one
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text nodes', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>
+        //     <cursor />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        Transforms.moveNodes(editor, at: Path([0, 0]), to: Path([1, 0]));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     one
+        //     <cursor />
+        //     two
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([1, 0]), 3), Point(Path([1, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text('onetwo'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text', () {
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+          ]),
+          Block(children: <Node>[
+            Text('two'),
+          ]),
+        ]);
+
+        Transforms.moveNodes(editor, at: Path([1, 0]), to: Path([0, 1]));
+
+        // <editor>
+        //   <block>onetwo</block>
+        //   <block>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('onetwo'),
+          ]),
+          Block(children: <Node>[
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('to sibling', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     one
+        //   </block>
+        //   <block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+              ]),
+            ]);
+
+        Transforms.moveNodes(editor, at: Path([0]), to: Path([1, 1]));
+
+        // <editor>
+        //   <block>
+        //     <block>two</block>
+        //     <block>
+        //       <cursor />
+        //       one
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+                Block(children: <Node>[
+                  Text('one'),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }
