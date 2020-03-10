@@ -11021,5 +11021,75 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('voids true', () {
+      test('block', () {
+        // <editor>
+        //   <block void>one</block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+          ], isVoid: true),
+        ]);
+
+        Transforms.removeNodes(editor, at: Path([0, 0]), voids: true);
+
+        // <editor>
+        //   <block void>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+          ], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>one</inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text('one'),
+            ], isVoid: true),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.removeNodes(editor, at: Path([0, 1, 0]), voids: true);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[
+              Text(''),
+            ], isVoid: true),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
