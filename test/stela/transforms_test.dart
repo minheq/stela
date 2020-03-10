@@ -4620,7 +4620,8 @@ void main() {
         //   </block>
         // </editor>
         TestEditor editor = TestEditor(
-            selection: Range(Point(Path([0, 1]), 0), Point(Path([0, 1]), 0)),
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
                 Text(''),
@@ -8257,7 +8258,7 @@ void main() {
             ]);
 
         Transforms.mergeNodes(editor, match: (node) {
-          return EditorUtils.isBlock(editor, node);
+          return node is Block;
         });
 
         // <editor>

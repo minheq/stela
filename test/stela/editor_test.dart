@@ -48,7 +48,7 @@ void main() {
 
       NodeEntry entry = EditorUtils.above(editor,
           at: Path([0, 0, 0]), mode: Mode.highest, match: (node) {
-        return EditorUtils.isBlock(editor, node);
+        return node is Block;
       });
 
       expect(entry.node, highest);
@@ -68,7 +68,7 @@ void main() {
 
       NodeEntry entry = EditorUtils.above(editor,
           at: Path([0, 0, 0]), mode: Mode.lowest, match: (node) {
-        return EditorUtils.isBlock(editor, node);
+        return node is Block;
       });
 
       expect(entry.node, lowest);
@@ -546,7 +546,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(EditorUtils.isBlock(editor, editor.children[0]), true);
+      expect(editor.children[0] is Block, true);
     });
 
     test('inline', () {
@@ -565,10 +565,7 @@ void main() {
         ]),
       ]);
 
-      expect(
-          EditorUtils.isBlock(
-              editor, (editor.children[0] as Block).children[1]),
-          false);
+      expect((editor.children[0] as Block).children[1] is Block, false);
     });
   });
 
@@ -1091,7 +1088,7 @@ void main() {
         Block(children: <Node>[Text('two')]),
       ]);
       NodeEntry next = EditorUtils.next(editor, at: Path([0]), match: (node) {
-        return EditorUtils.isBlock(editor, node);
+        return node is Block;
       });
 
       expect(next.node, editor.children[1]);
@@ -1226,7 +1223,7 @@ void main() {
           editor,
           at: Path([]),
           match: (node) {
-            return EditorUtils.isBlock(editor, node);
+            return node is Block;
           },
         ));
 
@@ -4271,7 +4268,7 @@ void main() {
       ]);
       NodeEntry previous =
           EditorUtils.previous(editor, at: Path([1]), match: (node) {
-        return EditorUtils.isBlock(editor, node);
+        return node is Block;
       });
 
       expect(previous.node, editor.children[0]);

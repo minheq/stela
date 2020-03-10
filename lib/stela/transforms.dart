@@ -78,13 +78,13 @@ class Transforms {
             match = (n) {
               return (n is Text);
             };
-          } else if (editor.isInline(node)) {
+          } else if (node is Inline) {
             match = (n) {
               return (n is Text) || EditorUtils.isInline(editor, n);
             };
           } else {
             match = (n) {
-              return EditorUtils.isBlock(editor, n);
+              return n is Block;
             };
           }
         }
@@ -149,7 +149,7 @@ class Transforms {
         match = (at is Path)
             ? matchPath(editor, at)
             : (n) {
-                return EditorUtils.isBlock(editor, n);
+                return n is Block;
               };
       }
 
@@ -233,7 +233,7 @@ class Transforms {
           };
         } else {
           match = (n) {
-            return EditorUtils.isBlock(editor, n);
+            return n is Block;
           };
         }
       }
@@ -368,7 +368,7 @@ class Transforms {
         match = at is Path
             ? matchPath(editor, at)
             : (n) {
-                return EditorUtils.isBlock(editor, n);
+                return n is Block;
               };
       }
 
@@ -413,7 +413,7 @@ class Transforms {
         match = at is Path
             ? matchPath(editor, at)
             : (n) {
-                return EditorUtils.isBlock(editor, n);
+                return n is Block;
               };
       }
 
@@ -466,7 +466,7 @@ class Transforms {
         match = at is Path
             ? matchPath(editor, at)
             : (n) {
-                return EditorUtils.isBlock(editor, n);
+                return n is Block;
               };
       }
 
@@ -549,7 +549,7 @@ class Transforms {
 
       if (match == null) {
         match = (n) {
-          return EditorUtils.isBlock(editor, n);
+          return n is Block;
         };
       }
 
@@ -594,7 +594,7 @@ class Transforms {
         Node voidNode = voidMatch.node;
         Path voidPath = voidMatch.path;
 
-        if (voidNode is Element && editor.isInline(voidNode)) {
+        if (voidNode is Element && voidNode is Inline) {
           Point after = EditorUtils.after(editor, voidPath);
 
           if (after == null) {
@@ -702,7 +702,7 @@ class Transforms {
         match = at is Path
             ? matchPath(editor, at)
             : (n) {
-                return EditorUtils.isBlock(editor, n);
+                return n is Block;
               };
       }
 
@@ -776,13 +776,13 @@ class Transforms {
       if (match == null) {
         if (at is Path) {
           match = matchPath(editor, at);
-        } else if (editor.isInline(element)) {
+        } else if (element is Inline) {
           match = (n) {
             return EditorUtils.isInline(editor, n) || (n is Text);
           };
         } else {
           match = (n) {
-            return EditorUtils.isBlock(editor, n);
+            return n is Block;
           };
         }
       }
@@ -807,9 +807,9 @@ class Transforms {
       List<NodeEntry> roots = List.from(EditorUtils.nodes(
         editor,
         at: at,
-        match: editor.isInline(element)
+        match: element is Inline
             ? (n) {
-                return EditorUtils.isBlock(editor, n);
+                return n is Block;
               }
             : (n) {
                 return n is Editor;
@@ -1088,10 +1088,10 @@ class Transforms {
       Point end = edges.end;
 
       NodeEntry<Block> startBlock = EditorUtils.above(editor, match: (n) {
-        return EditorUtils.isBlock(editor, n);
+        return n is Block;
       }, at: start, voids: voids);
       NodeEntry<Block> endBlock = EditorUtils.above(editor, match: (n) {
-        return EditorUtils.isBlock(editor, n);
+        return n is Block;
       }, at: end, voids: voids);
       bool isAcrossBlocks = startBlock != null &&
           endBlock != null &&
@@ -1273,7 +1273,7 @@ class Transforms {
       NodeEntry blockMatch = EditorUtils.above(
         editor,
         match: (n) {
-          return EditorUtils.isBlock(editor, n);
+          return n is Block;
         },
         at: at,
         voids: voids,
@@ -1299,7 +1299,7 @@ class Transforms {
             PathUtils.isAncestor(p, firstPath) &&
             (n is Element) &&
             !editor.isVoid(n) &&
-            !editor.isInline(n)) {
+            !(n is Inline)) {
           return false;
         }
 
@@ -1307,7 +1307,7 @@ class Transforms {
             PathUtils.isAncestor(p, lastPath) &&
             (n is Element) &&
             !editor.isVoid(n) &&
-            !editor.isInline(n)) {
+            !(n is Inline)) {
           return false;
         }
 
@@ -1330,7 +1330,7 @@ class Transforms {
       for (NodeEntry entry in matches) {
         Node node = entry.node;
 
-        if (node is Element && editor.isInline(node) == false) {
+        if (node is Element && node is Inline == false) {
           starting = false;
           hasBlocks = true;
           middles.add(node);
@@ -1359,9 +1359,7 @@ class Transforms {
           editor, isInlineEnd ? PathUtils.next(inlinePath) : inlinePath);
 
       Transforms.splitNodes(editor, at: at, match: (n) {
-        return hasBlocks
-            ? EditorUtils.isBlock(editor, n)
-            : (n is Text) || EditorUtils.isInline(editor, n);
+        return hasBlocks ? n is Block : n is Text || n is Inline;
       }, mode: hasBlocks ? Mode.lowest : Mode.highest, voids: voids);
 
       PathRef startRef = EditorUtils.pathRef(
@@ -1383,7 +1381,7 @@ class Transforms {
 
       Transforms.insertNodes(editor, middles, at: middleRef.current,
           match: (n) {
-        return EditorUtils.isBlock(editor, n);
+        return n is Block;
       }, mode: Mode.lowest, voids: voids);
 
       Transforms.insertNodes(editor, ends, at: endRef.current, match: (n) {

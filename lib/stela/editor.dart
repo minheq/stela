@@ -59,11 +59,6 @@ class Editor implements Ancestor {
     return 'Editor(children:[$str])';
   }
 
-  // Schema-specific node behaviors.
-  bool isInline(Element element) {
-    return false;
-  }
-
   bool isVoid(Element element) {
     return false;
   }
@@ -100,10 +95,10 @@ class Editor implements Ancestor {
     bool shouldHaveInlines = node is Editor
         ? false
         : (node is Element) &&
-            (isInline(node) ||
+            (node is Inline ||
                 node.children.isEmpty ||
                 (node.children.first is Text) ||
-                isInline(node.children.first));
+                node.children.first is Inline);
 
     // Since we'll be applying operations while iterating, keep track of an
     // index that accounts for any added/removed nodes.
@@ -122,7 +117,7 @@ class Editor implements Ancestor {
 
       bool isLast = i == (node as Ancestor).children.length - 1;
       bool isInlineOrText =
-          child is Text || (child is Element && isInline(child));
+          child is Text || (child is Element && child is Inline);
 
       // Only allow block nodes in the top-level children and parent blocks
       // that only contain block nodes. Similarly, only allow inline nodes in
@@ -138,7 +133,7 @@ class Editor implements Ancestor {
         n--;
       } else if (child is Element) {
         // Ensure that inline nodes are surrounded by text nodes.
-        if (isInline(child)) {
+        if (child is Inline) {
           if (prev == null || !(prev is Text)) {
             Path at = PathUtils.copy(path);
             at.add(n);
@@ -537,7 +532,7 @@ class EditorUtils {
     bool hasBlocks = false;
 
     for (Node node in element.children) {
-      if (EditorUtils.isBlock(editor, node)) {
+      if (node is Block) {
         hasBlocks = true;
         break;
       }
@@ -602,11 +597,6 @@ class EditorUtils {
     editor.insertText(text);
   }
 
-  /// Check if a value is a block `Element` object.
-  static bool isBlock(Editor editor, Node node) {
-    return (node is Element) && !editor.isInline(node);
-  }
-
   /// Check if a point is the end point of a location.
 
   static bool isEnd(Editor editor, Point point, Location at) {
@@ -632,7 +622,7 @@ class EditorUtils {
 
   /// Check if a value is an inline `Element` object.
   static bool isInline(Editor editor, Node node) {
-    return (node is Element) && editor.isInline(node);
+    return (node is Element) && node is Inline;
   }
 
   /// Check if the editor is currently _normalizing after each operation.
@@ -767,7 +757,7 @@ class EditorUtils {
         return (node is Text);
       });
       NodeEntry block = EditorUtils.above(editor, match: (node) {
-        return EditorUtils.isBlock(editor, node);
+        return node is Block;
       });
 
       if (prev != null && block != null) {
@@ -1191,7 +1181,7 @@ class EditorUtils {
           continue;
         }
 
-        if (editor.isInline(node)) {
+        if (node is Inline) {
           continue;
         }
 
@@ -1686,7 +1676,7 @@ class EditorUtils {
       editor,
       at: end,
       match: (node) {
-        return EditorUtils.isBlock(editor, node);
+        return node is Block;
       },
     );
 
