@@ -13787,5 +13787,98 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('voids true', () {
+      test('block', () {
+        // <editor>
+        //   <block void>
+        //     <block>one</block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ], isVoid: true),
+        ]);
+
+        Transforms.splitNodes(editor, at: Path([0, 1]), voids: true);
+
+        // <editor>
+        //   <block void>
+        //     <block>one</block>
+        //   </block>
+        //   <block void>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+          ], isVoid: true),
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ], isVoid: true),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text>one</text>
+        //       <text>two</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[Text('one'), Text('two')], isVoid: true),
+            Text(''),
+          ]),
+        ]);
+
+        Transforms.splitNodes(editor, at: Path([0, 1, 1]), voids: true);
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline void>
+        //       <text>one</text>
+        //     </inline>
+        //     <text />
+        //     <inline void>
+        //       <text>two</text>
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text(''),
+            Inline(children: <Node>[Text('one')], isVoid: true),
+            Text(''),
+            Inline(children: <Node>[Text('two')], isVoid: true),
+            Text(''),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
