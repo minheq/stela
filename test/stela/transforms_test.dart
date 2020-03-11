@@ -24,11 +24,6 @@ class TestEditor extends Editor {
             props: props);
 
   @override
-  bool isInline(Element element) {
-    return element is Inline;
-  }
-
-  @override
   bool isVoid(Element element) {
     return element.isVoid;
   }
@@ -53,6 +48,12 @@ void Function(Node, Node) expectEqual = (Node node, Node expected) {
     expect(node.isVoid, expected.isVoid);
 
     for (String key in expected.props.keys) {
+      dynamic value = node.props[key];
+      dynamic expectedValue = expected.props[key];
+      expect(value, expectedValue);
+    }
+
+    for (String key in node.props.keys) {
       dynamic value = node.props[key];
       dynamic expectedValue = expected.props[key];
       expect(value, expectedValue);
@@ -13876,6 +13877,48 @@ void main() {
             Text(''),
           ]),
         ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
+
+  group('unsetNodes', () {
+    group('text', () {
+      test('text', () {
+        // <editor>
+        //   <block>
+        //     <text key>
+        //       <cursor />
+        //       word
+        //     </text>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word', props: {'key': true}),
+              ]),
+            ]);
+
+        Transforms.unsetNodes(editor, ['key'], match: (node) {
+          return node is Text;
+        });
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
 
         expectEqual(editor, expected);
       });

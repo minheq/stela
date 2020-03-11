@@ -21,11 +21,6 @@ class TestEditor extends Editor {
             props: props);
 
   @override
-  bool isInline(Element element) {
-    return element is Inline;
-  }
-
-  @override
   bool isVoid(Element element) {
     return element.isVoid;
   }
