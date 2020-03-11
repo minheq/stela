@@ -14675,5 +14675,456 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('mode all', () {
+      test('match ancestors', () {
+        // <editor>
+        //   <block a>
+        //     <block a>
+        //       <block>
+        //         <cursor />
+        //         word
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('word'),
+                  ]),
+                ], props: {
+                  'a': true
+                }),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, mode: Mode.all, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('match sibling and parents', () {
+        // <editor>
+        //   <block a>
+        //     <block a>
+        //       <block>
+        //         <anchor />
+        //         one
+        //       </block>
+        //     </block>
+        //     <block a>
+        //       <block>
+        //         two
+        //         <focus />
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 1, 0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('one'),
+                  ]),
+                ], props: {
+                  'a': true
+                }),
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('two'),
+                  ]),
+                ], props: {
+                  'a': true
+                }),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, mode: Mode.all, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     one
+        //   </block>
+        //   <block>
+        //     two
+        //     <focus />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('match siblings', () {
+        // <editor>
+        //   <block a>
+        //     <block>
+        //       <anchor />
+        //       one
+        //     </block>
+        //   </block>
+        //   <block a>
+        //     <block>
+        //       two
+        //       <focus />
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 0), Point(Path([1, 0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('one'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+              ], props: {
+                'a': true
+              })
+            ]);
+
+        Transforms.unwrapNodes(editor, mode: Mode.all, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     one
+        //   </block>
+        //   <block>
+        //     two
+        //     <focus />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('match some siblings and parent split', () {
+        // <editor>
+        //   <block a>
+        //     <block a>
+        //       <block>
+        //         <anchor />
+        //         one
+        //       </block>
+        //     </block>
+        //     <block a>
+        //       <block>
+        //         two
+        //         <focus />
+        //       </block>
+        //     </block>
+        //     <block a>
+        //       <block>three</block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 1, 0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('one'),
+                  ]),
+                ], props: {
+                  'a': true
+                }),
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('two'),
+                  ]),
+                ], props: {
+                  'a': true
+                }),
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('three'),
+                  ]),
+                ], props: {
+                  'a': true
+                })
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, mode: Mode.all, split: true,
+            match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     one
+        //   </block>
+        //   <block>
+        //     two
+        //     <focus />
+        //   </block>
+        //   <block a>
+        //     <block a>
+        //       <block>three</block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('three'),
+                  ]),
+                ], props: {
+                  'a': true
+                }),
+              ], props: {
+                'a': true
+              })
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('match some siblings and parent', () {
+        // <editor>
+        //   <block a>
+        //     <block a>
+        //       <block>
+        //         <anchor />
+        //         one
+        //       </block>
+        //     </block>
+        //     <block a>
+        //       <block>
+        //         two
+        //         <focus />
+        //       </block>
+        //     </block>
+        //     <block a>
+        //       <block>three</block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 1, 0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('one'),
+                  ]),
+                ], props: {
+                  'a': true
+                }),
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('two'),
+                  ]),
+                ], props: {
+                  'a': true
+                }),
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('three'),
+                  ]),
+                ], props: {
+                  'a': true
+                })
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, mode: Mode.all, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     one
+        //   </block>
+        //   <block>
+        //     two
+        //     <focus />
+        //   </block>
+        //   <block a>
+        //     <block>three</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('three'),
+                ]),
+              ], props: {
+                'a': true
+              })
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('match some siblings', () {
+        // <editor>
+        //   <block a>
+        //     <block>
+        //       <anchor />
+        //       one
+        //     </block>
+        //   </block>
+        //   <block a>
+        //     <block>
+        //       two
+        //       <focus />
+        //     </block>
+        //   </block>
+        //   <block a>
+        //     <block>three</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 0), Point(Path([1, 0, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('one'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('three'),
+                ]),
+              ], props: {
+                'a': true
+              })
+            ]);
+
+        Transforms.unwrapNodes(editor, mode: Mode.all, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     one
+        //   </block>
+        //   <block>
+        //     two
+        //     <focus />
+        //   </block>
+        //   <block a>
+        //     <block>three</block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('three'),
+                ]),
+              ], props: {
+                'a': true
+              })
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
