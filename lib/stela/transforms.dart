@@ -847,12 +847,15 @@ class Transforms {
           int depth = commonPath.length + 1;
           Path wrapperPath = PathUtils.next(lastPath.slice(0, depth));
 
+          // TODO: Figure out how to create new node with any class inherting from either
           Element wrapper;
 
           if (element is Inline) {
-            wrapper = Inline(children: [], props: element.props);
+            wrapper = Inline(
+                children: [], props: element.props, isVoid: element.isVoid);
           } else if (element is Block) {
-            wrapper = Block(children: [], props: element.props);
+            wrapper = Block(
+                children: [], props: element.props, isVoid: element.isVoid);
           }
 
           Transforms.insertNodes(editor, [wrapper],
