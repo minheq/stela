@@ -13924,4 +13924,525 @@ void main() {
       });
     });
   });
+
+  group('unwrapNodes', () {
+    group('matchBlock', () {
+      test('block across', () {
+        // <editor>
+        //   <block a>
+        //     <block>
+        //       wo
+        //       <anchor />
+        //       rd
+        //     </block>
+        //     <block>
+        //       an
+        //       <focus />
+        //       other
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 2), Point(Path([0, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('word'),
+                ]),
+                Block(children: <Node>[
+                  Text('another'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     wo
+        //     <anchor />
+        //     rd
+        //   </block>
+        //   <block>
+        //     an
+        //     <focus />
+        //     other
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+              Block(children: <Node>[
+                Text('another'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block end', () {
+        // <editor>
+        //   <block a>
+        //     <block>one</block>
+        //     <block>two</block>
+        //     <block>three</block>
+        //     <block>four</block>
+        //     <block>
+        //       <anchor />
+        //       five
+        //     </block>
+        //     <block>
+        //       <focus />
+        //       six
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 4, 0]), 0), Point(Path([0, 5, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('one'),
+                ]),
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+                Block(children: <Node>[
+                  Text('three'),
+                ]),
+                Block(children: <Node>[
+                  Text('four'),
+                ]),
+                Block(children: <Node>[
+                  Text('five'),
+                ]),
+                Block(children: <Node>[
+                  Text('six'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        //   <block>three</block>
+        //   <block>four</block>
+        //   <block>
+        //     <anchor />
+        //     five
+        //   </block>
+        //   <block>
+        //     <focus />
+        //     six
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([4, 0]), 0), Point(Path([5, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+              Block(children: <Node>[
+                Text('four'),
+              ]),
+              Block(children: <Node>[
+                Text('five'),
+              ]),
+              Block(children: <Node>[
+                Text('six'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block inline', () {
+        // <editor>
+        //   <block a>
+        //     <block>
+        //       <text />
+        //       <inline>
+        //         wo
+        //         <anchor />
+        //         rd
+        //       </inline>
+        //       <text />
+        //     </block>
+        //     <block>
+        //       <text />
+        //       <inline>
+        //         an
+        //         <focus />
+        //         other
+        //       </inline>
+        //       <text />
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 1, 0]), 2), Point(Path([0, 1, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text(''),
+                  Inline(children: <Node>[
+                    Text('word'),
+                  ]),
+                  Text(''),
+                ]),
+                Block(children: <Node>[
+                  Text(''),
+                  Inline(children: <Node>[
+                    Text('another'),
+                  ]),
+                  Text(''),
+                ]),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wo
+        //       <anchor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       an
+        //       <focus />
+        //       other
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 2), Point(Path([1, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('another'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block middle', () {
+        // <editor>
+        //   <block a>
+        //     <block>one</block>
+        //     <block>two</block>
+        //     <block>
+        //       <anchor />
+        //       three
+        //     </block>
+        //     <block>
+        //       <focus />
+        //       four
+        //     </block>
+        //     <block>five</block>
+        //     <block>six</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 2, 0]), 0), Point(Path([0, 3, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('one'),
+                ]),
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+                Block(children: <Node>[
+                  Text('three'),
+                ]),
+                Block(children: <Node>[
+                  Text('four'),
+                ]),
+                Block(children: <Node>[
+                  Text('five'),
+                ]),
+                Block(children: <Node>[
+                  Text('six'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        //   <block>
+        //     <anchor />
+        //     three
+        //   </block>
+        //   <block>
+        //     <focus />
+        //     four
+        //   </block>
+        //   <block>five</block>
+        //   <block>six</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([2, 0]), 0), Point(Path([3, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+              Block(children: <Node>[
+                Text('four'),
+              ]),
+              Block(children: <Node>[
+                Text('five'),
+              ]),
+              Block(children: <Node>[
+                Text('six'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block nested', () {
+        // <editor>
+        //   <block a>
+        //     <block>
+        //       <block>
+        //         <cursor />
+        //         word
+        //       </block>
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(
+                Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Block(children: <Node>[
+                    Text('word'),
+                  ]),
+                ]),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <block>
+        //       <cursor />
+        //       word
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('word'),
+                ]),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block start', () {
+        // <editor>
+        //   <block a>
+        //     <block>
+        //       <anchor />
+        //       one
+        //     </block>
+        //     <block>
+        //       <focus />
+        //       two
+        //     </block>
+        //     <block>three</block>
+        //     <block>four</block>
+        //     <block>five</block>
+        //     <block>six</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('one'),
+                ]),
+                Block(children: <Node>[
+                  Text('two'),
+                ]),
+                Block(children: <Node>[
+                  Text('three'),
+                ]),
+                Block(children: <Node>[
+                  Text('four'),
+                ]),
+                Block(children: <Node>[
+                  Text('five'),
+                ]),
+                Block(children: <Node>[
+                  Text('six'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <anchor />
+        //     one
+        //   </block>
+        //   <block>
+        //     <focus />
+        //     two
+        //   </block>
+        //   <block>three</block>
+        //   <block>four</block>
+        //   <block>five</block>
+        //   <block>six</block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('one'),
+              ]),
+              Block(children: <Node>[
+                Text('two'),
+              ]),
+              Block(children: <Node>[
+                Text('three'),
+              ]),
+              Block(children: <Node>[
+                Text('four'),
+              ]),
+              Block(children: <Node>[
+                Text('five'),
+              ]),
+              Block(children: <Node>[
+                Text('six'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block', () {
+        // <editor>
+        //   <block a>
+        //     <block>
+        //       <cursor />
+        //       word
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('word'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        Transforms.unwrapNodes(editor, match: (node) {
+          return node.props['a'] != null;
+        });
+
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
+  });
 }
