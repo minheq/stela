@@ -847,7 +847,15 @@ class Transforms {
           Ancestor commonNode = common.node;
           int depth = commonPath.length + 1;
           Path wrapperPath = PathUtils.next(lastPath.slice(0, depth));
-          Block wrapper = Block(children: [], props: element.props);
+
+          Element wrapper;
+
+          if (element is Inline) {
+            wrapper = Inline(children: [], props: element.props);
+          } else if (element is Block) {
+            wrapper = Block(children: [], props: element.props);
+          }
+
           Transforms.insertNodes(editor, [wrapper],
               at: wrapperPath, voids: voids);
 

@@ -116,8 +116,7 @@ class Editor implements Ancestor {
       Descendant prev = i - 1 >= 0 ? (node as Ancestor).children[i - 1] : null;
 
       bool isLast = i == (node as Ancestor).children.length - 1;
-      bool isInlineOrText =
-          child is Text || (child is Element && child is Inline);
+      bool isInlineOrText = child is Text || child is Inline;
 
       // Only allow block nodes in the top-level children and parent blocks
       // that only contain block nodes. Similarly, only allow inline nodes in

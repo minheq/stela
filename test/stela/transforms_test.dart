@@ -16297,5 +16297,220 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('inline', () {
+      test('inline across', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       wo
+        //       <anchor />
+        //       rd
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       an
+        //       <focus />
+        //       other
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 2), Point(Path([1, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('another'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.wrapNodes(editor, Inline(children: [], props: {'a': true}));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline a>
+        //       <text />
+        //       <inline>
+        //         wo
+        //         <anchor />
+        //         rd
+        //       </inline>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        //   <block>
+        //     <text />
+        //     <inline a>
+        //       <text />
+        //       <inline>
+        //         an
+        //         <focus />
+        //         other
+        //       </inline>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(
+                Point(Path([0, 1, 1, 0]), 2), Point(Path([1, 1, 1, 0]), 2)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text(''),
+                  Inline(children: <Node>[
+                    Text('word'),
+                  ]),
+                  Text(''),
+                ], props: {
+                  'a': true
+                }),
+                Text(''),
+              ]),
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text(''),
+                  Inline(children: <Node>[
+                    Text('another'),
+                  ]),
+                  Text(''),
+                ], props: {
+                  'a': true
+                }),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('inline', () {
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <cursor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        Transforms.wrapNodes(editor, Inline(children: [], props: {'a': true}));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline>
+        //       <text />
+        //       <inline a>
+        //         <cursor />
+        //         word
+        //       </inline>
+        //       <text />
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection: Range(
+                Point(Path([0, 1, 1, 0]), 0), Point(Path([0, 1, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text(''),
+                  Inline(children: <Node>[
+                    Text('word'),
+                  ], props: {
+                    'a': true
+                  }),
+                  Text(''),
+                ]),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('text', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        Transforms.wrapNodes(editor, Inline(children: [], props: {'a': true}));
+
+        // <editor>
+        //   <block>
+        //     <text />
+        //     <inline a>
+        //       <cursor />
+        //       word
+        //     </inline>
+        //     <text />
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text(''),
+                Inline(children: <Node>[
+                  Text('word'),
+                ], props: {
+                  'a': true
+                }),
+                Text(''),
+              ]),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
