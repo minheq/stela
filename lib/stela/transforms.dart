@@ -819,10 +819,9 @@ class Transforms {
       ));
 
       for (NodeEntry root in roots) {
-        Path rootPath = root.path;
-        Range a = (at is Range)
+        Location a = at is Range
             ? RangeUtils.intersection(
-                at, EditorUtils.range(editor, rootPath, null))
+                at, EditorUtils.range(editor, root.path, null))
             : at;
 
         if (a == null) {

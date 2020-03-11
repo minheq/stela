@@ -16512,5 +16512,49 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('path', () {
+      test('block', () {
+        // <editor>
+        //   <block>
+        //     <cursor />
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(
+            selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Text('word'),
+              ]),
+            ]);
+
+        Transforms.wrapNodes(editor, Block(children: [], props: {'a': true}),
+            at: Path([0]));
+
+        // <editor>
+        //   <block a>
+        //     <block>
+        //       <cursor />
+        //       word
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(
+            selection:
+                Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
+            children: <Node>[
+              Block(children: <Node>[
+                Block(children: <Node>[
+                  Text('word'),
+                ]),
+              ], props: {
+                'a': true
+              }),
+            ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
