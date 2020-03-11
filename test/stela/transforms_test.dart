@@ -15727,5 +15727,39 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('voids true', () {
+      test('block', () {
+        // <editor>
+        //   <block void>
+        //     <block>
+        //       word
+        //     </block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('word'),
+            ]),
+          ], isVoid: true),
+        ]);
+
+        Transforms.unwrapNodes(editor, at: Path([0]), voids: true);
+
+        // <editor>
+        //   <block>
+        //     word
+        //   </block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
