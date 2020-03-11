@@ -15126,5 +15126,71 @@ void main() {
         expectEqual(editor, expected);
       });
     });
+
+    group('path', () {
+      test('block multiple', () {
+        // <editor>
+        //   <block>
+        //     <block>one</block>
+        //     <block>two</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('one'),
+            ]),
+            Block(children: <Node>[
+              Text('two'),
+            ]),
+          ]),
+        ]);
+
+        Transforms.unwrapNodes(editor, at: Path([0]));
+
+        // <editor>
+        //   <block>one</block>
+        //   <block>two</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('one'),
+          ]),
+          Block(children: <Node>[
+            Text('two'),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+
+      test('block', () {
+        // <editor>
+        //   <block>
+        //     <block>word</block>
+        //   </block>
+        // </editor>
+        TestEditor editor = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Block(children: <Node>[
+              Text('word'),
+            ]),
+          ]),
+        ]);
+
+        Transforms.unwrapNodes(editor, at: Path([0]));
+
+        // <editor>
+        //   <block>word</block>
+        // </editor>
+        TestEditor expected = TestEditor(children: <Node>[
+          Block(children: <Node>[
+            Text('word'),
+          ]),
+        ]);
+
+        expectEqual(editor, expected);
+      });
+    });
   });
 }
