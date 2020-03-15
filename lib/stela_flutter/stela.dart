@@ -15,37 +15,38 @@ class _StelaState extends State<Stela> {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        StelaText(
-          'World!',
-          style: DefaultTextStyle.of(context)
-              .style
-              .copyWith(fontWeight: FontWeight.bold),
-        ),
-        // StelaBlock(
-        //   children: [
-        //     StelaText(
-        //       'Hello ',
-        //       style: DefaultTextStyle.of(context).style,
-        //     ),
-        //     StelaText(
-        //       'World!',
-        //       style: DefaultTextStyle.of(context)
-        //           .style
-        //           .copyWith(fontWeight: FontWeight.bold),
-        //     )
-        //   ],
+        // StelaText(
+        //   'World!',
+        //   style: DefaultTextStyle.of(context)
+        //       .style
+        //       .copyWith(fontWeight: FontWeight.bold),
         // ),
-        RichText(
-          text: TextSpan(
-            text: 'Hello ',
-            style: DefaultTextStyle.of(context).style,
-            children: <TextSpan>[
-              TextSpan(
-                  text: 'bold', style: TextStyle(fontWeight: FontWeight.bold)),
-              TextSpan(text: ' world!'),
-            ],
-          ),
-        )
+        StelaBlock(
+          // direction: Axis.vertical,
+          children: [
+            StelaText(
+              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
+              style: DefaultTextStyle.of(context).style,
+            ),
+            StelaText(
+              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
+              style: DefaultTextStyle.of(context)
+                  .style
+                  .copyWith(fontWeight: FontWeight.bold),
+            )
+          ],
+        ),
+        // RichText(
+        //   text: TextSpan(
+        //     text: 'Hello ',
+        //     style: DefaultTextStyle.of(context).style,
+        //     children: <TextSpan>[
+        //       TextSpan(
+        //           text: 'bold', style: TextStyle(fontWeight: FontWeight.bold)),
+        //       TextSpan(text: ' world!'),
+        //     ],
+        //   ),
+        // )
       ],
     );
   }
