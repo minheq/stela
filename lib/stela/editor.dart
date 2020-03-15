@@ -1663,6 +1663,8 @@ class EditorUtils {
   }
 
   /// Convert a range into a non-hanging one.
+  ///
+  /// A hanging range is when it is not collapsed and its focus is at the start of a node
   static Range unhangRange(Editor editor, Range range, {bool voids = false}) {
     Edges edges = RangeUtils.edges(range);
     Point start = edges.start;

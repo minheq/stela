@@ -4,6 +4,16 @@ import 'package:inday/stela/path.dart';
 /// `Element` objects are a type of node that contain other
 /// element nodes or text nodes. They can be either "blocks" or "inlines"
 /// depending on the editor's configuration.
+///
+/// Depending on your use case, you might want to define another behavior for Element nodes
+/// which determines their editing "flow".
+///
+/// All elements default to being "block" elements.
+///
+/// But in certain cases, like for links, you might want to make as "inline" flowing elements instead.
+/// That way they live at the same level as text nodes, and flow.
+///
+/// Elements default to being non-void, meaning that their children are fully editable as text.
 class Element implements Ancestor, Descendant {
   Element({List<Node> children, Map<String, dynamic> props, bool isVoid})
       : children = children ?? [],
@@ -51,6 +61,8 @@ class ElementEntry {
   final Path path;
 }
 
+/// `Block` objects are a type of node that contain other element nodes or text nodes.
+/// They each appear separated by vertical space, and they never run into each other.
 class Block implements Element {
   Block({List<Node> children, Map<String, dynamic> props, bool isVoid})
       : children = children ?? [],
@@ -62,6 +74,7 @@ class Block implements Element {
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
 
+  /// Void-ness means that the content of the node should not be treated as editable
   bool isVoid;
 
   @override
@@ -76,6 +89,8 @@ class Block implements Element {
   }
 }
 
+/// `Inline` objects are a type of node that contain other text nodes.
+/// They live at the same level as text nodes and are useful for e.g. links.
 class Inline implements Element {
   Inline({List<Node> children, Map<String, dynamic> props, bool isVoid})
       : children = children ?? [],
@@ -87,6 +102,7 @@ class Inline implements Element {
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
 
+  /// Void-ness means that the content of the node should not be treated as editable
   bool isVoid;
 
   @override
