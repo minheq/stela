@@ -1,14 +1,10 @@
-import 'dart:ui' as ui;
 import 'dart:math' as math;
-
 import 'package:flutter/foundation.dart';
-import 'package:flutter/material.dart';
+import 'package:flutter/painting.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:inday/stela_flutter/node.dart';
-import 'package:inday/stela_flutter/text.dart';
 
-class StelaBlock extends MultiChildRenderObjectWidget {
+class Flex extends MultiChildRenderObjectWidget {
   /// Creates a flex layout.
   ///
   /// The [direction] is required.
@@ -22,7 +18,7 @@ class StelaBlock extends MultiChildRenderObjectWidget {
   /// to be necessary to decide which direction to lay the children in or to
   /// disambiguate `start` or `end` values for the main or cross axis
   /// directions, the [textDirection] must not be null.
-  StelaBlock({
+  Flex({
     Key key,
     @required this.direction,
     this.mainAxisAlignment = MainAxisAlignment.start,
@@ -136,7 +132,7 @@ class StelaBlock extends MultiChildRenderObjectWidget {
     return null;
   }
 
-  /// The value to pass to [RenderBlock.textDirection].
+  /// The value to pass to [RenderFlex.textDirection].
   ///
   /// This value is derived from the [textDirection] property and the ambient
   /// [Directionality]. The value is null if there is no need to specify the
@@ -149,7 +145,7 @@ class StelaBlock extends MultiChildRenderObjectWidget {
   /// inherited widget and defaults to [VerticalDirection.down].)
   ///
   /// This method exists so that subclasses of [Flex] that create their own
-  /// render objects that are derived from [RenderBlock] can do so and still use
+  /// render objects that are derived from [RenderFlex] can do so and still use
   /// the logic for providing a text direction only when it is necessary.
   @protected
   TextDirection getEffectiveTextDirection(BuildContext context) {
@@ -158,8 +154,8 @@ class StelaBlock extends MultiChildRenderObjectWidget {
   }
 
   @override
-  RenderBlock createRenderObject(BuildContext context) {
-    return RenderBlock(
+  RenderFlex createRenderObject(BuildContext context) {
+    return RenderFlex(
       direction: direction,
       mainAxisAlignment: mainAxisAlignment,
       mainAxisSize: mainAxisSize,
@@ -172,7 +168,7 @@ class StelaBlock extends MultiChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, covariant RenderBlock renderObject) {
+      BuildContext context, covariant RenderFlex renderObject) {
     renderObject
       ..direction = direction
       ..mainAxisAlignment = mainAxisAlignment
@@ -203,7 +199,34 @@ class StelaBlock extends MultiChildRenderObjectWidget {
   }
 }
 
-class RenderBlock extends RenderBox
+bool _startIsTopLeft(Axis direction, TextDirection textDirection,
+    VerticalDirection verticalDirection) {
+  assert(direction != null);
+  // If the relevant value of textDirection or verticalDirection is null, this returns null too.
+  switch (direction) {
+    case Axis.horizontal:
+      switch (textDirection) {
+        case TextDirection.ltr:
+          return true;
+        case TextDirection.rtl:
+          return false;
+      }
+      break;
+    case Axis.vertical:
+      switch (verticalDirection) {
+        case VerticalDirection.down:
+          return true;
+        case VerticalDirection.up:
+          return false;
+      }
+      break;
+  }
+  return null;
+}
+
+typedef _ChildSizingFunction = double Function(RenderBox child, double extent);
+
+class RenderFlex extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, FlexParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, FlexParentData>,
@@ -212,7 +235,7 @@ class RenderBlock extends RenderBox
   ///
   /// By default, the flex layout is horizontal and children are aligned to the
   /// start of the main axis and the center of the cross axis.
-  RenderBlock({
+  RenderFlex({
     List<RenderBox> children,
     Axis direction = Axis.horizontal,
     MainAxisSize mainAxisSize = MainAxisSize.max,
@@ -631,7 +654,7 @@ class RenderBlock extends RenderBox
               (mainAxisSize == MainAxisSize.max ||
                   _getFit(child) == FlexFit.tight)) {
             error = ErrorSummary(
-                'RenderBlock children have non-zero flex but incoming $dimension constraints are unbounded.');
+                'RenderFlex children have non-zero flex but incoming $dimension constraints are unbounded.');
             message = ErrorDescription(
                 'When a $identity is in a parent that does not provide a finite $dimension constraint, for example '
                 'if it is in a $axis scrollable, it will try to shrink-wrap its children along the $axis '
@@ -668,13 +691,13 @@ class RenderBlock extends RenderBox
                 'Consider setting mainAxisSize to MainAxisSize.min and using FlexFit.loose fits for the flexible '
                 'children (using Flexible rather than Expanded). This will allow the flexible children '
                 'to size themselves to less than the infinite remaining space they would otherwise be '
-                'forced to take, and then will cause the RenderBlock to shrink-wrap the children '
+                'forced to take, and then will cause the RenderFlex to shrink-wrap the children '
                 'rather than expanding to fit the maximum constraints provided by the parent.'),
             ErrorDescription(
                 'If this message did not help you determine the problem, consider using debugDumpRenderTree():\n'
                 '  https://flutter.dev/debugging/#rendering-layer\n'
                 '  http://api.flutter.dev/flutter/rendering/debugDumpRenderTree.html'),
-            describeForError('The affected RenderBlock is',
+            describeForError('The affected RenderFlex is',
                 style: DiagnosticsTreeStyle.errorProperty),
             DiagnosticsProperty<dynamic>(
                 'The creator information is set to', debugCreator,
@@ -1021,31 +1044,4 @@ class RenderBlock extends RenderBox
     properties.add(EnumProperty<TextBaseline>('textBaseline', textBaseline,
         defaultValue: null));
   }
-}
-
-typedef _ChildSizingFunction = double Function(RenderBox child, double extent);
-
-bool _startIsTopLeft(Axis direction, TextDirection textDirection,
-    VerticalDirection verticalDirection) {
-  assert(direction != null);
-  // If the relevant value of textDirection or verticalDirection is null, this returns null too.
-  switch (direction) {
-    case Axis.horizontal:
-      switch (textDirection) {
-        case TextDirection.ltr:
-          return true;
-        case TextDirection.rtl:
-          return false;
-      }
-      break;
-    case Axis.vertical:
-      switch (verticalDirection) {
-        case VerticalDirection.down:
-          return true;
-        case VerticalDirection.up:
-          return false;
-      }
-      break;
-  }
-  return null;
 }
