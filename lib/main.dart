@@ -1,35 +1,51 @@
 import 'package:flutter/material.dart';
-import 'package:inday/stela_flutter/stela.dart';
+import 'package:inday/stela/stela.dart' as Stela;
+import 'package:inday/stela_flutter/editor.dart';
 
 void main() => runApp(MyApp());
+
+class Editor extends Stela.Editor {
+  Editor(
+      {List<Stela.Node> children,
+      Stela.Range selection,
+      List<Stela.Operation> operations,
+      Map<String, dynamic> marks,
+      Map<String, dynamic> props})
+      : super(
+            children: children,
+            selection: selection,
+            operations: operations,
+            marks: marks,
+            props: props);
+
+  @override
+  bool isVoid(Stela.Element element) {
+    return element.isVoid;
+  }
+}
 
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    Editor editor = Editor(
+        selection: Stela.Range(Stela.Point(Stela.Path([0, 0]), 1),
+            Stela.Point(Stela.Path([0, 0]), 5)),
+        children: [
+          Stela.Block(children: [
+            Stela.Text(
+                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.'),
+          ]),
+        ]);
+
     return MaterialApp(
-      title: 'Flutter Demo',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
+      home: Scaffold(
+        body: SafeArea(
+            child: Column(
+          children: <Widget>[
+            StelaEditor(editor),
+          ],
+        )),
       ),
-      home: MyHomePage(title: 'Flutter Demo Home Page'),
-    );
-  }
-}
-
-class MyHomePage extends StatefulWidget {
-  MyHomePage({Key key, this.title}) : super(key: key);
-
-  final String title;
-
-  @override
-  _MyHomePageState createState() => _MyHomePageState();
-}
-
-class _MyHomePageState extends State<MyHomePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: SafeArea(child: Stela()),
     );
   }
 }

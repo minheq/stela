@@ -1,66 +1,55 @@
-import 'dart:ui' as ui;
 import 'dart:math' as math;
+import 'dart:ui' as ui;
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
-import 'package:inday/stela_flutter/node.dart';
-import 'package:inday/stela_flutter/text.dart';
 
-class StelaBlock extends MultiChildRenderObjectWidget {
-  /// Creates a paragraph of rich text.
-  ///
-  /// The [text], [textAlign], [softWrap], [overflow], and [textScaleFactor]
-  /// arguments must not be null.
-  ///
-  /// The [maxLines] property may be null (and indeed defaults to null), but if
-  /// it is not null, it must be greater than zero.
-  ///
-  /// The [textDirection], if null, defaults to the ambient [Directionality],
-  /// which in that case must not be null.
-  StelaBlock({
+class StelaBlockText extends MultiChildRenderObjectWidget {
+  StelaBlockText({
     Key key,
+    @required this.text,
     this.textAlign = TextAlign.start,
     this.textDirection,
-    this.softWrap = true,
-    this.overflow = TextOverflow.clip,
     this.textScaleFactor = 1.0,
-    this.maxLines,
+    this.selectionColor,
+    this.selection,
     this.locale,
     this.strutStyle,
     this.textWidthBasis = TextWidthBasis.parent,
     this.textHeightBehavior,
-    List<StelaNode> children = const <StelaNode>[],
-  })  : assert(children != null),
+  })  : assert(text != null),
         assert(textAlign != null),
-        assert(softWrap != null),
-        assert(overflow != null),
         assert(textScaleFactor != null),
-        assert(maxLines == null || maxLines > 0),
         assert(textWidthBasis != null),
-        _children = children,
-        super(key: key, children: _extractChildren(children));
+        super(key: key, children: _extractChildren(text));
 
   // Traverses the InlineSpan tree and depth-first collects the list of
   // child widgets that are created in WidgetSpans.
-  static List<Widget> _extractChildren(List<StelaNode> nodes) {
+  static List<Widget> _extractChildren(InlineSpan span) {
     final List<Widget> result = <Widget>[];
-
-    for (StelaNode node in nodes) {
-      // if (node is StelaInline) {
-      //   result.add(node.widget);
-      // }
-    }
-
+    span.visitChildren((InlineSpan span) {
+      if (span is WidgetSpan) {
+        result.add(span.child);
+      }
+      return true;
+    });
     return result;
   }
 
-  final List<StelaNode> _children;
+  /// The text to display in this widget.
+  final InlineSpan text;
 
   /// How the text should be aligned horizontally.
   final TextAlign textAlign;
+
+  /// How the text should be aligned horizontally.
+  final TextSelection selection;
+
+  /// The color to use when painting the selection.
+  final Color selectionColor;
 
   /// The directionality of the text.
   ///
@@ -78,27 +67,11 @@ class StelaBlock extends MultiChildRenderObjectWidget {
   /// [Directionality], then this must not be null.
   final TextDirection textDirection;
 
-  /// Whether the text should break at soft line breaks.
-  ///
-  /// If false, the glyphs in the text will be positioned as if there was unlimited horizontal space.
-  final bool softWrap;
-
-  /// How visual overflow should be handled.
-  final TextOverflow overflow;
-
   /// The number of font pixels for each logical pixel.
   ///
   /// For example, if the text scale factor is 1.5, text will be 50% larger than
   /// the specified font size.
   final double textScaleFactor;
-
-  /// An optional maximum number of lines for the text to span, wrapping if necessary.
-  /// If the text exceeds the given number of lines, it will be truncated according
-  /// to [overflow].
-  ///
-  /// If this is 1, text will not wrap. Otherwise, text will be wrapped at the
-  /// edge of the box.
-  final int maxLines;
 
   /// Used to select a font when the same Unicode character can
   /// be rendered differently, depending on the locale.
@@ -106,7 +79,7 @@ class StelaBlock extends MultiChildRenderObjectWidget {
   /// It's rarely necessary to set this property. By default its value
   /// is inherited from the enclosing app with `Localizations.localeOf(context)`.
   ///
-  /// See [RenderBlockParagraph.locale] for more information.
+  /// See [RenderBlock.locale] for more information.
   final Locale locale;
 
   /// {@macro flutter.painting.textPainter.strutStyle}
@@ -118,49 +91,34 @@ class StelaBlock extends MultiChildRenderObjectWidget {
   /// {@macro flutter.dart:ui.textHeightBehavior}
   final ui.TextHeightBehavior textHeightBehavior;
 
-  TextSpan buildTextSpan() {
-    List<TextSpan> textSpans = [];
-
-    for (StelaNode child in _children) {
-      if (child is StelaText) {
-        textSpans.add(child.text);
-      }
-    }
-
-    return TextSpan(children: textSpans);
-  }
-
   @override
-  RenderBlockParagraph createRenderObject(BuildContext context) {
+  RenderBlock createRenderObject(BuildContext context) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
-    return RenderBlockParagraph(
-      buildTextSpan(),
+    return RenderBlock(
+      text,
       textAlign: textAlign,
       textDirection: textDirection ?? Directionality.of(context),
-      softWrap: softWrap,
-      overflow: overflow,
       textScaleFactor: textScaleFactor,
-      maxLines: maxLines,
       strutStyle: strutStyle,
       textWidthBasis: textWidthBasis,
+      selection: TextSelection(baseOffset: 1, extentOffset: 5),
+      selectionColor: Colors.blue,
       textHeightBehavior: textHeightBehavior,
       locale: locale ?? Localizations.localeOf(context, nullOk: true),
     );
   }
 
   @override
-  void updateRenderObject(
-      BuildContext context, RenderBlockParagraph renderObject) {
+  void updateRenderObject(BuildContext context, RenderBlock renderObject) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
     renderObject
-      ..text = buildTextSpan()
+      ..text = text
       ..textAlign = textAlign
       ..textDirection = textDirection ?? Directionality.of(context)
-      ..softWrap = softWrap
-      ..overflow = overflow
       ..textScaleFactor = textScaleFactor
-      ..maxLines = maxLines
       ..strutStyle = strutStyle
+      ..selectionColor = Colors.blue
+      ..selection = TextSelection(baseOffset: 1, extentOffset: 5)
       ..textWidthBasis = textWidthBasis
       ..textHeightBehavior = textHeightBehavior
       ..locale = locale ?? Localizations.localeOf(context, nullOk: true);
@@ -173,48 +131,33 @@ class StelaBlock extends MultiChildRenderObjectWidget {
         defaultValue: TextAlign.start));
     properties.add(EnumProperty<TextDirection>('textDirection', textDirection,
         defaultValue: null));
-    properties.add(FlagProperty('softWrap',
-        value: softWrap,
-        ifTrue: 'wrapping at box width',
-        ifFalse: 'no wrapping except at line break characters',
-        showName: true));
-    properties.add(EnumProperty<TextOverflow>('overflow', overflow,
-        defaultValue: TextOverflow.clip));
     properties.add(
         DoubleProperty('textScaleFactor', textScaleFactor, defaultValue: 1.0));
-    properties.add(IntProperty('maxLines', maxLines, ifNull: 'unlimited'));
     properties.add(EnumProperty<TextWidthBasis>(
         'textWidthBasis', textWidthBasis,
         defaultValue: TextWidthBasis.parent));
-    properties.add(StringProperty('text', buildTextSpan().toPlainText()));
+    properties.add(StringProperty('text', text.toPlainText()));
   }
 }
 
-const String _kEllipsis = '\u2026';
-
-/// A render object that displays a paragraph of text.
-class RenderBlockParagraph extends RenderBox
+class RenderBlock extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, TextParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, TextParentData>,
         RelayoutWhenSystemFontsChangeMixin {
-  /// Creates a paragraph render object.
-  ///
-  /// The [text], [textAlign], [textDirection], [overflow], [softWrap], and
-  /// [textScaleFactor] arguments must not be null.
-  ///
-  /// The [maxLines] property may be null (and indeed defaults to null), but if
-  /// it is not null, it must be greater than zero.
-  RenderBlockParagraph(
+  RenderBlock(
     InlineSpan text, {
     TextAlign textAlign = TextAlign.start,
     @required TextDirection textDirection,
-    bool softWrap = true,
-    TextOverflow overflow = TextOverflow.clip,
+    Color selectionColor,
+    TextSelection selection,
+    ValueNotifier<bool> showCursor,
+    Color cursorColor,
     double textScaleFactor = 1.0,
-    int maxLines,
     Locale locale,
     StrutStyle strutStyle,
+    ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
+    ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     TextWidthBasis textWidthBasis = TextWidthBasis.parent,
     ui.TextHeightBehavior textHeightBehavior,
     List<RenderBox> children,
@@ -222,26 +165,29 @@ class RenderBlockParagraph extends RenderBox
         assert(text.debugAssertIsValid()),
         assert(textAlign != null),
         assert(textDirection != null),
-        assert(softWrap != null),
-        assert(overflow != null),
         assert(textScaleFactor != null),
-        assert(maxLines == null || maxLines > 0),
         assert(textWidthBasis != null),
-        _softWrap = softWrap,
-        _overflow = overflow,
+        assert(selectionHeightStyle != null),
+        assert(selectionWidthStyle != null),
+        _selection = selection,
+        _selectionColor = selectionColor,
+        _selectionHeightStyle = selectionHeightStyle,
+        _selectionWidthStyle = selectionWidthStyle,
+        _cursorColor = cursorColor,
+        _showCursor = showCursor ?? ValueNotifier<bool>(false),
         _textPainter = TextPainter(
             text: text,
             textAlign: textAlign,
             textDirection: textDirection,
             textScaleFactor: textScaleFactor,
-            maxLines: maxLines,
-            ellipsis: overflow == TextOverflow.ellipsis ? _kEllipsis : null,
             locale: locale,
             strutStyle: strutStyle,
             textWidthBasis: textWidthBasis,
             textHeightBehavior: textHeightBehavior) {
     addAll(children);
     _extractPlaceholderSpans(text);
+    assert(_showCursor != null);
+    assert(!_showCursor.value || cursorColor != null);
   }
 
   @override
@@ -268,7 +214,6 @@ class RenderBlockParagraph extends RenderBox
         break;
       case RenderComparison.layout:
         _textPainter.text = value;
-        _overflowShader = null;
         _extractPlaceholderSpans(value);
         markNeedsLayout();
         break;
@@ -296,19 +241,6 @@ class RenderBlockParagraph extends RenderBox
     markNeedsPaint();
   }
 
-  /// The directionality of the text.
-  ///
-  /// This decides how the [TextAlign.start], [TextAlign.end], and
-  /// [TextAlign.justify] values of [textAlign] are interpreted.
-  ///
-  /// This is also used to disambiguate how to render bidirectional text. For
-  /// example, if the [text] is an English phrase followed by a Hebrew phrase,
-  /// in a [TextDirection.ltr] context the English phrase will be on the left
-  /// and the Hebrew phrase to its right, while in a [TextDirection.rtl]
-  /// context, the English phrase will be on the right and the Hebrew phrase on
-  /// its left.
-  ///
-  /// This must not be null.
   TextDirection get textDirection => _textPainter.textDirection;
   set textDirection(TextDirection value) {
     assert(value != null);
@@ -317,32 +249,55 @@ class RenderBlockParagraph extends RenderBox
     markNeedsLayout();
   }
 
-  /// Whether the text should break at soft line breaks.
-  ///
-  /// If false, the glyphs in the text will be positioned as if there was
-  /// unlimited horizontal space.
-  ///
-  /// If [softWrap] is false, [overflow] and [textAlign] may have unexpected
-  /// effects.
-  bool get softWrap => _softWrap;
-  bool _softWrap;
-  set softWrap(bool value) {
-    assert(value != null);
-    if (_softWrap == value) return;
-    _softWrap = value;
-    markNeedsLayout();
+  /// The color to use when painting the selection.
+  Color get selectionColor => _selectionColor;
+  Color _selectionColor;
+  set selectionColor(Color value) {
+    if (_selectionColor == value) return;
+    _selectionColor = value;
+    markNeedsPaint();
   }
 
-  /// How visual overflow should be handled.
-  TextOverflow get overflow => _overflow;
-  TextOverflow _overflow;
-  set overflow(TextOverflow value) {
-    assert(value != null);
-    if (_overflow == value) return;
-    _overflow = value;
-    _textPainter.ellipsis = value == TextOverflow.ellipsis ? _kEllipsis : null;
-    markNeedsLayout();
+  /// The region of text that is selected, if any.
+  TextSelection get selection => _selection;
+  TextSelection _selection;
+  set selection(TextSelection value) {
+    if (_selection == value) return;
+    _selection = value;
+    _selectionRects = null;
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
   }
+
+  List<ui.TextBox> _selectionRects;
+
+  /// Controls how tall the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxHeightStyle] for details on available styles.
+  ui.BoxHeightStyle get selectionHeightStyle => _selectionHeightStyle;
+  ui.BoxHeightStyle _selectionHeightStyle;
+  set selectionHeightStyle(ui.BoxHeightStyle value) {
+    assert(value != null);
+    if (_selectionHeightStyle == value) return;
+    _selectionHeightStyle = value;
+    markNeedsPaint();
+  }
+
+  /// Controls how wide the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxWidthStyle] for details on available styles.
+  ui.BoxWidthStyle get selectionWidthStyle => _selectionWidthStyle;
+  ui.BoxWidthStyle _selectionWidthStyle;
+  set selectionWidthStyle(ui.BoxWidthStyle value) {
+    assert(value != null);
+    if (_selectionWidthStyle == value) return;
+    _selectionWidthStyle = value;
+    markNeedsPaint();
+  }
+
+  bool _floatingCursorOn = false;
+  Offset _floatingCursorOffset;
+  TextPosition _floatingCursorTextPosition;
 
   /// The number of font pixels for each logical pixel.
   ///
@@ -353,40 +308,36 @@ class RenderBlockParagraph extends RenderBox
     assert(value != null);
     if (_textPainter.textScaleFactor == value) return;
     _textPainter.textScaleFactor = value;
-    _overflowShader = null;
     markNeedsLayout();
   }
 
-  /// An optional maximum number of lines for the text to span, wrapping if
-  /// necessary. If the text exceeds the given number of lines, it will be
-  /// truncated according to [overflow] and [softWrap].
-  int get maxLines => _textPainter.maxLines;
-
-  /// The value may be null. If it is not null, then it must be greater than
-  /// zero.
-  set maxLines(int value) {
-    assert(value == null || value > 0);
-    if (_textPainter.maxLines == value) return;
-    _textPainter.maxLines = value;
-    _overflowShader = null;
-    markNeedsLayout();
+  /// The color to use when painting the cursor.
+  Color get cursorColor => _cursorColor;
+  Color _cursorColor;
+  set cursorColor(Color value) {
+    if (_cursorColor == value) return;
+    _cursorColor = value;
+    markNeedsPaint();
   }
 
-  /// Used by this paragraph's internal [TextPainter] to select a
-  /// locale-specific font.
-  ///
-  /// In some cases the same Unicode character may be rendered differently
-  /// depending
-  /// on the locale. For example the '骨' character is rendered differently in
-  /// the Chinese and Japanese locales. In these cases the [locale] may be used
-  /// to select a locale-specific font.
+  /// Whether to paint the cursor.
+  ValueNotifier<bool> get showCursor => _showCursor;
+  ValueNotifier<bool> _showCursor;
+  set showCursor(ValueNotifier<bool> value) {
+    assert(value != null);
+    if (_showCursor == value) return;
+    if (attached) _showCursor.removeListener(markNeedsPaint);
+    _showCursor = value;
+    if (attached) _showCursor.addListener(markNeedsPaint);
+    markNeedsPaint();
+  }
+
   Locale get locale => _textPainter.locale;
 
   /// The value may be null.
   set locale(Locale value) {
     if (_textPainter.locale == value) return;
     _textPainter.locale = value;
-    _overflowShader = null;
     markNeedsLayout();
   }
 
@@ -397,7 +348,6 @@ class RenderBlockParagraph extends RenderBox
   set strutStyle(StrutStyle value) {
     if (_textPainter.strutStyle == value) return;
     _textPainter.strutStyle = value;
-    _overflowShader = null;
     markNeedsLayout();
   }
 
@@ -407,7 +357,6 @@ class RenderBlockParagraph extends RenderBox
     assert(value != null);
     if (_textPainter.textWidthBasis == value) return;
     _textPainter.textWidthBasis = value;
-    _overflowShader = null;
     markNeedsLayout();
   }
 
@@ -417,7 +366,6 @@ class RenderBlockParagraph extends RenderBox
   set textHeightBehavior(ui.TextHeightBehavior value) {
     if (_textPainter.textHeightBehavior == value) return;
     _textPainter.textHeightBehavior = value;
-    _overflowShader = null;
     markNeedsLayout();
   }
 
@@ -618,21 +566,10 @@ class RenderBlockParagraph extends RenderBox
     }
   }
 
-  bool _needsClipping = false;
-  ui.Shader _overflowShader;
-
-  /// Whether this paragraph currently has a [dart:ui.Shader] for its overflow
-  /// effect.
-  ///
-  /// Used to test this object. Not for use in production.
-  @visibleForTesting
-  bool get debugHasOverflowShader => _overflowShader != null;
-
   void _layoutText({double minWidth = 0.0, double maxWidth = double.infinity}) {
-    final bool widthMatters = softWrap || overflow == TextOverflow.ellipsis;
     _textPainter.layout(
       minWidth: minWidth,
-      maxWidth: widthMatters ? maxWidth : double.infinity,
+      maxWidth: maxWidth,
     );
   }
 
@@ -723,6 +660,7 @@ class RenderBlockParagraph extends RenderBox
     _layoutChildren(constraints);
     _layoutTextWithConstraints(constraints);
     _setParentData();
+    _selectionRects = null;
 
     // We grab _textPainter.size and _textPainter.didExceedMaxLines here because
     // assigning to `size` will trigger us to validate our intrinsic sizes,
@@ -730,70 +668,17 @@ class RenderBlockParagraph extends RenderBox
     // calculations are destructive. Other _textPainter state will also be
     // affected. See also RenderEditable which has a similar issue.
     final Size textSize = _textPainter.size;
-    final bool textDidExceedMaxLines = _textPainter.didExceedMaxLines;
     size = constraints.constrain(textSize);
+  }
 
-    final bool didOverflowHeight =
-        size.height < textSize.height || textDidExceedMaxLines;
-    final bool didOverflowWidth = size.width < textSize.width;
-    // TODO(abarth): We're only measuring the sizes of the line boxes here. If
-    // the glyphs draw outside the line boxes, we might think that there isn't
-    // visual overflow when there actually is visual overflow. This can become
-    // a problem if we start having horizontal overflow and introduce a clip
-    // that affects the actual (but undetected) vertical overflow.
-    final bool hasVisualOverflow = didOverflowWidth || didOverflowHeight;
-    if (hasVisualOverflow) {
-      switch (_overflow) {
-        case TextOverflow.visible:
-          _needsClipping = false;
-          _overflowShader = null;
-          break;
-        case TextOverflow.clip:
-        case TextOverflow.ellipsis:
-          _needsClipping = true;
-          _overflowShader = null;
-          break;
-        case TextOverflow.fade:
-          assert(textDirection != null);
-          _needsClipping = true;
-          final TextPainter fadeSizePainter = TextPainter(
-            text: TextSpan(style: _textPainter.text.style, text: '\u2026'),
-            textDirection: textDirection,
-            textScaleFactor: textScaleFactor,
-            locale: locale,
-          )..layout();
-          if (didOverflowWidth) {
-            double fadeEnd, fadeStart;
-            switch (textDirection) {
-              case TextDirection.rtl:
-                fadeEnd = 0.0;
-                fadeStart = fadeSizePainter.width;
-                break;
-              case TextDirection.ltr:
-                fadeEnd = size.width;
-                fadeStart = fadeEnd - fadeSizePainter.width;
-                break;
-            }
-            _overflowShader = ui.Gradient.linear(
-              Offset(fadeStart, 0.0),
-              Offset(fadeEnd, 0.0),
-              <Color>[const Color(0xFFFFFFFF), const Color(0x00FFFFFF)],
-            );
-          } else {
-            final double fadeEnd = size.height;
-            final double fadeStart = fadeEnd - fadeSizePainter.height / 2.0;
-            _overflowShader = ui.Gradient.linear(
-              Offset(0.0, fadeStart),
-              Offset(0.0, fadeEnd),
-              <Color>[const Color(0xFFFFFFFF), const Color(0x00FFFFFF)],
-            );
-          }
-          break;
-      }
-    } else {
-      _needsClipping = false;
-      _overflowShader = null;
-    }
+  void _paintSelection(Canvas canvas, Offset effectiveOffset) {
+    // assert(_textLayoutLastMaxWidth == constraints.maxWidth &&
+    //        _textLayoutLastMinWidth == constraints.minWidth,
+    //   'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    assert(_selectionRects != null);
+    final Paint paint = Paint()..color = _selectionColor;
+    for (final ui.TextBox box in _selectionRects)
+      canvas.drawRect(box.toRect().shift(effectiveOffset), paint);
   }
 
   @override
@@ -818,17 +703,6 @@ class RenderBlockParagraph extends RenderBox
       return true;
     }());
 
-    if (_needsClipping) {
-      final Rect bounds = offset & size;
-      if (_overflowShader != null) {
-        // This layer limits what the shader below blends with to be just the
-        // text (as opposed to the text and its background).
-        context.canvas.saveLayer(bounds, Paint());
-      } else {
-        context.canvas.save();
-      }
-      context.canvas.clipRect(bounds);
-    }
     _textPainter.paint(context.canvas, offset);
 
     RenderBox child = firstChild;
@@ -856,16 +730,44 @@ class RenderBlockParagraph extends RenderBox
       child = childAfter(child);
       childIndex += 1;
     }
-    if (_needsClipping) {
-      if (_overflowShader != null) {
-        context.canvas.translate(offset.dx, offset.dy);
-        final Paint paint = Paint()
-          ..blendMode = BlendMode.modulate
-          ..shader = _overflowShader;
-        context.canvas.drawRect(Offset.zero & size, paint);
+
+    final Offset effectiveOffset = offset;
+    // final Offset effectiveOffset = offset + _paintOffset;
+    bool showSelection = false;
+    bool showCaret = false;
+
+    if (_selection != null && !_floatingCursorOn) {
+      if (_selection.isCollapsed && _showCursor.value && cursorColor != null) {
+        showCaret = true;
+      } else if (!_selection.isCollapsed && _selectionColor != null) {
+        showSelection = true;
+        // _updateSelectionExtentsVisibility(effectiveOffset);
       }
-      context.canvas.restore();
     }
+
+    if (showSelection) {
+      _selectionRects ??= _textPainter.getBoxesForSelection(_selection,
+          boxHeightStyle: _selectionHeightStyle,
+          boxWidthStyle: _selectionWidthStyle);
+      _paintSelection(context.canvas, effectiveOffset);
+    }
+
+    // // On iOS, the cursor is painted over the text, on Android, it's painted
+    // // under it.
+    // if (paintCursorAboveText)
+    //   _textPainter.paint(context.canvas, effectiveOffset);
+
+    // if (showCaret)
+    //   _paintCaret(context.canvas, effectiveOffset, _selection.extent);
+
+    // if (!paintCursorAboveText)
+    //   _textPainter.paint(context.canvas, effectiveOffset);
+
+    // if (_floatingCursorOn) {
+    //   if (_resetFloatingCursorAnimationValue == null)
+    //     _paintCaret(context.canvas, effectiveOffset, _floatingCursorTextPosition);
+    //   _paintFloatingCaret(context.canvas, _floatingCursorOffset);
+    // }
   }
 
   /// Returns the offset at which to paint the caret.
@@ -1088,14 +990,6 @@ class RenderBlockParagraph extends RenderBox
     super.debugFillProperties(properties);
     properties.add(EnumProperty<TextAlign>('textAlign', textAlign));
     properties.add(EnumProperty<TextDirection>('textDirection', textDirection));
-    properties.add(FlagProperty(
-      'softWrap',
-      value: softWrap,
-      ifTrue: 'wrapping at box width',
-      ifFalse: 'no wrapping except at line break characters',
-      showName: true,
-    ));
-    properties.add(EnumProperty<TextOverflow>('overflow', overflow));
     properties.add(DoubleProperty(
       'textScaleFactor',
       textScaleFactor,
@@ -1106,6 +1000,5 @@ class RenderBlockParagraph extends RenderBox
       locale,
       defaultValue: null,
     ));
-    properties.add(IntProperty('maxLines', maxLines, ifNull: 'unlimited'));
   }
 }
