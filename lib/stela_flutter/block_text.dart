@@ -686,6 +686,13 @@ class RenderBlockText extends RenderParagraph {
   }
 
   @override
+  set text(InlineSpan value) {
+    _textPrototype.text = TextSpan(text: '.', style: value.style);
+    _selectionRects = null;
+    super.text = value;
+  }
+
+  @override
   void performLayout() {
     super.performLayout();
     _caretPrototype = _getCaretPrototype;
@@ -737,9 +744,6 @@ class RenderBlockText extends RenderParagraph {
         case TargetPlatform.fuchsia:
         case TargetPlatform.linux:
         case TargetPlatform.windows:
-          // Override the height to take the full height of the glyph at the TextPosition
-          // when not on iOS. iOS has special handling that creates a taller caret.
-          // TODO(garyq): See the TODO for _getCaretPrototype.
           caretRect = Rect.fromLTWH(
             caretRect.left,
             caretRect.top - _kCaretHeightOffset,
@@ -795,10 +799,9 @@ class RenderBlockText extends RenderParagraph {
 
     super.paint(context, offset);
 
-    _paintCaret(context.canvas, offset, _selection.extent);
-    // if (showCaret) {
-    //   _paintCaret(context.canvas, offset, _selection.extent);
-    // }
+    if (showCaret) {
+      _paintCaret(context.canvas, offset, _selection.extent);
+    }
 
     // // On iOS, the cursor is painted over the text, on Android, it's painted
     // // under it.

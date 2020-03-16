@@ -48,16 +48,19 @@ class MyApp extends StatelessWidget {
           children: <Widget>[
             StelaEditor(
               controller: EditorEditingController(editor: editor),
-              style: DefaultTextStyle.of(context).style,
+              style: themeData.textTheme.subtitle1,
               focusNode: FocusNode(),
               cursorColor: themeData.cursorColor,
               backgroundCursorColor: CupertinoColors.inactiveGray,
               selectionColor: themeData.textSelectionColor,
             ),
             TextFormField(
-              initialValue: 'hello world',
+              initialValue: 'Lorem ipsum',
+              style: themeData.textTheme.subtitle1,
             ),
-            Cupertino.CupertinoTextField(),
+            Cupertino.CupertinoTextField(
+              style: themeData.textTheme.subtitle1,
+            ),
           ],
         )),
       ),

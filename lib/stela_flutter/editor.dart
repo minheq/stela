@@ -390,8 +390,7 @@ class _StelaEditorState extends State<StelaEditor> {
       }
     }
 
-    TextSpan textSpan =
-        TextSpan(children: children, style: DefaultTextStyle.of(context).style);
+    TextSpan textSpan = TextSpan(children: children, style: widget.style);
 
     return StelaBlockText(
       // key: _editableKey,
