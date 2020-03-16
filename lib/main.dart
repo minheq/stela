@@ -1,4 +1,6 @@
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/cupertino.dart' as Cupertino;
 import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/editor.dart';
 
@@ -27,9 +29,11 @@ class Editor extends Stela.Editor {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
+    final ThemeData themeData = Theme.of(context);
+
     Editor editor = Editor(
         selection: Stela.Range(Stela.Point(Stela.Path([0, 0]), 1),
-            Stela.Point(Stela.Path([0, 0]), 5)),
+            Stela.Point(Stela.Path([0, 0]), 10)),
         children: [
           Stela.Block(children: [
             Stela.Text(
@@ -42,7 +46,18 @@ class MyApp extends StatelessWidget {
         body: SafeArea(
             child: Column(
           children: <Widget>[
-            StelaEditor(editor),
+            StelaEditor(
+              controller: EditorEditingController(editor: editor),
+              style: DefaultTextStyle.of(context).style,
+              focusNode: FocusNode(),
+              cursorColor: themeData.cursorColor,
+              backgroundCursorColor: CupertinoColors.inactiveGray,
+              selectionColor: themeData.textSelectionColor,
+            ),
+            TextFormField(
+              initialValue: 'hello world',
+            ),
+            Cupertino.CupertinoTextField(),
           ],
         )),
       ),
