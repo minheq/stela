@@ -20,6 +20,8 @@ class Element implements Ancestor, Descendant {
         props = props ?? {},
         isVoid = isVoid ?? false;
 
+  String type = 'element';
+
   List<Node> children;
 
   /// Custom properties that can extend the `Element` behavior
@@ -69,6 +71,8 @@ class Block implements Element {
         props = props ?? {},
         isVoid = isVoid ?? false;
 
+  String type = 'block';
+
   List<Node> children;
 
   /// Custom properties that can extend the `Element` behavior
@@ -96,6 +100,8 @@ class Inline implements Element {
       : children = children ?? [],
         props = props ?? {},
         isVoid = isVoid ?? false;
+
+  String type = 'inline';
 
   List<Node> children;
 

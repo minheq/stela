@@ -59,6 +59,35 @@ class Editor implements Ancestor {
     return 'Editor(children:[$str])';
   }
 
+  factory Editor.fromJSON(Map<String, dynamic> encoded) {
+    return Editor(
+      children: encoded['children'] as List<Node>,
+    );
+  }
+
+  /// Returns a representation of this object as a JSON object.
+  Map<String, dynamic> toJSON() {
+    return <String, dynamic>{
+      'children': children,
+    };
+  }
+
+  Editor copyWith({
+    Map<String, dynamic> props,
+    List<Node> children,
+    Range selection,
+    List<Operation> operations,
+    Map<String, dynamic> marks,
+  }) {
+    return Editor(
+      props: props ?? this.props,
+      children: children ?? this.children,
+      selection: selection ?? this.selection,
+      operations: operations ?? this.operations,
+      marks: marks ?? this.marks,
+    );
+  }
+
   bool isVoid(Element element) {
     return false;
   }
