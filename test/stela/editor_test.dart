@@ -2,31 +2,10 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inday/stela/editor.dart';
 import 'package:inday/stela/element.dart';
 import 'package:inday/stela/node.dart';
-import 'package:inday/stela/operation.dart';
 import 'package:inday/stela/path.dart';
 import 'package:inday/stela/point.dart';
 import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
-
-class TestEditor extends Editor {
-  TestEditor(
-      {List<Node> children,
-      Range selection,
-      List<Operation> operations,
-      Map<String, dynamic> marks,
-      Map<String, dynamic> props})
-      : super(
-            children: children,
-            selection: selection,
-            operations: operations,
-            marks: marks,
-            props: props);
-
-  @override
-  bool isVoid(Element element) {
-    return element.isVoid;
-  }
-}
 
 void main() {
   group('above', () {
@@ -39,7 +18,7 @@ void main() {
       Block highest = Block(children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
-      TestEditor editor = TestEditor(children: <Node>[highest]);
+      Editor editor = Editor(children: <Node>[highest]);
 
       NodeEntry entry = EditorUtils.above(editor,
           at: Path([0, 0, 0]), mode: Mode.highest, match: (node) {
@@ -57,7 +36,7 @@ void main() {
       //   </block>
       // </editor>
       Block lowest = Block(children: <Node>[Text('one')]);
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[lowest])
       ]);
 
@@ -77,7 +56,7 @@ void main() {
       //   </block>
       // </editor>
       Inline inline = Inline(children: <Node>[Text('two')]);
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one'), inline, Text('three')])
       ]);
 
@@ -98,7 +77,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')])
       ]);
@@ -113,7 +92,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')])
       ]);
@@ -127,7 +106,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -141,7 +120,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -159,7 +138,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')])
       ]);
@@ -173,7 +152,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -187,7 +166,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -203,7 +182,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')])
       ]);
@@ -219,7 +198,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -235,7 +214,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -251,7 +230,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -270,7 +249,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -283,7 +262,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -296,7 +275,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -314,7 +293,7 @@ void main() {
       //     <block>one</block>
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Block(children: <Node>[Text('one')])
         ]),
@@ -327,7 +306,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -344,7 +323,7 @@ void main() {
       //     five
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -368,7 +347,7 @@ void main() {
       //     one<inline>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -389,7 +368,7 @@ void main() {
       //     <block>one</block>
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Block(children: <Node>[Text('one')])
         ]),
@@ -402,7 +381,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -419,7 +398,7 @@ void main() {
       //     five
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -443,7 +422,7 @@ void main() {
       //     one<inline>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -464,7 +443,7 @@ void main() {
       //     <block>one</block>
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Block(children: <Node>[Text('one')])
         ]),
@@ -477,7 +456,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -494,7 +473,7 @@ void main() {
       //     five
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -518,7 +497,7 @@ void main() {
       //     one<inline>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -537,7 +516,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -550,7 +529,7 @@ void main() {
       //     one<inline>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -573,7 +552,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -589,7 +568,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
 
@@ -605,7 +584,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -621,7 +600,7 @@ void main() {
       //     <text />
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('')])
       ]);
 
@@ -632,8 +611,7 @@ void main() {
       // <editor>
       //   <block />
       // </editor>
-      TestEditor editor =
-          TestEditor(children: <Node>[Block(children: <Node>[])]);
+      Editor editor = Editor(children: <Node>[Block(children: <Node>[])]);
 
       expect(EditorUtils.isEmpty(editor, editor.children[0]), true);
     });
@@ -642,7 +620,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -655,7 +633,7 @@ void main() {
       //     <text />
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('')], isVoid: true)
       ]);
 
@@ -672,7 +650,7 @@ void main() {
       //     three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[Text('')]),
@@ -694,7 +672,7 @@ void main() {
       //     three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[]),
@@ -714,7 +692,7 @@ void main() {
       //     one<inline>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[Text('two')]),
@@ -738,7 +716,7 @@ void main() {
       //     three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[Text('')], isVoid: true),
@@ -762,7 +740,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -778,7 +756,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -794,7 +772,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -808,7 +786,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -816,7 +794,7 @@ void main() {
     });
 
     test('inline', () {
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -842,7 +820,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -858,7 +836,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -874,7 +852,7 @@ void main() {
       //   </block>
       // </editor>
       Range cursor = Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0));
-      TestEditor editor = TestEditor(selection: cursor, children: <Node>[
+      Editor editor = Editor(selection: cursor, children: <Node>[
         Block(children: <Node>[Text('one')])
       ]);
 
@@ -888,7 +866,7 @@ void main() {
       // <editor>
       //   <block void>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
         ], isVoid: true),
@@ -901,7 +879,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
         ]),
@@ -916,7 +894,7 @@ void main() {
       //     one<inline void>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[Text('two')], isVoid: true),
@@ -936,7 +914,7 @@ void main() {
       //     one<inline>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[Text('two')]),
@@ -960,7 +938,7 @@ void main() {
       // </editor>
       Text text = Text('one', props: {'a': true});
       Element element = Element(children: <Node>[text], props: {'a': true});
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         element,
       ]);
 
@@ -984,7 +962,7 @@ void main() {
       // </editor>
       Text text = Text('one');
       Element element = Element(children: <Node>[text]);
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         element,
       ]);
 
@@ -1009,7 +987,7 @@ void main() {
       // </editor>
       Text text = Text('one');
       Element element = Element(children: <Node>[text]);
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         element,
       ]);
 
@@ -1034,7 +1012,7 @@ void main() {
       // </editor>
       Text text = Text('one');
       Element element = Element(children: <Node>[text], isVoid: true);
-      TestEditor editor = TestEditor(children: <Node>[element]);
+      Editor editor = Editor(children: <Node>[element]);
 
       List<NodeEntry> entries = List.from(
         EditorUtils.levels(editor, at: Path([0, 0])),
@@ -1055,7 +1033,7 @@ void main() {
       // </editor>
       Text text = Text('one');
       Element element = Element(children: <Node>[text], isVoid: true);
-      TestEditor editor = TestEditor(children: <Node>[element]);
+      Editor editor = Editor(children: <Node>[element]);
 
       List<NodeEntry> entries = List.from(
         EditorUtils.levels(editor, at: Path([0, 0]), voids: true),
@@ -1078,7 +1056,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -1095,7 +1073,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -1111,7 +1089,7 @@ void main() {
       //   <block>two</block>
       // </editor>
       Text text = Text('two');
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[text]),
       ]);
@@ -1129,7 +1107,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
       NodeEntry entry = EditorUtils.node(editor, Path([0]));
@@ -1143,7 +1121,7 @@ void main() {
       //   <block>one</block>
       // </editor>
       Text text = Text('one');
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[text]),
       ]);
       NodeEntry entry = EditorUtils.node(editor, Point(Path([0, 0]), 1));
@@ -1158,7 +1136,7 @@ void main() {
       //   <block>two</block>
       // </editor>
       Text text = Text('two');
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[text]),
       ]);
@@ -1176,7 +1154,7 @@ void main() {
       //   <block>two</block>
       // </editor>
       Text text = Text('one');
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[text]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -1194,7 +1172,7 @@ void main() {
       //   <block>two</block>
       // </editor>
       Text text = Text('one');
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[text]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -1213,7 +1191,7 @@ void main() {
         //   <block>one</block>
         // </editor>
         Block block = Block(children: <Node>[Text('one')]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
           at: Path([]),
@@ -1232,7 +1210,7 @@ void main() {
         //   <block>two</block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')]),
           Block(children: <Node>[Text('three')]),
@@ -1258,7 +1236,7 @@ void main() {
         //   </block>
         // </editor>
         Inline inline = Inline(children: <Node>[Text('two')]);
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one'), inline, Text('three')])
         ]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
@@ -1290,7 +1268,7 @@ void main() {
         Block innerBlock2 =
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['a'] != null;
@@ -1326,7 +1304,7 @@ void main() {
         Block innerBlock2 =
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['a'] != null;
@@ -1356,7 +1334,7 @@ void main() {
         Block innerBlock2 =
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['a'] != null;
@@ -1386,7 +1364,7 @@ void main() {
         Block innerBlock2 =
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['a'] != null;
@@ -1407,7 +1385,7 @@ void main() {
         Block block1 = Block(children: <Node>[Text('one')], props: {'a': true});
         Block block2 = Block(children: <Node>[Text('two')], props: {'a': true});
 
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['a'] != null;
@@ -1435,7 +1413,7 @@ void main() {
         Block innerBlock2 =
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'b': true});
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['a'] != null;
@@ -1462,7 +1440,7 @@ void main() {
         Block innerBlock2 =
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['b'] != null;
@@ -1479,7 +1457,7 @@ void main() {
         Block block1 = Block(children: <Node>[Text('one')], props: {'a': true});
         Block block2 = Block(children: <Node>[Text('two')], props: {'a': true});
 
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['b'] != null;
@@ -1503,7 +1481,7 @@ void main() {
         Block innerBlock2 =
             Block(children: <Node>[Text('two')], props: {'b': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'b': true});
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['a'] != null;
@@ -1520,7 +1498,7 @@ void main() {
         Block block1 = Block(children: <Node>[Text('one')], props: {'a': true});
         Block block2 = Block(children: <Node>[Text('two')], props: {'b': true});
 
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
           return node.props['a'] != null;
@@ -1540,7 +1518,7 @@ void main() {
         Block block1 = Block(children: <Node>[text1]);
         Text text2 = Text('two');
         Block block2 = Block(children: <Node>[text2]);
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
           at: Path([]),
@@ -1577,7 +1555,7 @@ void main() {
         Text text2 = Text('two');
         Block innerBlock2 = Block(children: <Node>[text2]);
         Block block2 = Block(children: <Node>[innerBlock2]);
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
           at: Path([]),
@@ -1614,7 +1592,7 @@ void main() {
         Block block1 = Block(children: <Node>[text1]);
         Text text2 = Text('two');
         Block block2 = Block(children: <Node>[text2]);
-        TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+        Editor editor = Editor(children: <Node>[block1, block2]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
           at: Path([]),
@@ -1642,7 +1620,7 @@ void main() {
         //   <block void>one</block>
         // </editor>
         Block block = Block(children: <Node>[Text('one')], isVoid: true);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
           at: Path([]),
@@ -1661,7 +1639,7 @@ void main() {
         // </editor>
         Text text = Text('one');
         Block block = Block(children: <Node>[text]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
           at: Path([]),
@@ -1692,7 +1670,7 @@ void main() {
         Text text5 = Text('five');
         Block block =
             Block(children: <Node>[text1, inline2, text3, inline4, text5]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
           at: Path([]),
@@ -1744,7 +1722,7 @@ void main() {
         Inline inline = Inline(children: <Node>[text2, innerInline, text4]);
         Text text5 = Text('five');
         Block block = Block(children: <Node>[text1, inline, text5]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
 
         List<NodeEntry> entries = List.from(EditorUtils.nodes(
           editor,
@@ -1794,7 +1772,7 @@ void main() {
         Text text5 = Text('five');
         Block block =
             Block(children: <Node>[text1, inline2, text3, inline4, text5]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), reverse: true));
 
@@ -1837,7 +1815,7 @@ void main() {
         Text text3 = Text('three');
         Inline inline = Inline(children: <Node>[text2], isVoid: true);
         Block block = Block(children: <Node>[text1, inline, text3]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
 
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([])));
@@ -1869,7 +1847,7 @@ void main() {
         Text text3 = Text('three');
         Inline inline = Inline(children: <Node>[text2]);
         Block block = Block(children: <Node>[text1, inline, text3]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
 
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([])));
@@ -1901,7 +1879,7 @@ void main() {
         // </editor>
         Text text1 = Text('one');
         Block block = Block(children: <Node>[text1], isVoid: true);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
 
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
@@ -1923,7 +1901,7 @@ void main() {
         Text text3 = Text('three');
         Inline inline = Inline(children: <Node>[text2], isVoid: true);
         Block block = Block(children: <Node>[text1, inline, text3]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
 
         List<NodeEntry> entries =
             List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
@@ -1949,7 +1927,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       NodeEntry entry = EditorUtils.parent(editor, Path([0, 0]));
 
@@ -1963,7 +1941,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       NodeEntry entry = EditorUtils.parent(editor, Point(Path([0, 0]), 1));
 
@@ -1980,7 +1958,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       NodeEntry entry = EditorUtils.parent(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
@@ -1999,7 +1977,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       NodeEntry entry = EditorUtils.parent(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
@@ -2018,7 +1996,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       NodeEntry entry = EditorUtils.parent(
         editor,
@@ -2037,7 +2015,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Path path = EditorUtils.path(editor, Path([0]));
 
@@ -2050,7 +2028,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Path path = EditorUtils.path(editor, Point(Path([0, 0]), 1));
 
@@ -2066,7 +2044,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       Path path = EditorUtils.path(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
@@ -2084,7 +2062,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       Path path = EditorUtils.path(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
@@ -2102,7 +2080,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       Path path = EditorUtils.path(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
@@ -2118,7 +2096,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Point point = EditorUtils.point(editor, Path([0]), edge: Edge.end);
 
@@ -2131,7 +2109,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Point point = EditorUtils.point(editor, Path([0]), edge: Edge.start);
 
@@ -2144,7 +2122,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Point point = EditorUtils.point(editor, Path([0]));
 
@@ -2157,7 +2135,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Point point = EditorUtils.point(editor, Point(Path([0, 0]), 1));
 
@@ -2173,7 +2151,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       Point point = EditorUtils.point(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
@@ -2191,7 +2169,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       Point point = EditorUtils.point(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
@@ -2209,7 +2187,7 @@ void main() {
       Text text2 = Text('two');
       Block block1 = Block(children: <Node>[text1]);
       Block block2 = Block(children: <Node>[text2]);
-      TestEditor editor = TestEditor(children: <Node>[block1, block2]);
+      Editor editor = Editor(children: <Node>[block1, block2]);
 
       Point point = EditorUtils.point(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)));
@@ -2226,7 +2204,7 @@ void main() {
         //   <block>two</block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')]),
           Block(children: <Node>[Text('three')]),
@@ -2257,7 +2235,7 @@ void main() {
         //   <block>two</block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')]),
           Block(children: <Node>[Text('three')]),
@@ -2291,7 +2269,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')])
           ]),
@@ -2357,7 +2335,7 @@ void main() {
         // <editor>
         //   <block>one</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
         ]);
 
@@ -2394,7 +2372,7 @@ void main() {
         // <editor>
         //   <block>one</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
         ]);
 
@@ -2442,7 +2420,7 @@ void main() {
         Text text5 = Text('five');
         Block block =
             Block(children: <Node>[text1, inline2, text3, inline4, text5]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
 
         List<Point> points =
             List.from(EditorUtils.positions(editor, at: Path([])));
@@ -2603,7 +2581,7 @@ void main() {
         //     five
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
             Inline(children: <Node>[
@@ -2771,7 +2749,7 @@ void main() {
         //   </block>
         // </editor>
         Inline inline = Inline(children: <Node>[Text('two')]);
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one'), inline, Text('three')])
         ]);
 
@@ -2871,7 +2849,7 @@ void main() {
         //   </block>
         // </editor>
         Inline inline = Inline(children: <Node>[Text('two')]);
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one'), inline, Text('three')])
         ]);
 
@@ -2969,7 +2947,7 @@ void main() {
         //   <block>one two three</block>
         //   <block>four five six</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one two three')]),
           Block(children: <Node>[Text('four five six')]),
         ]);
@@ -3008,7 +2986,7 @@ void main() {
         //   <block>one two three</block>
         //   <block>four five six</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one two three')]),
           Block(children: <Node>[Text('four five six')]),
         ]);
@@ -3051,7 +3029,7 @@ void main() {
         //     four<inline>five</inline>six
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
             Inline(children: <Node>[
@@ -3226,7 +3204,7 @@ void main() {
         //     four<inline>five</inline>six
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
             Inline(children: <Node>[
@@ -3397,7 +3375,7 @@ void main() {
         //   <block>one two three</block>
         //   <block>four five six</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one two three')]),
           Block(children: <Node>[Text('four five six')]),
         ]);
@@ -3436,7 +3414,7 @@ void main() {
         //   <block>one two three</block>
         //   <block>four five six</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one two three')]),
           Block(children: <Node>[Text('four five six')]),
         ]);
@@ -3475,7 +3453,7 @@ void main() {
         //   <block>one two three</block>
         //   <block>four five six</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one two three')]),
           Block(children: <Node>[Text('four five six')]),
         ]);
@@ -3538,7 +3516,7 @@ void main() {
         //   <block>one two three</block>
         //   <block>four five six</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one two three')]),
           Block(children: <Node>[Text('four five six')]),
         ]);
@@ -3605,7 +3583,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')]),
             Block(children: <Node>[Text('two')]),
@@ -3670,7 +3648,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')]),
         ]);
@@ -3709,7 +3687,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')]),
         ]);
@@ -3753,7 +3731,7 @@ void main() {
         //     five
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
             Inline(children: <Node>[
@@ -3866,7 +3844,7 @@ void main() {
         //     one<inline>two</inline>three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
             Inline(children: <Node>[
@@ -3911,7 +3889,7 @@ void main() {
         //     one<inline>two</inline>three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
             Inline(children: <Node>[
@@ -3958,7 +3936,7 @@ void main() {
         //   <block>two</block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')]),
           Block(children: <Node>[Text('three')]),
@@ -4036,7 +4014,7 @@ void main() {
         //   <block>two</block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')]),
           Block(children: <Node>[Text('three')]),
@@ -4122,7 +4100,7 @@ void main() {
         Text text5 = Text('five');
         Block block =
             Block(children: <Node>[text1, inline2, text3, inline4, text5]);
-        TestEditor editor = TestEditor(children: <Node>[block]);
+        Editor editor = Editor(children: <Node>[block]);
 
         List<Point> points = List.from(EditorUtils.positions(editor,
             at: Range(Point(Path([0, 0]), 2), Point(Path([0, 4]), 2))));
@@ -4257,7 +4235,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -4275,7 +4253,7 @@ void main() {
       //   <block>one</block>
       //   <block>two</block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -4291,7 +4269,7 @@ void main() {
       //   <block>two</block>
       // </editor>
       Text text = Text('one');
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[text]),
         Block(children: <Node>[Text('two')]),
       ]);
@@ -4312,7 +4290,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Range range = EditorUtils.range(editor, Path([0]), null);
 
@@ -4328,7 +4306,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Range range = EditorUtils.range(editor, Point(Path([0, 0]), 1), null);
 
@@ -4344,7 +4322,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block1 = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block1]);
+      Editor editor = Editor(children: <Node>[block1]);
 
       Range range = EditorUtils.range(
           editor, Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 1)), null);
@@ -4361,7 +4339,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block1 = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block1]);
+      Editor editor = Editor(children: <Node>[block1]);
 
       Range range = EditorUtils.range(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)), null);
@@ -4380,7 +4358,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Point point = EditorUtils.start(editor, Path([0]));
 
@@ -4398,7 +4376,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       Point point = EditorUtils.start(editor, Point(Path([0, 0]), 1));
 
@@ -4416,7 +4394,7 @@ void main() {
       // </editor>
       Text text1 = Text('one');
       Block block1 = Block(children: <Node>[text1]);
-      TestEditor editor = TestEditor(children: <Node>[block1]);
+      Editor editor = Editor(children: <Node>[block1]);
 
       Point point = EditorUtils.start(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)));
@@ -4442,7 +4420,7 @@ void main() {
       //     <text>four</text>
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one'), Text('two')]),
         Block(children: <Node>[Text('three'), Text('four')]),
       ]);
@@ -4459,7 +4437,7 @@ void main() {
       //     <text>two</text>
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one'), Text('two')], isVoid: true),
       ]);
 
@@ -4479,7 +4457,7 @@ void main() {
       //     <text>four</text>
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one'), Text('two')]),
         Block(children: <Node>[Text('three'), Text('four')]),
       ]);
@@ -4495,7 +4473,7 @@ void main() {
       //     one<inline>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
           Inline(children: <Node>[
@@ -4516,7 +4494,7 @@ void main() {
       //     one<inline>two</inline>three
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one'), Text('two')]),
       ]);
 

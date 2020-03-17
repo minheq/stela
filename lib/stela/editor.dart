@@ -89,7 +89,7 @@ class Editor implements Ancestor {
   }
 
   bool isVoid(Element element) {
-    return false;
+    return element.isVoid;
   }
 
   void onChange() {

@@ -8,26 +8,6 @@ import 'package:inday/stela/point.dart';
 import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
 
-class TestEditor extends Editor {
-  TestEditor(
-      {List<Node> children,
-      Range selection,
-      List<Operation> operations,
-      Map<String, dynamic> marks,
-      Map<String, dynamic> props})
-      : super(
-            children: children,
-            selection: selection,
-            operations: operations,
-            marks: marks,
-            props: props);
-
-  @override
-  bool isVoid(Element element) {
-    return element.isVoid;
-  }
-}
-
 void main() {
   group('move node', () {
     test('path equals new path', () {
@@ -37,7 +17,7 @@ void main() {
       // </editor>
       Element element1 = Element(children: <Node>[Text('1')]);
       Element element2 = Element(children: <Node>[Text('2')]);
-      TestEditor editor = TestEditor(children: <Node>[element1, element2]);
+      Editor editor = Editor(children: <Node>[element1, element2]);
 
       editor.apply(MoveNodeOperation(Path([0]), Path([0])));
 
@@ -59,7 +39,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 4)),
           children: <Node>[element]);
 
@@ -86,7 +66,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 4)),
           children: <Node>[element]);
 
@@ -114,7 +94,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 4)),
           children: <Node>[element]);
 
@@ -140,7 +120,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
           children: <Node>[element]);
 
@@ -166,7 +146,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
           children: <Node>[element]);
 
@@ -193,7 +173,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
           children: <Node>[element]);
 
@@ -220,7 +200,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3)),
           children: <Node>[element]);
 
@@ -246,7 +226,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 1)),
           children: <Node>[element]);
 
@@ -274,7 +254,7 @@ void main() {
       //   </element>
       // </editor>
       Element element = Element(children: <Node>[Text('word')]);
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 2)),
           children: <Node>[element]);
 

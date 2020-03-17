@@ -2,29 +2,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inday/stela/editor.dart';
 import 'package:inday/stela/element.dart';
 import 'package:inday/stela/node.dart';
-import 'package:inday/stela/operation.dart';
-import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
-
-class TestEditor extends Editor {
-  TestEditor(
-      {List<Node> children,
-      Range selection,
-      List<Operation> operations,
-      Map<String, dynamic> marks,
-      Map<String, dynamic> props})
-      : super(
-            children: children,
-            selection: selection,
-            operations: operations,
-            marks: marks,
-            props: props);
-
-  @override
-  bool isVoid(Element element) {
-    return element.isVoid;
-  }
-}
 
 void main() {
   group('block', () {
@@ -33,7 +11,7 @@ void main() {
       //   <block />
       // </editor>
       Block block = Block(children: <Node>[]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -57,7 +35,7 @@ void main() {
         Text('one'),
         Block(children: <Node>[Text('two')])
       ]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -82,7 +60,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
         Inline(children: <Node>[Text('two')])
       ]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -104,7 +82,7 @@ void main() {
       //   <block>two</block>
       // </editor>
 
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Inline(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')])
       ]);
@@ -125,7 +103,7 @@ void main() {
       //   <block>two</block>
       // </editor>
 
-      TestEditor editor = TestEditor(children: <Node>[
+      Editor editor = Editor(children: <Node>[
         Text('one'),
         Block(children: <Node>[Text('two')])
       ]);
@@ -153,7 +131,7 @@ void main() {
         Inline(children: <Node>[Text('one')]),
         Inline(children: <Node>[Text('two')]),
       ]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -193,7 +171,7 @@ void main() {
         ]),
         Text(''),
       ]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -225,7 +203,7 @@ void main() {
         Text(''),
         Text(''),
       ]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -249,7 +227,7 @@ void main() {
         Text('1'),
         Text('2'),
       ]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -273,7 +251,7 @@ void main() {
         Text('1', props: {'a': true}),
         Text('2', props: {'a': true}),
       ]);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -293,7 +271,7 @@ void main() {
       //   <block void />
       // </editor>
       Block block = Block(children: <Node>[], isVoid: true);
-      TestEditor editor = TestEditor(children: <Node>[block]);
+      Editor editor = Editor(children: <Node>[block]);
 
       EditorUtils.normalize(editor, force: true);
 
@@ -313,8 +291,7 @@ void main() {
       //   <text />
       // </editor>
       Inline inline = Inline(children: <Node>[], isVoid: true);
-      TestEditor editor =
-          TestEditor(children: <Node>[Text(''), inline, Text('')]);
+      Editor editor = Editor(children: <Node>[Text(''), inline, Text('')]);
 
       EditorUtils.normalize(editor, force: true);
 

@@ -2,32 +2,11 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:inday/stela/editor.dart';
 import 'package:inday/stela/element.dart';
 import 'package:inday/stela/node.dart';
-import 'package:inday/stela/operation.dart';
 import 'package:inday/stela/path.dart';
 import 'package:inday/stela/point.dart';
 import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
 import 'package:inday/stela/transforms.dart';
-
-class TestEditor extends Editor {
-  TestEditor(
-      {List<Node> children,
-      Range selection,
-      List<Operation> operations,
-      Map<String, dynamic> marks,
-      Map<String, dynamic> props})
-      : super(
-            children: children,
-            selection: selection,
-            operations: operations,
-            marks: marks,
-            props: props);
-
-  @override
-  bool isVoid(Element element) {
-    return element.isVoid;
-  }
-}
 
 void Function(Node, Node) expectEqual = (Node node, Node expected) {
   expect(node.runtimeType, expected.runtimeType);
@@ -82,7 +61,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 6), Point(Path([0, 1, 0]), 6)),
             children: <Node>[
@@ -105,7 +84,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 4), Point(Path([0, 1, 0]), 4)),
             children: <Node>[
@@ -130,7 +109,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 5), Point(Path([0, 1, 0]), 5)),
             children: <Node>[
@@ -153,7 +132,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 3), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -179,7 +158,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -203,7 +182,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -228,7 +207,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -250,7 +229,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -275,7 +254,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -298,7 +277,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -319,7 +298,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 6), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[Text('word📛')])
@@ -333,7 +312,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('word')])
@@ -349,7 +328,7 @@ void main() {
         //     📛word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('📛word')])
@@ -363,7 +342,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('word')])
@@ -379,7 +358,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')]),
         ]);
@@ -389,7 +368,7 @@ void main() {
         // <editor>
         //   <block>one</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('one')])
         ]);
 
@@ -404,7 +383,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[Text('one')]),
@@ -419,7 +398,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('')])
         ]);
 
@@ -436,7 +415,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 1), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[Text('one')]),
@@ -454,7 +433,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('one')]),
@@ -470,7 +449,7 @@ void main() {
         //     <text>one</text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
         ]);
 
@@ -481,7 +460,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('')]),
         ]);
 
@@ -498,7 +477,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('one')]),
@@ -514,7 +493,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('onetwo')]),
@@ -531,7 +510,7 @@ void main() {
         //   </block>
         //   <block>another</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -547,7 +526,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('wordanother')]),
@@ -566,7 +545,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([1, 0, 0]), 0), Point(Path([1, 0, 0]), 0)),
             children: <Node>[
@@ -585,7 +564,7 @@ void main() {
         //     world!
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[Text('Helloworld!')]),
@@ -604,7 +583,7 @@ void main() {
         //     four
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('one')]),
@@ -626,7 +605,7 @@ void main() {
         //     four
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -653,7 +632,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -676,7 +655,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -705,7 +684,7 @@ void main() {
         //     four
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([1, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
             children: <Node>[
@@ -735,7 +714,7 @@ void main() {
         //     four
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 0), Point(Path([0, 3, 0]), 0)),
             children: <Node>[
@@ -765,7 +744,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -790,7 +769,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -813,7 +792,7 @@ void main() {
         //     two<inline>three</inline>four
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -835,7 +814,7 @@ void main() {
         //     two<inline>three</inline>four
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -858,7 +837,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -883,7 +862,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 4), Point(Path([0, 0, 0]), 4)),
             children: <Node>[
@@ -907,7 +886,7 @@ void main() {
         //     <block>another</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 4), Point(Path([0, 0, 0]), 4)),
             children: <Node>[
@@ -932,7 +911,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 4), Point(Path([0, 0, 0]), 4)),
             children: <Node>[
@@ -961,7 +940,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([3, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -985,7 +964,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')]),
@@ -1011,7 +990,7 @@ void main() {
         //     <block>four</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 3), Point(Path([1, 0, 0]), 0)),
             children: <Node>[
@@ -1049,7 +1028,7 @@ void main() {
         //     <block>four</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 3), Point(Path([0, 0, 0]), 3)),
             children: <Node>[
@@ -1081,7 +1060,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -1101,7 +1080,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -1125,7 +1104,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0, 0]), 3), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1149,7 +1128,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 3), Point(Path([0, 0, 0]), 3)),
             children: <Node>[
@@ -1179,7 +1158,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -1204,7 +1183,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -1227,7 +1206,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([2, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1249,7 +1228,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1274,7 +1253,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1293,7 +1272,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1328,7 +1307,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([1, 1, 0]), 2)),
             children: <Node>[
@@ -1358,7 +1337,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 0), Point(Path([0, 3, 0]), 0)),
             children: <Node>[
@@ -1383,7 +1362,7 @@ void main() {
         //     <focus />r
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 1), Point(Path([1, 2]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -1404,7 +1383,7 @@ void main() {
         //     t<cursor />r
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 1), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -1429,7 +1408,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1449,7 +1428,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -1471,7 +1450,7 @@ void main() {
         //     two<inline>three</inline>four
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1493,7 +1472,7 @@ void main() {
         //     two<inline>three</inline>four
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -1521,7 +1500,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 4), Point(Path([0, 0, 1, 0]), 0)),
             children: <Node>[
@@ -1550,7 +1529,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 4), Point(Path([0, 0, 0, 0]), 4)),
             children: <Node>[
@@ -1574,7 +1553,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 1), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -1597,7 +1576,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 1), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -1632,7 +1611,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0]), 0), Point(Path([0, 1, 1, 0, 0]), 5)),
             children: <Node>[
@@ -1660,7 +1639,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -1681,7 +1660,7 @@ void main() {
         //     <anchor />d<focus />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -1697,7 +1676,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -1715,7 +1694,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -1731,7 +1710,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -1749,7 +1728,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -1765,7 +1744,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1783,7 +1762,7 @@ void main() {
         //     <anchor />a<focus />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -1803,7 +1782,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1827,7 +1806,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -1850,7 +1829,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -1872,7 +1851,7 @@ void main() {
         //     <focus />e
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 2]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -1889,7 +1868,7 @@ void main() {
         //     o<cursor />e
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -1912,7 +1891,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 4)),
             children: <Node>[
@@ -1934,7 +1913,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -1956,7 +1935,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -1971,7 +1950,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -1991,7 +1970,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -2007,7 +1986,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -2025,7 +2004,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2041,7 +2020,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2058,7 +2037,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2073,7 +2052,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2090,7 +2069,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2105,7 +2084,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2123,7 +2102,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -2139,7 +2118,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -2157,7 +2136,7 @@ void main() {
         //     <cursor />d
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -2173,7 +2152,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -2191,7 +2170,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -2207,7 +2186,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2225,7 +2204,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2241,7 +2220,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2260,7 +2239,7 @@ void main() {
         //     a<cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 1), Point(Path([0, 2]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -2279,7 +2258,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2300,7 +2279,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -2319,7 +2298,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2340,7 +2319,7 @@ void main() {
         //     <cursor />a
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2359,7 +2338,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2380,7 +2359,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2399,7 +2378,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2422,7 +2401,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 1), Point(Path([0, 1, 0]), 1)),
             children: <Node>[
@@ -2444,7 +2423,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -2468,7 +2447,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -2490,7 +2469,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -2511,7 +2490,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -2527,7 +2506,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -2545,7 +2524,7 @@ void main() {
         //     <cursor />d
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -2561,7 +2540,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -2580,7 +2559,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -2596,7 +2575,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -2615,7 +2594,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -2631,7 +2610,7 @@ void main() {
         //     <cursor />d
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -2649,7 +2628,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -2665,7 +2644,7 @@ void main() {
         //     w<cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -2683,7 +2662,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2698,7 +2677,7 @@ void main() {
         //     <cursor />d
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2718,7 +2697,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 13), Point(Path([0, 0]), 13)),
             children: <Node>[
               Block(children: <Node>[
@@ -2733,7 +2712,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2751,7 +2730,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 13), Point(Path([0, 0]), 13)),
             children: <Node>[
               Block(children: <Node>[
@@ -2766,7 +2745,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 13), Point(Path([0, 0]), 13)),
             children: <Node>[
               Block(children: <Node>[
@@ -2785,7 +2764,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 11), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[
@@ -2800,7 +2779,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2819,7 +2798,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 11), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[
@@ -2834,7 +2813,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 11), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[
@@ -2852,7 +2831,7 @@ void main() {
         //     one two three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2867,7 +2846,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2885,7 +2864,7 @@ void main() {
         //     one two three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2900,7 +2879,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2921,7 +2900,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -2941,7 +2920,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -2960,7 +2939,7 @@ void main() {
         //   </block>
         //   <block>another</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -2980,7 +2959,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -2998,7 +2977,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 13), Point(Path([0, 0]), 13)),
             children: <Node>[
               Block(children: <Node>[
@@ -3013,7 +2992,7 @@ void main() {
         //     one two <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -3032,7 +3011,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 11), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[
@@ -3048,7 +3027,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -3066,7 +3045,7 @@ void main() {
         //     ne two three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -3081,7 +3060,7 @@ void main() {
         //     o<cursor /> two three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -3099,7 +3078,7 @@ void main() {
         //     one two three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3114,7 +3093,7 @@ void main() {
         //     <cursor /> two three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3138,7 +3117,7 @@ void main() {
         //     <anchor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([2, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -3159,7 +3138,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3179,7 +3158,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3197,7 +3176,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3217,7 +3196,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3235,7 +3214,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3257,7 +3236,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3283,7 +3262,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3310,7 +3289,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -3329,7 +3308,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -3351,7 +3330,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3374,7 +3353,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3400,7 +3379,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3422,7 +3401,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3442,7 +3421,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3453,7 +3432,7 @@ void main() {
         Transforms.delete(editor);
 
         // <editor />
-        TestEditor expected = TestEditor(children: <Node>[]);
+        Editor expected = Editor(children: <Node>[]);
 
         expectEqual(editor, expected);
       });
@@ -3472,7 +3451,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([2, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3498,7 +3477,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3524,7 +3503,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([2, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -3549,7 +3528,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3573,7 +3552,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3592,7 +3571,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3615,7 +3594,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3634,7 +3613,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3657,7 +3636,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -3679,7 +3658,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -3707,7 +3686,7 @@ void main() {
         //     five
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([2, 3, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3731,7 +3710,7 @@ void main() {
         //     five
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3755,7 +3734,7 @@ void main() {
         //     three <focus />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -3776,7 +3755,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -3798,7 +3777,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -3817,7 +3796,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -3845,7 +3824,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -3865,7 +3844,7 @@ void main() {
         //     wo
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -3882,7 +3861,7 @@ void main() {
         //     <text>one</text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ], isVoid: true),
@@ -3895,7 +3874,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
           ], isVoid: true),
@@ -3914,7 +3893,7 @@ void main() {
       //     one
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
           children: <Node>[
             Block(children: <Node>[
@@ -3927,7 +3906,7 @@ void main() {
       // <editor>
       //   <block>one</block>
       // </editor>
-      TestEditor expected = TestEditor(children: <Node>[
+      Editor expected = Editor(children: <Node>[
         Block(children: <Node>[
           Text('one'),
         ]),
@@ -3946,7 +3925,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -3975,7 +3954,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([2, 0]), 5), Point(Path([2, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[
@@ -4003,7 +3982,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -4033,7 +4012,7 @@ void main() {
         //   </block>
         //   <block>another</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 3), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -4058,7 +4037,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -4088,7 +4067,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([2, 0]), 5), Point(Path([2, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[
@@ -4114,7 +4093,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 4), Point(Path([0, 0, 0]), 4)),
             children: <Node>[
@@ -4148,7 +4127,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 2, 0]), 5), Point(Path([0, 2, 0]), 5)),
             children: <Node>[
@@ -4175,7 +4154,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -4205,7 +4184,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([2, 0]), 5), Point(Path([2, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[
@@ -4230,7 +4209,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -4282,7 +4261,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([2, 2]), 4), Point(Path([2, 2]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -4313,7 +4292,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -4340,7 +4319,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 8), Point(Path([0, 1, 0]), 8)),
             children: <Node>[
@@ -4361,7 +4340,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -4389,7 +4368,7 @@ void main() {
         //   </block>
         // </editor>
         // TODO: this cursor placement seems off
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 8), Point(Path([0, 1, 0]), 8)),
             children: <Node>[
@@ -4411,7 +4390,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -4438,7 +4417,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 8), Point(Path([0, 1, 0]), 8)),
             children: <Node>[
@@ -4459,7 +4438,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -4486,7 +4465,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 8), Point(Path([0, 1, 0]), 8)),
             children: <Node>[
@@ -4508,7 +4487,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -4539,7 +4518,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 8), Point(Path([0, 3, 0]), 8)),
             children: <Node>[
@@ -4563,7 +4542,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -4594,7 +4573,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 8), Point(Path([0, 1, 0]), 8)),
             children: <Node>[
@@ -4620,7 +4599,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -4654,7 +4633,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 8), Point(Path([0, 3, 0]), 8)),
             children: <Node>[
@@ -4681,7 +4660,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 4), Point(Path([0, 1, 0]), 4)),
             children: <Node>[
@@ -4713,7 +4692,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 8), Point(Path([0, 3, 0]), 8)),
             children: <Node>[
@@ -4741,7 +4720,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -4775,7 +4754,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 8), Point(Path([0, 3, 0]), 8)),
             children: <Node>[
@@ -4804,7 +4783,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -4836,7 +4815,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 8), Point(Path([0, 1, 0]), 8)),
             children: <Node>[
@@ -4864,7 +4843,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -4906,7 +4885,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 7, 0]), 5), Point(Path([0, 7, 0]), 5)),
             children: <Node>[
@@ -4936,7 +4915,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -4966,7 +4945,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 5), Point(Path([0, 2]), 5)),
             children: <Node>[
               Block(children: <Node>[
@@ -4990,7 +4969,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 1]), 1), Point(Path([0, 1]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -5027,7 +5006,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 5), Point(Path([0, 2]), 5)),
             children: <Node>[
               Block(children: <Node>[
@@ -5061,7 +5040,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0, 0, 0, 0, 0]), 0),
                 Point(Path([0, 0, 0, 0, 0, 0]), 0)),
             children: <Node>[
@@ -5135,7 +5114,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0, 0, 0, 1, 0, 0]), 1),
                 Point(Path([0, 0, 0, 0, 1, 0, 0]), 1)),
             children: <Node>[
@@ -5182,7 +5161,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0, 0, 0, 0, 0]), 0),
                 Point(Path([0, 0, 0, 0, 0, 0]), 0)),
             children: <Node>[
@@ -5240,7 +5219,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0, 0, 0, 1, 0]), 0),
                 Point(Path([0, 0, 0, 0, 1, 0]), 0)),
             children: <Node>[
@@ -5278,7 +5257,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0, 0, 0, 0, 0]), 0),
                 Point(Path([0, 0, 0, 0, 0, 0]), 0)),
             children: <Node>[
@@ -5332,7 +5311,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0, 0, 1, 0]), 4),
                 Point(Path([0, 0, 0, 1, 0]), 4)),
             children: <Node>[
@@ -5371,7 +5350,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -5396,7 +5375,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[Text('wofragmentother')]),
@@ -5411,7 +5390,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -5432,7 +5411,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[Text('fragment')]),
@@ -5448,7 +5427,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -5469,7 +5448,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 12), Point(Path([0, 0]), 12)),
             children: <Node>[
               Block(children: <Node>[Text('wordfragment')]),
@@ -5486,7 +5465,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -5508,7 +5487,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[Text('wofragmentrd')]),
@@ -5524,7 +5503,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -5546,7 +5525,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[Text('fragmentword')]),
@@ -5563,7 +5542,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -5588,7 +5567,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -5609,7 +5588,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -5634,7 +5613,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -5657,7 +5636,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -5686,7 +5665,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -5710,7 +5689,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 4), Point(Path([0, 1, 0]), 4)),
             children: <Node>[
@@ -5736,7 +5715,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -5761,7 +5740,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -5790,7 +5769,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -5816,7 +5795,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -5842,7 +5821,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -5863,7 +5842,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -5889,7 +5868,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -5910,7 +5889,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[Text('word')], isVoid: true),
@@ -5930,7 +5909,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -5953,7 +5932,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -5983,7 +5962,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -6007,7 +5986,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[Text('word')], isVoid: true),
@@ -6027,7 +6006,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[
@@ -6050,7 +6029,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -6079,7 +6058,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 8), Point(Path([0, 2]), 8)),
             children: <Node>[
               Block(children: <Node>[
@@ -6105,7 +6084,7 @@ void main() {
         //   </block>
         //   <block>not empty</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')]),
@@ -6130,7 +6109,7 @@ void main() {
         //   </block>
         //   <block>not empty</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')]),
@@ -6148,7 +6127,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -6169,7 +6148,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -6187,7 +6166,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -6209,7 +6188,7 @@ void main() {
         //   </block>
         //   <block>rd</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('wo')]),
@@ -6227,7 +6206,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -6248,7 +6227,7 @@ void main() {
         //   </block>
         //   <block>word</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')]),
@@ -6266,7 +6245,7 @@ void main() {
         //   </block>
         //   <block>text</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('text')], isVoid: true),
@@ -6289,7 +6268,7 @@ void main() {
         //   </block>
         //   <block>text</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('text')], isVoid: true),
@@ -6310,7 +6289,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -6345,7 +6324,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6372,7 +6351,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')]),
@@ -6396,7 +6375,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -6417,7 +6396,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -6441,7 +6420,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -6463,7 +6442,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -6487,7 +6466,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -6508,7 +6487,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -6532,7 +6511,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -6552,7 +6531,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')], isVoid: true),
@@ -6572,7 +6551,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')], isVoid: true),
@@ -6593,7 +6572,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -6626,7 +6605,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 1, 1, 0]), 0), Point(Path([0, 1, 1, 0]), 0)),
             children: <Node>[
@@ -6653,7 +6632,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6679,7 +6658,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6700,7 +6679,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6727,7 +6706,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6747,7 +6726,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6772,7 +6751,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([2, 0]), 0), Point(Path([2, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6796,7 +6775,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6818,7 +6797,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 7), Point(Path([0, 0]), 7)),
             children: <Node>[
               Block(children: <Node>[
@@ -6838,7 +6817,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6863,7 +6842,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -6881,7 +6860,7 @@ void main() {
     group('selection', () {
       test('none empty', () {
         // <editor />
-        TestEditor editor = TestEditor(children: <Node>[]);
+        Editor editor = Editor(children: <Node>[]);
 
         // <block>
         //   one
@@ -6898,7 +6877,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -6913,7 +6892,7 @@ void main() {
         // <editor>
         //   <block>one</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ]),
@@ -6935,7 +6914,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 3), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -6958,7 +6937,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -6982,7 +6961,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 3), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -7001,7 +6980,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -7033,7 +7012,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([1, 0, 0]), 3), Point(Path([1, 0, 0]), 3)),
             children: <Node>[
@@ -7055,7 +7034,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -7079,7 +7058,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 3), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -7102,7 +7081,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 3), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -7138,7 +7117,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 1, 1, 0]), 4), Point(Path([0, 1, 1, 0]), 4)),
             children: <Node>[
@@ -7167,7 +7146,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -7187,7 +7166,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('onetwo')], isVoid: true)
@@ -7207,7 +7186,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 3), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -7236,7 +7215,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 3), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -7260,7 +7239,7 @@ void main() {
         // <editor>
         //   <block>word</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('word')]),
         ]);
 
@@ -7269,7 +7248,7 @@ void main() {
         // <editor>
         //   <block>x</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('x')]),
         ]);
 
@@ -7280,7 +7259,7 @@ void main() {
         // <editor>
         //   <block>word</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('word')]),
         ]);
 
@@ -7289,7 +7268,7 @@ void main() {
         // <editor>
         //   <block>x</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('x')]),
         ]);
 
@@ -7308,7 +7287,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7324,7 +7303,7 @@ void main() {
         //     dx
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('wordx')]),
@@ -7343,7 +7322,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7359,7 +7338,7 @@ void main() {
         //     d
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('xword')]),
@@ -7378,7 +7357,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7394,7 +7373,7 @@ void main() {
         //     d
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('worxd')]),
@@ -7413,7 +7392,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7429,7 +7408,7 @@ void main() {
         //     d
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('woxrd')]),
@@ -7448,7 +7427,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7464,7 +7443,7 @@ void main() {
         //     d
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('wxord')]),
@@ -7479,7 +7458,7 @@ void main() {
         //     <text>word</text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('word')]),
         ]);
 
@@ -7488,7 +7467,7 @@ void main() {
         // <editor>
         //   <block>wordx</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('wordx')]),
         ]);
 
@@ -7501,7 +7480,7 @@ void main() {
         //     <text>word</text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('word')]),
         ]);
 
@@ -7510,7 +7489,7 @@ void main() {
         // <editor>
         //   <block>woxrd</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('woxrd')]),
         ]);
 
@@ -7527,7 +7506,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7542,7 +7521,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('xword')]),
@@ -7560,7 +7539,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7574,7 +7553,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 16), Point(Path([0, 0]), 16)),
             children: <Node>[
               Block(children: <Node>[Text('word a few words')]),
@@ -7590,7 +7569,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7604,7 +7583,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[Text('worda')]),
@@ -7625,7 +7604,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([2, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('one')]),
@@ -7641,7 +7620,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[Text('athree')]),
@@ -7661,7 +7640,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('one')]),
@@ -7676,7 +7655,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[Text('a')]),
@@ -7693,7 +7672,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7707,7 +7686,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 14), Point(Path([0, 0]), 14)),
             children: <Node>[
               Block(children: <Node>[Text('w a few words ord')]),
@@ -7723,7 +7702,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7738,7 +7717,7 @@ void main() {
         //     ord
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[Text('waord')]),
@@ -7754,7 +7733,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7769,7 +7748,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 11), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[Text('a few wordsword')]),
@@ -7785,7 +7764,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('word')]),
@@ -7799,7 +7778,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[Text('aword')]),
@@ -7814,7 +7793,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')], isVoid: true),
@@ -7827,7 +7806,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('')], isVoid: true),
@@ -7847,7 +7826,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 3), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -7869,7 +7848,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 2]), 4), Point(Path([0, 2]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -7888,7 +7867,7 @@ void main() {
         // <editor>
         //   <block void>word</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('word')], isVoid: true),
         ]);
 
@@ -7897,7 +7876,7 @@ void main() {
         // <editor>
         //   <block void>word</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('word')], isVoid: true),
         ]);
 
@@ -7908,7 +7887,7 @@ void main() {
         // <editor>
         //   <block void>word</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('word')], isVoid: true),
         ]);
 
@@ -7917,7 +7896,7 @@ void main() {
         // <editor>
         //   <block void>word</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('word')], isVoid: true),
         ]);
 
@@ -7930,7 +7909,7 @@ void main() {
         // <editor>
         //   <block void>word</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('word')], isVoid: true),
         ]);
 
@@ -7939,7 +7918,7 @@ void main() {
         // <editor>
         //   <block void>x</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('x')], isVoid: true),
         ]);
 
@@ -7950,7 +7929,7 @@ void main() {
         // <editor>
         //   <block void>x</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('word')], isVoid: true),
         ]);
 
@@ -7959,7 +7938,7 @@ void main() {
         // <editor>
         //   <block void>x</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('x')], isVoid: true),
         ]);
 
@@ -7976,7 +7955,7 @@ void main() {
         //     <block>word</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('word')])
           ]),
@@ -7987,7 +7966,7 @@ void main() {
         // <editor>
         //   <block>word</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('word')])
         ]);
 
@@ -8001,7 +7980,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')]),
             Block(children: <Node>[Text('two')])
@@ -8016,7 +7995,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[
             Block(children: <Node>[Text('two')])
@@ -8033,7 +8012,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')]),
             Block(children: <Node>[Text('two')])
@@ -8048,7 +8027,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')])
           ]),
@@ -8066,7 +8045,7 @@ void main() {
         //     <block>three</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')]),
             Block(children: <Node>[Text('two')]),
@@ -8085,7 +8064,7 @@ void main() {
         //     <block>three</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')])
           ]),
@@ -8117,7 +8096,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 5, 0]), 3)),
             children: <Node>[
@@ -8147,7 +8126,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([5, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('one')]),
@@ -8172,7 +8151,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 0, 0, 0]), 0)),
             children: <Node>[
@@ -8199,7 +8178,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -8221,7 +8200,7 @@ void main() {
         //     <block>word</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('word')])
           ], isVoid: true),
@@ -8232,7 +8211,7 @@ void main() {
         // <editor>
         //   <block>word</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('word')]),
         ]);
 
@@ -8251,7 +8230,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[Text('one')]),
@@ -8269,7 +8248,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('onetwo')]),
@@ -8289,7 +8268,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')])
           ]),
@@ -8306,7 +8285,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[Text('one')]),
             Block(children: <Node>[Text('two')])
@@ -8321,7 +8300,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')])
         ]);
@@ -8333,7 +8312,7 @@ void main() {
         //     onetwo
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('onetwo')]),
         ]);
 
@@ -8345,7 +8324,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one')]),
           Block(children: <Node>[Text('two')])
         ]);
@@ -8359,7 +8338,7 @@ void main() {
         //     onetwo
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('onetwo')]),
         ]);
 
@@ -8375,7 +8354,7 @@ void main() {
         //     <text>two</text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
             Text('two'),
@@ -8387,7 +8366,7 @@ void main() {
         // <editor>
         //   <block void>onetwo</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[Text('onetwo')], isVoid: true),
         ]);
 
@@ -8407,7 +8386,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[
@@ -8425,7 +8404,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8442,7 +8421,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -8457,7 +8436,7 @@ void main() {
         //     one t<anchor />w<focus />o three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8473,7 +8452,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -8489,7 +8468,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8507,7 +8486,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[
@@ -8525,7 +8504,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 7), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8543,7 +8522,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -8560,7 +8539,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8577,7 +8556,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -8594,7 +8573,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8610,7 +8589,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -8626,7 +8605,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8643,7 +8622,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -8660,7 +8639,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8680,7 +8659,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -8697,7 +8676,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8715,7 +8694,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -8733,7 +8712,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 11), Point(Path([0, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8749,7 +8728,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -8765,7 +8744,7 @@ void main() {
         //     <cursor /> two three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8781,7 +8760,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -8797,7 +8776,7 @@ void main() {
         //     wo three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8814,7 +8793,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[
@@ -8830,7 +8809,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8846,7 +8825,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -8863,7 +8842,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8881,7 +8860,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[
@@ -8898,7 +8877,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8916,7 +8895,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[
@@ -8934,7 +8913,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8950,7 +8929,7 @@ void main() {
         //     <cursor />o three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 6), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -8966,7 +8945,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -8982,7 +8961,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -8998,7 +8977,7 @@ void main() {
         //     <cursor /> three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 7), Point(Path([0, 0]), 7)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9017,7 +8996,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -9034,7 +9013,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9051,7 +9030,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -9069,7 +9048,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9085,7 +9064,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9101,7 +9080,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9117,7 +9096,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9133,7 +9112,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9150,7 +9129,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9167,7 +9146,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9184,7 +9163,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9201,7 +9180,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9218,7 +9197,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9235,7 +9214,7 @@ void main() {
         //     <focus />e
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 12)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9252,7 +9231,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9269,7 +9248,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9286,7 +9265,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9304,7 +9283,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9321,7 +9300,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -9338,7 +9317,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9355,7 +9334,7 @@ void main() {
         //     <focus /> three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 7)),
             children: <Node>[
               Block(children: <Node>[
@@ -9372,7 +9351,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9391,7 +9370,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -9409,7 +9388,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9425,7 +9404,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9441,7 +9420,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 8)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9457,7 +9436,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9473,7 +9452,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9491,7 +9470,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[
@@ -9507,7 +9486,7 @@ void main() {
         //     wo three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9524,7 +9503,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -9542,7 +9521,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 10)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9559,7 +9538,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -9575,7 +9554,7 @@ void main() {
         //     wo three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9592,7 +9571,7 @@ void main() {
         //     <focus />o three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -9609,7 +9588,7 @@ void main() {
         //     <focus /> three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 7)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9627,7 +9606,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[
@@ -9644,7 +9623,7 @@ void main() {
         //     two three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9663,7 +9642,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -9680,7 +9659,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9697,7 +9676,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -9714,7 +9693,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9730,7 +9709,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9746,7 +9725,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 8), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9762,7 +9741,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9778,7 +9757,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 10), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9795,7 +9774,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9812,7 +9791,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9829,7 +9808,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9846,7 +9825,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 7), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9863,7 +9842,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9880,7 +9859,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9897,7 +9876,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9914,7 +9893,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 5), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9931,7 +9910,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -9949,7 +9928,7 @@ void main() {
         //     ee
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 9), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -9966,7 +9945,7 @@ void main() {
         //     hree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[
@@ -9983,7 +9962,7 @@ void main() {
         //     <anchor />e
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 12), Point(Path([0, 0]), 9)),
             children: <Node>[
               Block(children: <Node>[Text('one two three')]),
@@ -10004,7 +9983,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10024,7 +10003,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10051,7 +10030,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -10082,7 +10061,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 0), Point(Path([0, 3, 0]), 0)),
             children: <Node>[
@@ -10112,7 +10091,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10136,7 +10115,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -10162,7 +10141,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -10186,7 +10165,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
           ]),
@@ -10208,7 +10187,7 @@ void main() {
         //   <block>1</block>
         //   <block>2</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('1'),
           ]),
@@ -10223,7 +10202,7 @@ void main() {
         //   <block>1</block>
         //   <block>2</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('1'),
           ]),
@@ -10243,7 +10222,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10263,7 +10242,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10285,7 +10264,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10308,7 +10287,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 3), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -10327,7 +10306,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ]),
@@ -10344,7 +10323,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('onetwo'),
           ]),
@@ -10366,7 +10345,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10390,7 +10369,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -10423,7 +10402,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2, 0]), 5)),
             children: <Node>[
@@ -10457,7 +10436,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([2, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[
@@ -10489,7 +10468,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -10520,7 +10499,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -10545,7 +10524,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10567,7 +10546,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10588,7 +10567,7 @@ void main() {
         //   <block void>one</block>
         //   <block void>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ], isVoid: true),
@@ -10606,7 +10585,7 @@ void main() {
         //   </block>
         //   <block void>onetwo</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
           ], isVoid: true),
@@ -10631,7 +10610,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -10663,7 +10642,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 0), Point(Path([0, 3, 0]), 0)),
             children: <Node>[
@@ -10696,7 +10675,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -10719,7 +10698,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
           ]),
@@ -10738,7 +10717,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ]),
@@ -10752,7 +10731,7 @@ void main() {
         // <editor>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('two'),
           ]),
@@ -10771,7 +10750,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -10794,7 +10773,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -10812,7 +10791,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ]),
@@ -10829,7 +10808,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ]),
@@ -10850,7 +10829,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ], isVoid: true),
@@ -10859,7 +10838,7 @@ void main() {
         Transforms.removeNodes(editor, at: Path([0]));
 
         // <editor />
-        TestEditor expected = TestEditor(children: <Node>[]);
+        Editor expected = Editor(children: <Node>[]);
 
         expectEqual(editor, expected);
       });
@@ -10875,7 +10854,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10895,7 +10874,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10915,7 +10894,7 @@ void main() {
         //   <block>two</block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10938,7 +10917,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -10966,7 +10945,7 @@ void main() {
         //   </block>
         //   <block>three</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -10988,7 +10967,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11010,7 +10989,7 @@ void main() {
         //     wo
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -11024,7 +11003,7 @@ void main() {
         Transforms.removeNodes(editor);
 
         // <editor />
-        TestEditor expected = TestEditor(children: <Node>[]);
+        Editor expected = Editor(children: <Node>[]);
 
         expectEqual(editor, expected);
       });
@@ -11035,7 +11014,7 @@ void main() {
         // <editor>
         //   <block void>one</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ], isVoid: true),
@@ -11048,7 +11027,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
           ], isVoid: true),
@@ -11065,7 +11044,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -11086,7 +11065,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -11109,7 +11088,7 @@ void main() {
       //     one
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
           children: <Node>[
             Block(children: <Node>[
@@ -11126,7 +11105,7 @@ void main() {
       //     <focus />
       //   </block>
       // </editor>
-      TestEditor expected = TestEditor(
+      Editor expected = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3)),
           children: <Node>[
             Block(children: <Node>[
@@ -11144,7 +11123,7 @@ void main() {
       //     one
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
           children: <Node>[
             Block(children: <Node>[
@@ -11160,7 +11139,7 @@ void main() {
       //     ne
       //   </block>
       // </editor>
-      TestEditor expected = TestEditor(
+      Editor expected = Editor(
           selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1)),
           children: <Node>[
             Block(children: <Node>[
@@ -11178,7 +11157,7 @@ void main() {
       //     one
       //   </block>
       // </editor>
-      TestEditor editor = TestEditor(
+      Editor editor = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
           children: <Node>[
             Block(children: <Node>[
@@ -11196,7 +11175,7 @@ void main() {
       //     <focus />
       //   </block>
       // </editor>
-      TestEditor expected = TestEditor(
+      Editor expected = Editor(
           selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3)),
           children: <Node>[
             Block(children: <Node>[
@@ -11221,7 +11200,7 @@ void main() {
         //     nother
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -11246,7 +11225,7 @@ void main() {
         //     nother
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -11275,7 +11254,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11300,7 +11279,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11325,7 +11304,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -11348,7 +11327,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -11371,7 +11350,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11389,7 +11368,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(
@@ -11410,7 +11389,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11428,7 +11407,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11462,7 +11441,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 1, 0]), 7)),
             children: <Node>[
@@ -11504,7 +11483,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 1, 0]), 7)),
             children: <Node>[
@@ -11550,7 +11529,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
             children: <Node>[
@@ -11592,7 +11571,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
             children: <Node>[
@@ -11628,7 +11607,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11654,7 +11633,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11686,7 +11665,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 1, 1, 0]), 0), Point(Path([0, 1, 1, 0]), 0)),
             children: <Node>[
@@ -11721,7 +11700,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 1, 1, 0]), 0), Point(Path([0, 1, 1, 0]), 0)),
             children: <Node>[
@@ -11754,7 +11733,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11780,7 +11759,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11809,7 +11788,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11835,7 +11814,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -11860,7 +11839,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ]),
@@ -11873,7 +11852,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ], props: {
@@ -11892,7 +11871,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -11911,7 +11890,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -11932,7 +11911,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ]),
@@ -11945,7 +11924,7 @@ void main() {
         //     <text key>word</text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word', props: {'key': true}),
           ]),
@@ -11966,7 +11945,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -11989,7 +11968,7 @@ void main() {
         //     <text key>d</text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 1]), 0), Point(Path([0, 1]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -12012,7 +11991,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -12035,7 +12014,7 @@ void main() {
         //     <text>d</text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 1]), 0), Point(Path([0, 1]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -12061,7 +12040,7 @@ void main() {
         //     nother
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -12090,7 +12069,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -12111,7 +12090,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12131,7 +12110,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12148,7 +12127,7 @@ void main() {
         // <editor>
         //   <block void>word</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ], isVoid: true),
@@ -12162,7 +12141,7 @@ void main() {
         //     <text key>word</text>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -12181,7 +12160,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[Text('word')]),
@@ -12198,7 +12177,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -12228,7 +12207,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12255,7 +12234,7 @@ void main() {
         //     two
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([01, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12280,7 +12259,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 2]), 0), Point(Path([0, 2]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12305,7 +12284,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12330,7 +12309,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -12352,7 +12331,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12376,7 +12355,7 @@ void main() {
         //   </block>
         //   <block>another</block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 4), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -12398,7 +12377,7 @@ void main() {
         //   </block>
         //   <block>another</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12423,7 +12402,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12448,7 +12427,7 @@ void main() {
         //     another
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([2, 0]), 0), Point(Path([2, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12479,7 +12458,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 2), Point(Path([0, 0, 0, 0]), 2)),
             children: <Node>[
@@ -12511,7 +12490,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([1, 0, 0, 0]), 0), Point(Path([1, 0, 0, 0]), 0)),
             children: <Node>[
@@ -12546,7 +12525,7 @@ void main() {
         //     <text>two</text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -12566,7 +12545,7 @@ void main() {
         //   </block>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -12588,7 +12567,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -12607,7 +12586,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -12633,7 +12612,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -12665,7 +12644,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([1, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
             children: <Node>[
@@ -12702,7 +12681,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -12731,7 +12710,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 3, 0]), 0), Point(Path([0, 3, 0]), 0)),
             children: <Node>[
@@ -12763,7 +12742,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -12791,7 +12770,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -12818,7 +12797,7 @@ void main() {
         //     <block void>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -12839,7 +12818,7 @@ void main() {
         //     <block void>two</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -12863,7 +12842,7 @@ void main() {
         //     <block>three</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -12888,7 +12867,7 @@ void main() {
         //     <block>three</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -12914,7 +12893,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -12933,7 +12912,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -12957,7 +12936,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -12978,7 +12957,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -13001,7 +12980,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -13026,7 +13005,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -13051,7 +13030,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ], isVoid: true),
@@ -13064,7 +13043,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ], isVoid: true),
@@ -13079,7 +13058,7 @@ void main() {
         //     <text>word</text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ]),
@@ -13094,7 +13073,7 @@ void main() {
         //   <block>wo</block>
         //   <block>rd</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('wo'),
           ]),
@@ -13116,7 +13095,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -13140,7 +13119,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -13166,7 +13145,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -13194,7 +13173,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[
@@ -13226,7 +13205,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -13246,7 +13225,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13268,7 +13247,7 @@ void main() {
         //     <focus />d
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -13284,7 +13263,7 @@ void main() {
         //     <cursor />d
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13310,7 +13289,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([2, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13336,7 +13315,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([2, 0]), 0), Point(Path([2, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13368,7 +13347,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -13389,7 +13368,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
           ]),
@@ -13411,7 +13390,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -13430,7 +13409,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -13454,7 +13433,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([2, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -13477,7 +13456,7 @@ void main() {
         //     ree
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13504,7 +13483,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -13523,7 +13502,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13555,7 +13534,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([1, 1, 0]), 2)),
             children: <Node>[
@@ -13592,7 +13571,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([1, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
             children: <Node>[
@@ -13627,7 +13606,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 1), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -13656,7 +13635,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([1, 1, 0]), 0), Point(Path([1, 1, 0]), 0)),
             children: <Node>[
@@ -13690,7 +13669,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 4), Point(Path([0, 1, 0]), 4)),
             children: <Node>[
@@ -13715,7 +13694,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13745,7 +13724,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -13770,7 +13749,7 @@ void main() {
         //     <cursor />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13797,7 +13776,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -13818,7 +13797,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -13845,7 +13824,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[Text('one'), Text('two')], isVoid: true),
@@ -13868,7 +13847,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text(''),
             Inline(children: <Node>[Text('one')], isVoid: true),
@@ -13894,7 +13873,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13912,7 +13891,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -13942,7 +13921,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -13974,7 +13953,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -14005,7 +13984,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 4, 0]), 0), Point(Path([0, 5, 0]), 0)),
             children: <Node>[
@@ -14051,7 +14030,7 @@ void main() {
         //     six
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([4, 0]), 0), Point(Path([5, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -14100,7 +14079,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 1, 0]), 2), Point(Path([0, 1, 1, 0]), 2)),
             children: <Node>[
@@ -14148,7 +14127,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([1, 1, 0]), 2)),
             children: <Node>[
@@ -14188,7 +14167,7 @@ void main() {
         //     <block>six</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 2, 0]), 0), Point(Path([0, 3, 0]), 0)),
             children: <Node>[
@@ -14234,7 +14213,7 @@ void main() {
         //   <block>five</block>
         //   <block>six</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([2, 0]), 0), Point(Path([3, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -14271,7 +14250,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 0, 0, 0]), 0)),
             children: <Node>[
@@ -14298,7 +14277,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -14329,7 +14308,7 @@ void main() {
         //     <block>six</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -14375,7 +14354,7 @@ void main() {
         //   <block>five</block>
         //   <block>six</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -14410,7 +14389,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -14433,7 +14412,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -14459,7 +14438,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 1), Point(Path([0, 0, 1, 0]), 2)),
             children: <Node>[
@@ -14489,7 +14468,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 1), Point(Path([0, 0, 0]), 3)),
             children: <Node>[
@@ -14519,7 +14498,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 3, 0]), 5)),
             children: <Node>[
@@ -14551,7 +14530,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 11)),
             children: <Node>[
               Block(children: <Node>[
@@ -14576,7 +14555,7 @@ void main() {
         //     her
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([1, 2]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -14614,7 +14593,7 @@ void main() {
         //     her
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -14639,7 +14618,7 @@ void main() {
         //     d
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -14664,7 +14643,7 @@ void main() {
         //     <focus />d
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -14688,7 +14667,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 0, 0, 0]), 0)),
             children: <Node>[
@@ -14715,7 +14694,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -14743,7 +14722,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 1, 0, 0]), 3)),
             children: <Node>[
@@ -14781,7 +14760,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -14810,7 +14789,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([1, 0, 0]), 3)),
             children: <Node>[
@@ -14844,7 +14823,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -14878,7 +14857,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 1, 0, 0]), 3)),
             children: <Node>[
@@ -14929,7 +14908,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -14974,7 +14953,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 1, 0, 0]), 3)),
             children: <Node>[
@@ -15022,7 +15001,7 @@ void main() {
         //     <block>three</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -15061,7 +15040,7 @@ void main() {
         //     <block>three</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([1, 0, 0]), 3)),
             children: <Node>[
@@ -15105,7 +15084,7 @@ void main() {
         //     <block>three</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -15135,7 +15114,7 @@ void main() {
         //     <block>two</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('one'),
@@ -15152,7 +15131,7 @@ void main() {
         //   <block>one</block>
         //   <block>two</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('one'),
           ]),
@@ -15170,7 +15149,7 @@ void main() {
         //     <block>word</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('word'),
@@ -15183,7 +15162,7 @@ void main() {
         // <editor>
         //   <block>word</block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ]),
@@ -15211,7 +15190,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 5, 0]), 3)),
             children: <Node>[
@@ -15257,7 +15236,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([5, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -15300,7 +15279,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 4, 0]), 0), Point(Path([0, 5, 0]), 3)),
             children: <Node>[
@@ -15348,7 +15327,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([2, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -15395,7 +15374,7 @@ void main() {
         //     <block>six</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 2, 0]), 0), Point(Path([0, 3, 0]), 4)),
             children: <Node>[
@@ -15445,7 +15424,7 @@ void main() {
         //     <block>six</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([2, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -15498,7 +15477,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(
                 Point(Path([0, 0, 2, 0]), 0), Point(Path([0, 0, 3, 0]), 4)),
             children: <Node>[
@@ -15552,7 +15531,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 2, 0]), 4)),
             children: <Node>[
@@ -15606,7 +15585,7 @@ void main() {
         //     <block>six</block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -15654,7 +15633,7 @@ void main() {
         //     <block>six</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([1, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -15693,7 +15672,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -15716,7 +15695,7 @@ void main() {
         //     one
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -15737,7 +15716,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('word'),
@@ -15752,7 +15731,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ]),
@@ -15780,7 +15759,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -15812,7 +15791,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 2), Point(Path([0, 0, 1, 0]), 2)),
             children: <Node>[
@@ -15850,7 +15829,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 2), Point(Path([0, 1, 0, 0]), 2)),
             children: <Node>[
@@ -15886,7 +15865,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 2), Point(Path([0, 0, 1, 0, 0]), 2)),
             children: <Node>[
@@ -15922,7 +15901,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -15949,7 +15928,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -15980,7 +15959,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([1, 0]), 0), Point(Path([2, 0]), 5)),
             children: <Node>[
               Block(children: <Node>[
@@ -16009,7 +15988,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([1, 0, 0]), 0), Point(Path([1, 1, 0]), 5)),
             children: <Node>[
@@ -16040,7 +16019,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -16067,7 +16046,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 0, 0, 0]), 0), Point(Path([0, 0, 0, 0]), 0)),
             children: <Node>[
@@ -16096,7 +16075,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -16114,7 +16093,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -16151,7 +16130,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([1, 1, 0]), 2)),
             children: <Node>[
@@ -16195,7 +16174,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 0, 1, 0]), 2), Point(Path([0, 1, 1, 0]), 2)),
             children: <Node>[
@@ -16235,7 +16214,7 @@ void main() {
         //     other
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -16278,7 +16257,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 2), Point(Path([0, 1, 0]), 2)),
             children: <Node>[
@@ -16320,7 +16299,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 2), Point(Path([1, 1, 0]), 2)),
             children: <Node>[
@@ -16370,7 +16349,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 1, 1, 0]), 2), Point(Path([1, 1, 1, 0]), 2)),
             children: <Node>[
@@ -16416,7 +16395,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -16445,7 +16424,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 1, 1, 0]), 0), Point(Path([0, 1, 1, 0]), 0)),
             children: <Node>[
@@ -16474,7 +16453,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -16494,7 +16473,7 @@ void main() {
         //     <text />
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 0)),
             children: <Node>[
@@ -16521,7 +16500,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -16540,7 +16519,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -16568,7 +16547,7 @@ void main() {
         //     </text>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -16590,7 +16569,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 4)),
             children: <Node>[
@@ -16619,7 +16598,7 @@ void main() {
         //     wo
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([1, 0]), 1)),
             children: <Node>[
               Block(children: <Node>[
@@ -16645,7 +16624,7 @@ void main() {
         //   </block>
         //   <block>wo</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([1, 0, 0]), 0), Point(Path([1, 1, 0]), 1)),
             children: <Node>[
@@ -16679,7 +16658,7 @@ void main() {
         //     <focus />
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 4)),
             children: <Node>[
               Block(children: <Node>[
@@ -16700,7 +16679,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([1, 0, 0]), 0), Point(Path([1, 0, 0]), 2)),
             children: <Node>[
@@ -16727,7 +16706,7 @@ void main() {
         //     <focus />d
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)),
             children: <Node>[
               Block(children: <Node>[
@@ -16749,7 +16728,7 @@ void main() {
         //   </block>
         //   <block>d</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([1, 0, 0]), 0), Point(Path([1, 0, 0]), 2)),
             children: <Node>[
@@ -16781,7 +16760,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 1), Point(Path([0, 0, 0]), 3)),
             children: <Node>[
@@ -16810,7 +16789,7 @@ void main() {
         //     <block>d</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection: Range(
                 Point(Path([0, 1, 0, 0]), 0), Point(Path([0, 1, 0, 0]), 2)),
             children: <Node>[
@@ -16845,7 +16824,7 @@ void main() {
         //     rd
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 2)),
             children: <Node>[
               Block(children: <Node>[
@@ -16866,7 +16845,7 @@ void main() {
         //   </block>
         //   <block>rd</block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 2)),
             children: <Node>[
@@ -16892,7 +16871,7 @@ void main() {
         //     word
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 0)),
             children: <Node>[
               Block(children: <Node>[
@@ -16911,7 +16890,7 @@ void main() {
         //     </block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 0, 0]), 0), Point(Path([0, 0, 0]), 0)),
             children: <Node>[
@@ -16939,7 +16918,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor editor = TestEditor(
+        Editor editor = Editor(
             selection: Range(Point(Path([0, 0]), 3), Point(Path([0, 0]), 6)),
             children: <Node>[
               Block(children: <Node>[
@@ -16961,7 +16940,7 @@ void main() {
         //     three
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(
+        Editor expected = Editor(
             selection:
                 Range(Point(Path([0, 1, 0]), 0), Point(Path([0, 1, 0]), 3)),
             children: <Node>[
@@ -16985,7 +16964,7 @@ void main() {
         // <editor>
         //   <block void>word</block>
         // </editor>
-        TestEditor editor = TestEditor(children: <Node>[
+        Editor editor = Editor(children: <Node>[
           Block(children: <Node>[
             Text('word'),
           ], isVoid: true),
@@ -16999,7 +16978,7 @@ void main() {
         //     <block a>word</block>
         //   </block>
         // </editor>
-        TestEditor expected = TestEditor(children: <Node>[
+        Editor expected = Editor(children: <Node>[
           Block(children: <Node>[
             Block(children: <Node>[
               Text('word'),
