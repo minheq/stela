@@ -1,6 +1,7 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:inday/stela/stela.dart' as Stela;
+import 'package:inday/stela_flutter/editable.dart';
 import 'package:inday/stela_flutter/editor.dart';
 
 void main() => runApp(MyApp());
@@ -27,7 +28,10 @@ class MyApp extends StatelessWidget {
           children: <Widget>[
             StelaEditor(
               controller: EditorEditingController.fromEditor(editor),
+              cursorColor: themeData.cursorColor,
+              backgroundCursorColor: CupertinoColors.inactiveGray,
               focusNode: FocusNode(),
+              children: [StelaEditable()],
             ),
           ],
         )),
