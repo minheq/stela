@@ -31,6 +31,7 @@ class StelaElement extends StatefulWidget {
 class _StelaElementState extends State<StelaElement> {
   @override
   Widget build(BuildContext context) {
+    ThemeData themeData = Theme.of(context);
     bool isRichText =
         widget.node is Stela.Block && widget.node.children.first is Stela.Text;
 
@@ -57,6 +58,10 @@ class _StelaElementState extends State<StelaElement> {
 
     return StelaRichText(
       text: TextSpan(children: inlineSpans),
+      showCursor: ValueNotifier<bool>(true),
+      cursorColor: themeData.cursorColor,
+      hasFocus: true,
+      selection: TextSelection(baseOffset: 1, extentOffset: 1),
     );
   }
 }

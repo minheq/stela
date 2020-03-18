@@ -37,6 +37,20 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     this.strutStyle,
     this.textWidthBasis = TextWidthBasis.parent,
     this.textHeightBehavior,
+    this.cursorColor,
+    this.selection,
+    this.onCaretChanged,
+    this.selectionColor,
+    this.hasFocus,
+    this.backgroundCursorColor,
+    this.showCursor,
+    this.cursorWidth = 1.0,
+    this.cursorRadius,
+    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
+    this.paintCursorAboveText = false,
+    this.cursorOffset,
+    this.devicePixelRatio = 1.0,
   })  : assert(text != null),
         assert(textAlign != null),
         assert(softWrap != null),
@@ -59,66 +73,30 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     return result;
   }
 
-  /// The text to display in this widget.
+  final Color cursorColor;
+  final Color backgroundCursorColor;
+  final ValueNotifier<bool> showCursor;
+  final bool hasFocus;
+  final Color selectionColor;
+  final TextSelection selection;
+  final CaretChangedHandler onCaretChanged;
+  final double cursorWidth;
+  final Radius cursorRadius;
+  final Offset cursorOffset;
+  final bool paintCursorAboveText;
+  final ui.BoxHeightStyle selectionHeightStyle;
+  final ui.BoxWidthStyle selectionWidthStyle;
+  final double devicePixelRatio;
   final InlineSpan text;
-
-  /// How the text should be aligned horizontally.
   final TextAlign textAlign;
-
-  /// The directionality of the text.
-  ///
-  /// This decides how [textAlign] values like [TextAlign.start] and
-  /// [TextAlign.end] are interpreted.
-  ///
-  /// This is also used to disambiguate how to render bidirectional text. For
-  /// example, if the [text] is an English phrase followed by a Hebrew phrase,
-  /// in a [TextDirection.ltr] context the English phrase will be on the left
-  /// and the Hebrew phrase to its right, while in a [TextDirection.rtl]
-  /// context, the English phrase will be on the right and the Hebrew phrase on
-  /// its left.
-  ///
-  /// Defaults to the ambient [Directionality], if any. If there is no ambient
-  /// [Directionality], then this must not be null.
   final TextDirection textDirection;
-
-  /// Whether the text should break at soft line breaks.
-  ///
-  /// If false, the glyphs in the text will be positioned as if there was unlimited horizontal space.
   final bool softWrap;
-
-  /// How visual overflow should be handled.
   final TextOverflow overflow;
-
-  /// The number of font pixels for each logical pixel.
-  ///
-  /// For example, if the text scale factor is 1.5, text will be 50% larger than
-  /// the specified font size.
   final double textScaleFactor;
-
-  /// An optional maximum number of lines for the text to span, wrapping if necessary.
-  /// If the text exceeds the given number of lines, it will be truncated according
-  /// to [overflow].
-  ///
-  /// If this is 1, text will not wrap. Otherwise, text will be wrapped at the
-  /// edge of the box.
   final int maxLines;
-
-  /// Used to select a font when the same Unicode character can
-  /// be rendered differently, depending on the locale.
-  ///
-  /// It's rarely necessary to set this property. By default its value
-  /// is inherited from the enclosing app with `Localizations.localeOf(context)`.
-  ///
-  /// See [RenderStelaRichText.locale] for more information.
   final Locale locale;
-
-  /// {@macro flutter.painting.textPainter.strutStyle}
   final StrutStyle strutStyle;
-
-  /// {@macro flutter.widgets.text.DefaultTextStyle.textWidthBasis}
   final TextWidthBasis textWidthBasis;
-
-  /// {@macro flutter.dart:ui.textHeightBehavior}
   final ui.TextHeightBehavior textHeightBehavior;
 
   @override
@@ -135,6 +113,20 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       strutStyle: strutStyle,
       textWidthBasis: textWidthBasis,
       textHeightBehavior: textHeightBehavior,
+      cursorColor: cursorColor,
+      backgroundCursorColor: backgroundCursorColor,
+      showCursor: showCursor,
+      hasFocus: hasFocus,
+      selection: selection,
+      selectionColor: selectionColor,
+      onCaretChanged: onCaretChanged,
+      cursorWidth: cursorWidth,
+      cursorRadius: cursorRadius,
+      cursorOffset: cursorOffset,
+      paintCursorAboveText: paintCursorAboveText,
+      selectionHeightStyle: selectionHeightStyle,
+      selectionWidthStyle: selectionWidthStyle,
+      devicePixelRatio: devicePixelRatio,
       locale: locale ?? Localizations.localeOf(context, nullOk: true),
     );
   }
@@ -154,6 +146,20 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       ..strutStyle = strutStyle
       ..textWidthBasis = textWidthBasis
       ..textHeightBehavior = textHeightBehavior
+      ..cursorColor = cursorColor
+      ..backgroundCursorColor = backgroundCursorColor
+      ..showCursor = showCursor
+      ..hasFocus = hasFocus
+      ..selection = selection
+      ..selectionColor = selectionColor
+      ..onCaretChanged = onCaretChanged
+      ..cursorWidth = cursorWidth
+      ..cursorRadius = cursorRadius
+      ..cursorOffset = cursorOffset
+      ..paintCursorAboveText = paintCursorAboveText
+      ..selectionHeightStyle = selectionHeightStyle
+      ..selectionWidthStyle = selectionWidthStyle
+      ..devicePixelRatio = devicePixelRatio
       ..locale = locale ?? Localizations.localeOf(context, nullOk: true);
   }
 
@@ -244,6 +250,7 @@ class RenderStelaRichText extends RenderBox
     ui.TextHeightBehavior textHeightBehavior,
     TextSelection selection,
     Color selectionColor,
+    bool hasFocus,
     this.onCaretChanged,
     Color cursorColor,
     Color backgroundCursorColor,
