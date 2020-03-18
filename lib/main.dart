@@ -6,32 +6,12 @@ import 'package:inday/stela_flutter/editor.dart';
 
 void main() => runApp(MyApp());
 
-class Editor extends Stela.Editor {
-  Editor(
-      {List<Stela.Node> children,
-      Stela.Range selection,
-      List<Stela.Operation> operations,
-      Map<String, dynamic> marks,
-      Map<String, dynamic> props})
-      : super(
-            children: children,
-            selection: selection,
-            operations: operations,
-            marks: marks,
-            props: props);
-
-  @override
-  bool isVoid(Stela.Element element) {
-    return element.isVoid;
-  }
-}
-
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
 
-    Editor editor = Editor(
+    Stela.Editor editor = Stela.Editor(
         selection: Stela.Range(Stela.Point(Stela.Path([0, 0]), 1),
             Stela.Point(Stela.Path([0, 0]), 10)),
         children: [
@@ -47,12 +27,8 @@ class MyApp extends StatelessWidget {
             child: Column(
           children: <Widget>[
             StelaEditor(
-              controller: EditorEditingController(editor: editor),
-              style: themeData.textTheme.subtitle1,
+              controller: EditorEditingController.fromEditor(editor),
               focusNode: FocusNode(),
-              cursorColor: themeData.cursorColor,
-              backgroundCursorColor: CupertinoColors.inactiveGray,
-              selectionColor: themeData.textSelectionColor,
             ),
             TextFormField(
               initialValue: 'Lorem ipsum',
