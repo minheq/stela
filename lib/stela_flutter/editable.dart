@@ -2214,146 +2214,6 @@ class RenderEditable extends RenderBox
     markNeedsLayout();
   }
 
-  // @override
-  // double computeMinIntrinsicWidth(double height) {
-  //   if (!_canComputeIntrinsics()) {
-  //     return 0.0;
-  //   }
-  //   _computeChildrenWidthWithMinIntrinsics(height);
-  //   _layoutText(); // layout with infinite width.
-  //   return _textPainter.minIntrinsicWidth;
-  // }
-
-  // @override
-  // double computeMaxIntrinsicWidth(double height) {
-  //   if (!_canComputeIntrinsics()) {
-  //     return 0.0;
-  //   }
-  //   _computeChildrenWidthWithMaxIntrinsics(height);
-  //   _layoutText(); // layout with infinite width.
-  //   return _textPainter.maxIntrinsicWidth;
-  // }
-
-  // double _computeIntrinsicHeight(double width) {
-  //   if (!_canComputeIntrinsics()) {
-  //     return 0.0;
-  //   }
-  //   _computeChildrenHeightWithMinIntrinsics(width);
-  //   _layoutText(minWidth: width, maxWidth: width);
-  //   return _textPainter.height;
-  // }
-
-  // @override
-  // double computeMinIntrinsicHeight(double width) {
-  //   return _computeIntrinsicHeight(width);
-  // }
-
-  // @override
-  // double computeMaxIntrinsicHeight(double width) {
-  //   return _computeIntrinsicHeight(width);
-  // }
-
-  // @override
-  // double computeDistanceToActualBaseline(TextBaseline baseline) {
-  //   assert(!debugNeedsLayout);
-  //   assert(constraints != null);
-  //   assert(constraints.debugAssertIsValid());
-  //   _layoutTextWithConstraints(constraints);
-  //   // TODO(garyq): Since our metric for ideographic baseline is currently
-  //   // inaccurate and the non-alphabetic baselines are based off of the
-  //   // alphabetic baseline, we use the alphabetic for now to produce correct
-  //   // layouts. We should eventually change this back to pass the `baseline`
-  //   // property when the ideographic baseline is properly implemented
-  //   // (https://github.com/flutter/flutter/issues/22625).
-  //   return _textPainter
-  //       .computeDistanceToActualBaseline(TextBaseline.alphabetic);
-  // }
-
-  // Intrinsics cannot be calculated without a full layout for
-  // alignments that require the baseline (baseline, aboveBaseline,
-  // belowBaseline).
-  bool _canComputeIntrinsics() {
-    for (final PlaceholderSpan span in _placeholderSpans) {
-      switch (span.alignment) {
-        case ui.PlaceholderAlignment.baseline:
-        case ui.PlaceholderAlignment.aboveBaseline:
-        case ui.PlaceholderAlignment.belowBaseline:
-          {
-            assert(
-                RenderObject.debugCheckingIntrinsics,
-                'Intrinsics are not available for PlaceholderAlignment.baseline, '
-                'PlaceholderAlignment.aboveBaseline, or PlaceholderAlignment.belowBaseline,');
-            return false;
-          }
-        case ui.PlaceholderAlignment.top:
-        case ui.PlaceholderAlignment.middle:
-        case ui.PlaceholderAlignment.bottom:
-          {
-            continue;
-          }
-      }
-    }
-    return true;
-  }
-
-  void _computeChildrenWidthWithMaxIntrinsics(double height) {
-    RenderBox child = firstChild;
-    final List<PlaceholderDimensions> placeholderDimensions =
-        List<PlaceholderDimensions>(childCount);
-    int childIndex = 0;
-    while (child != null) {
-      // Height and baseline is irrelevant as all text will be laid
-      // out in a single line.
-      placeholderDimensions[childIndex] = PlaceholderDimensions(
-        size: Size(child.getMaxIntrinsicWidth(height), height),
-        alignment: _placeholderSpans[childIndex].alignment,
-        baseline: _placeholderSpans[childIndex].baseline,
-      );
-      child = childAfter(child);
-      childIndex += 1;
-    }
-    _textPainter.setPlaceholderDimensions(placeholderDimensions);
-  }
-
-  void _computeChildrenWidthWithMinIntrinsics(double height) {
-    RenderBox child = firstChild;
-    final List<PlaceholderDimensions> placeholderDimensions =
-        List<PlaceholderDimensions>(childCount);
-    int childIndex = 0;
-    while (child != null) {
-      final double intrinsicWidth = child.getMinIntrinsicWidth(height);
-      final double intrinsicHeight =
-          child.getMinIntrinsicHeight(intrinsicWidth);
-      placeholderDimensions[childIndex] = PlaceholderDimensions(
-        size: Size(intrinsicWidth, intrinsicHeight),
-        alignment: _placeholderSpans[childIndex].alignment,
-        baseline: _placeholderSpans[childIndex].baseline,
-      );
-      child = childAfter(child);
-      childIndex += 1;
-    }
-    _textPainter.setPlaceholderDimensions(placeholderDimensions);
-  }
-
-  void _computeChildrenHeightWithMinIntrinsics(double width) {
-    RenderBox child = firstChild;
-    final List<PlaceholderDimensions> placeholderDimensions =
-        List<PlaceholderDimensions>(childCount);
-    int childIndex = 0;
-    while (child != null) {
-      final double intrinsicHeight = child.getMinIntrinsicHeight(width);
-      final double intrinsicWidth = child.getMinIntrinsicWidth(intrinsicHeight);
-      placeholderDimensions[childIndex] = PlaceholderDimensions(
-        size: Size(intrinsicWidth, intrinsicHeight),
-        alignment: _placeholderSpans[childIndex].alignment,
-        baseline: _placeholderSpans[childIndex].baseline,
-      );
-      child = childAfter(child);
-      childIndex += 1;
-    }
-    _textPainter.setPlaceholderDimensions(placeholderDimensions);
-  }
-
   @override
   bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
     RenderBox child = firstChild;
@@ -2391,23 +2251,6 @@ class RenderEditable extends RenderBox
     return false;
   }
 
-  // @override
-  // void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
-  //   assert(debugHandleEvent(event, entry));
-  //   if (event is! PointerDownEvent) return;
-  //   _layoutTextWithConstraints(constraints);
-  //   final Offset offset = entry.localPosition;
-  //   final TextPosition position = _textPainter.getPositionForOffset(offset);
-  //   final InlineSpan span = _textPainter.text.getSpanForPosition(position);
-  //   if (span == null) {
-  //     return;
-  //   }
-  //   if (span is TextSpan) {
-  //     final TextSpan textSpan = span;
-  //     textSpan.recognizer?.addPointer(event as PointerDownEvent);
-  //   }
-  // }
-
   bool _needsClipping = false;
   ui.Shader _overflowShader;
 
@@ -2417,14 +2260,6 @@ class RenderEditable extends RenderBox
   /// Used to test this object. Not for use in production.
   @visibleForTesting
   bool get debugHasOverflowShader => _overflowShader != null;
-
-  // void _layoutText({double minWidth = 0.0, double maxWidth = double.infinity}) {
-  //   final bool widthMatters = softWrap || overflow == TextOverflow.ellipsis;
-  //   _textPainter.layout(
-  //     minWidth: minWidth,
-  //     maxWidth: widthMatters ? maxWidth : double.infinity,
-  //   );
-  // }
 
   // Placeholder dimensions representing the sizes of child inline widgets.
   //
@@ -2500,157 +2335,6 @@ class RenderEditable extends RenderBox
       childIndex += 1;
     }
   }
-
-  // @override
-  // void performLayout() {
-  //   final BoxConstraints constraints = this.constraints;
-  //   _layoutChildren(constraints);
-  //   _layoutTextWithConstraints(constraints);
-  //   _setParentData();
-
-  //   // We grab _textPainter.size and _textPainter.didExceedMaxLines here because
-  //   // assigning to `size` will trigger us to validate our intrinsic sizes,
-  //   // which will change _textPainter's layout because the intrinsic size
-  //   // calculations are destructive. Other _textPainter state will also be
-  //   // affected. See also RenderEditable which has a similar issue.
-  //   final Size textSize = _textPainter.size;
-  //   final bool textDidExceedMaxLines = _textPainter.didExceedMaxLines;
-  //   size = constraints.constrain(textSize);
-
-  //   final bool didOverflowHeight =
-  //       size.height < textSize.height || textDidExceedMaxLines;
-  //   final bool didOverflowWidth = size.width < textSize.width;
-  //   // TODO(abarth): We're only measuring the sizes of the line boxes here. If
-  //   // the glyphs draw outside the line boxes, we might think that there isn't
-  //   // visual overflow when there actually is visual overflow. This can become
-  //   // a problem if we start having horizontal overflow and introduce a clip
-  //   // that affects the actual (but undetected) vertical overflow.
-  //   final bool hasVisualOverflow = didOverflowWidth || didOverflowHeight;
-  //   if (hasVisualOverflow) {
-  //     switch (_overflow) {
-  //       case TextOverflow.visible:
-  //         _needsClipping = false;
-  //         _overflowShader = null;
-  //         break;
-  //       case TextOverflow.clip:
-  //       case TextOverflow.ellipsis:
-  //         _needsClipping = true;
-  //         _overflowShader = null;
-  //         break;
-  //       case TextOverflow.fade:
-  //         assert(textDirection != null);
-  //         _needsClipping = true;
-  //         final TextPainter fadeSizePainter = TextPainter(
-  //           text: TextSpan(style: _textPainter.text.style, text: '\u2026'),
-  //           textDirection: textDirection,
-  //           textScaleFactor: textScaleFactor,
-  //           locale: locale,
-  //         )..layout();
-  //         if (didOverflowWidth) {
-  //           double fadeEnd, fadeStart;
-  //           switch (textDirection) {
-  //             case TextDirection.rtl:
-  //               fadeEnd = 0.0;
-  //               fadeStart = fadeSizePainter.width;
-  //               break;
-  //             case TextDirection.ltr:
-  //               fadeEnd = size.width;
-  //               fadeStart = fadeEnd - fadeSizePainter.width;
-  //               break;
-  //           }
-  //           _overflowShader = ui.Gradient.linear(
-  //             Offset(fadeStart, 0.0),
-  //             Offset(fadeEnd, 0.0),
-  //             <Color>[const Color(0xFFFFFFFF), const Color(0x00FFFFFF)],
-  //           );
-  //         } else {
-  //           final double fadeEnd = size.height;
-  //           final double fadeStart = fadeEnd - fadeSizePainter.height / 2.0;
-  //           _overflowShader = ui.Gradient.linear(
-  //             Offset(0.0, fadeStart),
-  //             Offset(0.0, fadeEnd),
-  //             <Color>[const Color(0xFFFFFFFF), const Color(0x00FFFFFF)],
-  //           );
-  //         }
-  //         break;
-  //     }
-  //   } else {
-  //     _needsClipping = false;
-  //     _overflowShader = null;
-  //   }
-  // }
-
-  // @override
-  // void paint(PaintingContext context, Offset offset) {
-  //   // Ideally we could compute the min/max intrinsic width/height with a
-  //   // non-destructive operation. However, currently, computing these values
-  //   // will destroy state inside the painter. If that happens, we need to get
-  //   // back the correct state by calling _layout again.
-  //   //
-  //   // TODO(abarth): Make computing the min/max intrinsic width/height a
-  //   //  non-destructive operation.
-  //   //
-  //   // If you remove this call, make sure that changing the textAlign still
-  //   // works properly.
-  //   _layoutTextWithConstraints(constraints);
-
-  //   assert(() {
-  //     if (debugRepaintTextRainbowEnabled) {
-  //       final Paint paint = Paint()..color = debugCurrentRepaintColor.toColor();
-  //       context.canvas.drawRect(offset & size, paint);
-  //     }
-  //     return true;
-  //   }());
-
-  //   if (_needsClipping) {
-  //     final Rect bounds = offset & size;
-  //     if (_overflowShader != null) {
-  //       // This layer limits what the shader below blends with to be just the
-  //       // text (as opposed to the text and its background).
-  //       context.canvas.saveLayer(bounds, Paint());
-  //     } else {
-  //       context.canvas.save();
-  //     }
-  //     context.canvas.clipRect(bounds);
-  //   }
-  //   _textPainter.paint(context.canvas, offset);
-
-  //   RenderBox child = firstChild;
-  //   int childIndex = 0;
-  //   // childIndex might be out of index of placeholder boxes. This can happen
-  //   // if engine truncates children due to ellipsis. Sadly, we would not know
-  //   // it until we finish layout, and RenderObject is in immutable state at
-  //   // this point.
-  //   while (child != null &&
-  //       childIndex < _textPainter.inlinePlaceholderBoxes.length) {
-  //     final TextParentData textParentData = child.parentData as TextParentData;
-
-  //     final double scale = textParentData.scale;
-  //     context.pushTransform(
-  //       needsCompositing,
-  //       offset + textParentData.offset,
-  //       Matrix4.diagonal3Values(scale, scale, scale),
-  //       (PaintingContext context, Offset offset) {
-  //         context.paintChild(
-  //           child,
-  //           offset,
-  //         );
-  //       },
-  //     );
-  //     child = childAfter(child);
-  //     childIndex += 1;
-  //   }
-  //   if (_needsClipping) {
-  //     if (_overflowShader != null) {
-  //       context.canvas.translate(offset.dx, offset.dy);
-  //       final Paint paint = Paint()
-  //         ..blendMode = BlendMode.modulate
-  //         ..shader = _overflowShader;
-  //       context.canvas.drawRect(Offset.zero & size, paint);
-  //     }
-  //     context.canvas.restore();
-  //   }
-  // }
 
   /// Returns the offset at which to paint the caret.
   ///
@@ -2891,5 +2575,321 @@ class RenderEditable extends RenderBox
   //     defaultValue: null,
   //   ));
   //   properties.add(IntProperty('maxLines', maxLines, ifNull: 'unlimited'));
+  // }
+
+  // @override
+  // double computeMinIntrinsicWidth(double height) {
+  //   if (!_canComputeIntrinsics()) {
+  //     return 0.0;
+  //   }
+  //   _computeChildrenWidthWithMinIntrinsics(height);
+  //   _layoutText(); // layout with infinite width.
+  //   return _textPainter.minIntrinsicWidth;
+  // }
+
+  // @override
+  // double computeMaxIntrinsicWidth(double height) {
+  //   if (!_canComputeIntrinsics()) {
+  //     return 0.0;
+  //   }
+  //   _computeChildrenWidthWithMaxIntrinsics(height);
+  //   _layoutText(); // layout with infinite width.
+  //   return _textPainter.maxIntrinsicWidth;
+  // }
+
+  // double _computeIntrinsicHeight(double width) {
+  //   if (!_canComputeIntrinsics()) {
+  //     return 0.0;
+  //   }
+  //   _computeChildrenHeightWithMinIntrinsics(width);
+  //   _layoutText(minWidth: width, maxWidth: width);
+  //   return _textPainter.height;
+  // }
+
+  // @override
+  // double computeMinIntrinsicHeight(double width) {
+  //   return _computeIntrinsicHeight(width);
+  // }
+
+  // @override
+  // double computeMaxIntrinsicHeight(double width) {
+  //   return _computeIntrinsicHeight(width);
+  // }
+
+  // @override
+  // double computeDistanceToActualBaseline(TextBaseline baseline) {
+  //   assert(!debugNeedsLayout);
+  //   assert(constraints != null);
+  //   assert(constraints.debugAssertIsValid());
+  //   _layoutTextWithConstraints(constraints);
+  //   // TODO(garyq): Since our metric for ideographic baseline is currently
+  //   // inaccurate and the non-alphabetic baselines are based off of the
+  //   // alphabetic baseline, we use the alphabetic for now to produce correct
+  //   // layouts. We should eventually change this back to pass the `baseline`
+  //   // property when the ideographic baseline is properly implemented
+  //   // (https://github.com/flutter/flutter/issues/22625).
+  //   return _textPainter
+  //       .computeDistanceToActualBaseline(TextBaseline.alphabetic);
+  // }
+
+  // // Intrinsics cannot be calculated without a full layout for
+  // // alignments that require the baseline (baseline, aboveBaseline,
+  // // belowBaseline).
+  // bool _canComputeIntrinsics() {
+  //   for (final PlaceholderSpan span in _placeholderSpans) {
+  //     switch (span.alignment) {
+  //       case ui.PlaceholderAlignment.baseline:
+  //       case ui.PlaceholderAlignment.aboveBaseline:
+  //       case ui.PlaceholderAlignment.belowBaseline:
+  //         {
+  //           assert(
+  //               RenderObject.debugCheckingIntrinsics,
+  //               'Intrinsics are not available for PlaceholderAlignment.baseline, '
+  //               'PlaceholderAlignment.aboveBaseline, or PlaceholderAlignment.belowBaseline,');
+  //           return false;
+  //         }
+  //       case ui.PlaceholderAlignment.top:
+  //       case ui.PlaceholderAlignment.middle:
+  //       case ui.PlaceholderAlignment.bottom:
+  //         {
+  //           continue;
+  //         }
+  //     }
+  //   }
+  //   return true;
+  // }
+
+  // void _computeChildrenWidthWithMaxIntrinsics(double height) {
+  //   RenderBox child = firstChild;
+  //   final List<PlaceholderDimensions> placeholderDimensions =
+  //       List<PlaceholderDimensions>(childCount);
+  //   int childIndex = 0;
+  //   while (child != null) {
+  //     // Height and baseline is irrelevant as all text will be laid
+  //     // out in a single line.
+  //     placeholderDimensions[childIndex] = PlaceholderDimensions(
+  //       size: Size(child.getMaxIntrinsicWidth(height), height),
+  //       alignment: _placeholderSpans[childIndex].alignment,
+  //       baseline: _placeholderSpans[childIndex].baseline,
+  //     );
+  //     child = childAfter(child);
+  //     childIndex += 1;
+  //   }
+  //   _textPainter.setPlaceholderDimensions(placeholderDimensions);
+  // }
+
+  // void _computeChildrenWidthWithMinIntrinsics(double height) {
+  //   RenderBox child = firstChild;
+  //   final List<PlaceholderDimensions> placeholderDimensions =
+  //       List<PlaceholderDimensions>(childCount);
+  //   int childIndex = 0;
+  //   while (child != null) {
+  //     final double intrinsicWidth = child.getMinIntrinsicWidth(height);
+  //     final double intrinsicHeight =
+  //         child.getMinIntrinsicHeight(intrinsicWidth);
+  //     placeholderDimensions[childIndex] = PlaceholderDimensions(
+  //       size: Size(intrinsicWidth, intrinsicHeight),
+  //       alignment: _placeholderSpans[childIndex].alignment,
+  //       baseline: _placeholderSpans[childIndex].baseline,
+  //     );
+  //     child = childAfter(child);
+  //     childIndex += 1;
+  //   }
+  //   _textPainter.setPlaceholderDimensions(placeholderDimensions);
+  // }
+
+  // void _computeChildrenHeightWithMinIntrinsics(double width) {
+  //   RenderBox child = firstChild;
+  //   final List<PlaceholderDimensions> placeholderDimensions =
+  //       List<PlaceholderDimensions>(childCount);
+  //   int childIndex = 0;
+  //   while (child != null) {
+  //     final double intrinsicHeight = child.getMinIntrinsicHeight(width);
+  //     final double intrinsicWidth = child.getMinIntrinsicWidth(intrinsicHeight);
+  //     placeholderDimensions[childIndex] = PlaceholderDimensions(
+  //       size: Size(intrinsicWidth, intrinsicHeight),
+  //       alignment: _placeholderSpans[childIndex].alignment,
+  //       baseline: _placeholderSpans[childIndex].baseline,
+  //     );
+  //     child = childAfter(child);
+  //     childIndex += 1;
+  //   }
+  //   _textPainter.setPlaceholderDimensions(placeholderDimensions);
+  // }
+
+  // void _layoutText({double minWidth = 0.0, double maxWidth = double.infinity}) {
+  //   final bool widthMatters = softWrap || overflow == TextOverflow.ellipsis;
+  //   _textPainter.layout(
+  //     minWidth: minWidth,
+  //     maxWidth: widthMatters ? maxWidth : double.infinity,
+  //   );
+  // }
+
+  // @override
+  // void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
+  //   assert(debugHandleEvent(event, entry));
+  //   if (event is! PointerDownEvent) return;
+  //   _layoutTextWithConstraints(constraints);
+  //   final Offset offset = entry.localPosition;
+  //   final TextPosition position = _textPainter.getPositionForOffset(offset);
+  //   final InlineSpan span = _textPainter.text.getSpanForPosition(position);
+  //   if (span == null) {
+  //     return;
+  //   }
+  //   if (span is TextSpan) {
+  //     final TextSpan textSpan = span;
+  //     textSpan.recognizer?.addPointer(event as PointerDownEvent);
+  //   }
+  // }
+
+  // @override
+  // void performLayout() {
+  //   final BoxConstraints constraints = this.constraints;
+  //   _layoutChildren(constraints);
+  //   _layoutTextWithConstraints(constraints);
+  //   _setParentData();
+
+  //   // We grab _textPainter.size and _textPainter.didExceedMaxLines here because
+  //   // assigning to `size` will trigger us to validate our intrinsic sizes,
+  //   // which will change _textPainter's layout because the intrinsic size
+  //   // calculations are destructive. Other _textPainter state will also be
+  //   // affected. See also RenderEditable which has a similar issue.
+  //   final Size textSize = _textPainter.size;
+  //   final bool textDidExceedMaxLines = _textPainter.didExceedMaxLines;
+  //   size = constraints.constrain(textSize);
+
+  //   final bool didOverflowHeight =
+  //       size.height < textSize.height || textDidExceedMaxLines;
+  //   final bool didOverflowWidth = size.width < textSize.width;
+  //   // TODO(abarth): We're only measuring the sizes of the line boxes here. If
+  //   // the glyphs draw outside the line boxes, we might think that there isn't
+  //   // visual overflow when there actually is visual overflow. This can become
+  //   // a problem if we start having horizontal overflow and introduce a clip
+  //   // that affects the actual (but undetected) vertical overflow.
+  //   final bool hasVisualOverflow = didOverflowWidth || didOverflowHeight;
+  //   if (hasVisualOverflow) {
+  //     switch (_overflow) {
+  //       case TextOverflow.visible:
+  //         _needsClipping = false;
+  //         _overflowShader = null;
+  //         break;
+  //       case TextOverflow.clip:
+  //       case TextOverflow.ellipsis:
+  //         _needsClipping = true;
+  //         _overflowShader = null;
+  //         break;
+  //       case TextOverflow.fade:
+  //         assert(textDirection != null);
+  //         _needsClipping = true;
+  //         final TextPainter fadeSizePainter = TextPainter(
+  //           text: TextSpan(style: _textPainter.text.style, text: '\u2026'),
+  //           textDirection: textDirection,
+  //           textScaleFactor: textScaleFactor,
+  //           locale: locale,
+  //         )..layout();
+  //         if (didOverflowWidth) {
+  //           double fadeEnd, fadeStart;
+  //           switch (textDirection) {
+  //             case TextDirection.rtl:
+  //               fadeEnd = 0.0;
+  //               fadeStart = fadeSizePainter.width;
+  //               break;
+  //             case TextDirection.ltr:
+  //               fadeEnd = size.width;
+  //               fadeStart = fadeEnd - fadeSizePainter.width;
+  //               break;
+  //           }
+  //           _overflowShader = ui.Gradient.linear(
+  //             Offset(fadeStart, 0.0),
+  //             Offset(fadeEnd, 0.0),
+  //             <Color>[const Color(0xFFFFFFFF), const Color(0x00FFFFFF)],
+  //           );
+  //         } else {
+  //           final double fadeEnd = size.height;
+  //           final double fadeStart = fadeEnd - fadeSizePainter.height / 2.0;
+  //           _overflowShader = ui.Gradient.linear(
+  //             Offset(0.0, fadeStart),
+  //             Offset(0.0, fadeEnd),
+  //             <Color>[const Color(0xFFFFFFFF), const Color(0x00FFFFFF)],
+  //           );
+  //         }
+  //         break;
+  //     }
+  //   } else {
+  //     _needsClipping = false;
+  //     _overflowShader = null;
+  //   }
+  // }
+
+  // @override
+  // void paint(PaintingContext context, Offset offset) {
+  //   // Ideally we could compute the min/max intrinsic width/height with a
+  //   // non-destructive operation. However, currently, computing these values
+  //   // will destroy state inside the painter. If that happens, we need to get
+  //   // back the correct state by calling _layout again.
+  //   //
+  //   // TODO(abarth): Make computing the min/max intrinsic width/height a
+  //   //  non-destructive operation.
+  //   //
+  //   // If you remove this call, make sure that changing the textAlign still
+  //   // works properly.
+  //   _layoutTextWithConstraints(constraints);
+
+  //   assert(() {
+  //     if (debugRepaintTextRainbowEnabled) {
+  //       final Paint paint = Paint()..color = debugCurrentRepaintColor.toColor();
+  //       context.canvas.drawRect(offset & size, paint);
+  //     }
+  //     return true;
+  //   }());
+
+  //   if (_needsClipping) {
+  //     final Rect bounds = offset & size;
+  //     if (_overflowShader != null) {
+  //       // This layer limits what the shader below blends with to be just the
+  //       // text (as opposed to the text and its background).
+  //       context.canvas.saveLayer(bounds, Paint());
+  //     } else {
+  //       context.canvas.save();
+  //     }
+  //     context.canvas.clipRect(bounds);
+  //   }
+  //   _textPainter.paint(context.canvas, offset);
+
+  //   RenderBox child = firstChild;
+  //   int childIndex = 0;
+  //   // childIndex might be out of index of placeholder boxes. This can happen
+  //   // if engine truncates children due to ellipsis. Sadly, we would not know
+  //   // it until we finish layout, and RenderObject is in immutable state at
+  //   // this point.
+  //   while (child != null &&
+  //       childIndex < _textPainter.inlinePlaceholderBoxes.length) {
+  //     final TextParentData textParentData = child.parentData as TextParentData;
+
+  //     final double scale = textParentData.scale;
+  //     context.pushTransform(
+  //       needsCompositing,
+  //       offset + textParentData.offset,
+  //       Matrix4.diagonal3Values(scale, scale, scale),
+  //       (PaintingContext context, Offset offset) {
+  //         context.paintChild(
+  //           child,
+  //           offset,
+  //         );
+  //       },
+  //     );
+  //     child = childAfter(child);
+  //     childIndex += 1;
+  //   }
+  //   if (_needsClipping) {
+  //     if (_overflowShader != null) {
+  //       context.canvas.translate(offset.dx, offset.dy);
+  //       final Paint paint = Paint()
+  //         ..blendMode = BlendMode.modulate
+  //         ..shader = _overflowShader;
+  //       context.canvas.drawRect(Offset.zero & size, paint);
+  //     }
+  //     context.canvas.restore();
+  //   }
   // }
 }

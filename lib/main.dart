@@ -26,10 +26,10 @@ class MyApp extends StatelessWidget {
         body: SafeArea(
             child: Column(
           children: <Widget>[
-            StelaEditor(
-              controller: EditorEditingController.fromEditor(editor),
-              focusNode: FocusNode(),
-            ),
+            // StelaEditor(
+            //   controller: EditorEditingController.fromEditor(editor),
+            //   focusNode: FocusNode(),
+            // ),
             StelaFlutter.TextField()
           ],
         )),

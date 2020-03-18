@@ -748,7 +748,9 @@ class _TextFieldState extends State<TextField>
     _selectionGestureDetectorBuilder =
         _TextFieldSelectionGestureDetectorBuilder(state: this);
     if (widget.controller == null) {
-      _controller = StelaEditableText.TextEditingController();
+      _controller = StelaEditableText.TextEditingController(
+          text:
+              'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis');
     }
     _effectiveFocusNode.canRequestFocus = _isEnabled;
   }
