@@ -1,8 +1,8 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/cupertino.dart' as Cupertino;
 import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/editor.dart';
+import 'package:inday/stela_flutter/text_field.dart' as StelaFlutter;
 
 void main() => runApp(MyApp());
 
@@ -30,13 +30,7 @@ class MyApp extends StatelessWidget {
               controller: EditorEditingController.fromEditor(editor),
               focusNode: FocusNode(),
             ),
-            TextFormField(
-              initialValue: 'Lorem ipsum',
-              style: themeData.textTheme.subtitle1,
-            ),
-            Cupertino.CupertinoTextField(
-              style: themeData.textTheme.subtitle1,
-            ),
+            StelaFlutter.TextField()
           ],
         )),
       ),
