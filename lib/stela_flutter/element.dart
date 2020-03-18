@@ -62,6 +62,7 @@ class _StelaElementState extends State<StelaElement> {
       cursorColor: themeData.cursorColor,
       hasFocus: true,
       selection: TextSelection(baseOffset: 1, extentOffset: 1),
+      cursorRadius: Radius.circular(2.0),
     );
   }
 }

@@ -44,7 +44,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     this.hasFocus,
     this.backgroundCursorColor,
     this.showCursor,
-    this.cursorWidth = 1.0,
+    this.cursorWidth = 2.0,
     this.cursorRadius,
     this.selectionHeightStyle = ui.BoxHeightStyle.tight,
     this.selectionWidthStyle = ui.BoxWidthStyle.tight,
