@@ -12,9 +12,30 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/scheduler.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
-import 'editable_text.dart' as StelaEditableText;
+import 'package:inday/stela_flutter/editor.dart';
 
-export 'package:flutter/services.dart' show TextSelectionDelegate;
+abstract class EditorSelectionDelegate {
+  /// Gets the current text input.
+  EditorEditingValue get editorEditingValue;
+
+  /// Sets the current text input (replaces the whole line).
+  set editorEditingValue(EditorEditingValue value);
+
+  /// Hides the text selection toolbar.
+  void hideToolbar();
+
+  /// Whether cut is enabled, must not be null.
+  bool get cutEnabled => true;
+
+  /// Whether copy is enabled, must not be null.
+  bool get copyEnabled => true;
+
+  /// Whether paste is enabled, must not be null.
+  bool get pasteEnabled => true;
+
+  /// Whether select all is enabled, must not be null.
+  bool get selectAllEnabled => true;
+}
 
 /// A duration that controls how often the drag selection update callback is
 /// called.
@@ -824,8 +845,8 @@ class _TextSelectionHandleOverlayState
 /// Delegate interface for the [TextSelectionGestureDetectorBuilder].
 ///
 /// The interface is usually implemented by textfield implementations wrapping
-/// [StelaEditableText.EditableText], that use a [TextSelectionGestureDetectorBuilder] to build a
-/// [TextSelectionGestureDetector] for their [StelaEditableText.EditableText]. The delegate provides
+/// [EditableText], that use a [TextSelectionGestureDetectorBuilder] to build a
+/// [TextSelectionGestureDetector] for their [EditableText]. The delegate provides
 /// the builder with information about the current state of the textfield.
 /// Based on these information, the builder adds the correct gesture handlers
 /// to the gesture detector.
@@ -836,9 +857,9 @@ class _TextSelectionHandleOverlayState
 ///  * [CupertinoTextField], which implements this delegate for the Cupertino
 ///    textfield.
 abstract class TextSelectionGestureDetectorBuilderDelegate {
-  /// [GlobalKey] to the [StelaEditableText.EditableText] for which the
+  /// [GlobalKey] to the [EditableText] for which the
   /// [TextSelectionGestureDetectorBuilder] will build a [TextSelectionGestureDetector].
-  GlobalKey<StelaEditableText.EditableTextState> get editableTextKey;
+  GlobalKey<EditableTextState> get editableTextKey;
 
   /// Whether the textfield should respond to force presses.
   bool get forcePressEnabled;
@@ -847,24 +868,24 @@ abstract class TextSelectionGestureDetectorBuilderDelegate {
   bool get selectionEnabled;
 }
 
-/// Builds a [TextSelectionGestureDetector] to wrap an [StelaEditableText.EditableText].
+/// Builds a [TextSelectionGestureDetector] to wrap an [EditableText].
 ///
 /// The class implements sensible defaults for many user interactions
-/// with an [StelaEditableText.EditableText] (see the documentation of the various gesture handler
+/// with an [EditableText] (see the documentation of the various gesture handler
 /// methods, e.g. [onTapDown], [onForcePress], etc.). Subclasses of
 /// [EditableTextSelectionHandlesProvider] can change the behavior performed in
 /// responds to these gesture events by overriding the corresponding handler
 /// methods of this class.
 ///
-/// The resulting [TextSelectionGestureDetector] to wrap an [StelaEditableText.EditableText] is
+/// The resulting [TextSelectionGestureDetector] to wrap an [EditableText] is
 /// obtained by calling [buildGestureDetector].
 ///
 /// See also:
 ///
 ///  * [TextField], which uses a subclass to implement the Material-specific
-///    gesture logic of an [StelaEditableText.EditableText].
+///    gesture logic of an [EditableText].
 ///  * [CupertinoTextField], which uses a subclass to implement the
-///    Cupertino-specific gesture logic of an [StelaEditableText.EditableText].
+///    Cupertino-specific gesture logic of an [EditableText].
 class TextSelectionGestureDetectorBuilder {
   /// Creates a [TextSelectionGestureDetectorBuilder].
   ///
@@ -889,13 +910,12 @@ class TextSelectionGestureDetectorBuilder {
   bool get shouldShowSelectionToolbar => _shouldShowSelectionToolbar;
   bool _shouldShowSelectionToolbar = true;
 
-  /// The [State] of the [StelaEditableText.EditableText] for which the builder will provide a
+  /// The [State] of the [EditableText] for which the builder will provide a
   /// [TextSelectionGestureDetector].
   @protected
-  StelaEditableText.EditableTextState get editableText =>
-      delegate.editableTextKey.currentState;
+  EditableTextState get editableText => delegate.editableTextKey.currentState;
 
-  /// The [RenderObject] of the [StelaEditableText.EditableText] for which the builder will
+  /// The [RenderObject] of the [EditableText] for which the builder will
   /// provide a [TextSelectionGestureDetector].
   @protected
   RenderEditable get renderEditable => editableText.renderEditable;
@@ -1111,7 +1131,7 @@ class TextSelectionGestureDetectorBuilder {
   /// Returns a [TextSelectionGestureDetector] configured with the handlers
   /// provided by this builder.
   ///
-  /// The [child] or its subtree should contain [StelaEditableText.EditableText].
+  /// The [child] or its subtree should contain [EditableText].
   Widget buildGestureDetector({
     Key key,
     HitTestBehavior behavior,

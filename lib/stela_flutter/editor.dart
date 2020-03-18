@@ -6,7 +6,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
-import 'package:inday/stela_flutter/block_text.dart';
+import 'package:inday/stela_flutter/children.dart';
+import 'package:inday/stela_flutter/element.dart';
+import 'package:inday/stela_flutter/selection.dart';
 
 class EditorEditingValue extends Stela.Editor {
   EditorEditingValue(
@@ -22,7 +24,7 @@ class EditorEditingValue extends Stela.Editor {
             marks: marks,
             props: props);
 
-  static Stela.Editor empty = Stela.Editor();
+  static EditorEditingValue empty = EditorEditingValue(children: []);
 }
 
 class EditorEditingController extends ValueNotifier<EditorEditingValue> {
@@ -76,15 +78,8 @@ class StelaEditor extends StatefulWidget {
         assert(focusNode != null),
         super(key: key);
 
-  final Widget Function(
-    Stela.Element element, {
-    Stela.Editor editor,
-  }) elementBuilder;
-
-  final TextSpan Function(
-    Stela.Text text, {
-    Stela.Editor editor,
-  }) textBuilder;
+  final Widget Function(Stela.Element element) elementBuilder;
+  final TextSpan Function(Stela.Text text) textBuilder;
 
   final EditorEditingController controller;
 
@@ -96,80 +91,80 @@ class StelaEditor extends StatefulWidget {
   _StelaEditorState createState() => _StelaEditorState();
 }
 
-class _StelaEditorState extends State<StelaEditor> {
+class _StelaEditorState extends State<StelaEditor>
+    implements EditorSelectionDelegate {
+  EditorEditingValue get _value => widget.controller.value;
+  set _value(EditorEditingValue value) {
+    widget.controller.value = value;
+  }
+
+  @override
+  void hideToolbar() {
+    // TODO
+  }
+
+  @override
+  EditorEditingValue get editorEditingValue => _value;
+  set editorEditingValue(EditorEditingValue value) {
+    // TODO
+  }
+
+  @override
+  bool get cutEnabled => true;
+
+  @override
+  bool get copyEnabled => true;
+
+  @override
+  bool get pasteEnabled => true;
+
+  @override
+  bool get selectAllEnabled => true;
+
   @override
   Widget build(BuildContext context) {
-    return Column(children: _buildChildren(widget.controller.value));
+    return StelaChildren(
+      node: _value,
+      elementBuilder: widget.elementBuilder,
+      textBuilder: widget.textBuilder,
+      selection: _value.selection,
+    );
   }
 }
 
-TextSpan defaultTextBuilder(Stela.Text text, {Stela.Editor editor}) {
+TextSpan defaultTextBuilder(Stela.Text text) {
   return TextSpan(text: text.text);
 }
 
-Widget defaultElementBuilder(Stela.Element element, {Stela.Editor editor}) {
+Widget defaultElementBuilder(Stela.Element element) {
   if (element is Stela.Inline) {
     return Text('inline');
   }
 
   if (element is Stela.Block) {
-    return Column(children: _buildChildren(element));
+    return StelaElement(node: element);
   }
 
   throw Exception('Unidentified element ${element.toString()}');
 }
 
-List<Widget> _buildChildren(Stela.Ancestor ancestor) {
-  List<Widget> children = [];
+class EditorScope extends ChangeNotifier {
+  static EditorScope of(BuildContext context) {
+    final EditorScopeAccess widget =
+        context.dependOnInheritedWidgetOfExactType<EditorScopeAccess>();
 
-  for (Stela.Node child in ancestor.children) {
-    bool isBlockText =
-        child is Stela.Block && child.children.first is Stela.Text;
-
-    if (isBlockText) {
-      children.add(_buildBlockText(child));
-    }
+    return widget.scope;
   }
-
-  return children;
 }
 
-Widget _buildBlockText(Stela.Block block) {
-  List<InlineSpan> children = [];
+class EditorScopeAccess extends InheritedWidget {
+  final EditorScope scope;
 
-  for (Stela.Node blockChild in block.children) {
-    if (blockChild is Stela.Text) {
-      children.add(TextSpan(
-          text: blockChild.text,
-          style: TextStyle(color: Colors.black, fontSize: 16)));
-    }
-
-    if (blockChild is Stela.Inline) {
-      // TODO: implement inline stuff for things like hyperlinks
-      children.add(WidgetSpan(child: Text('inline')));
-    }
-  }
-
-  TextSpan textSpan = TextSpan(children: children);
-
-  return BlockText(text: textSpan);
-}
-
-class BlockText extends LeafRenderObjectWidget {
-  BlockText({@required this.text}) : assert(text != null);
-
-  final TextSpan text;
+  EditorScopeAccess({Key key, @required this.scope, @required Widget child})
+      : super(key: key, child: child);
 
   @override
-  RenderObject createRenderObject(BuildContext context) {
-    return RenderParagraph(
-      text,
-      textDirection: Directionality.of(context),
-    );
-  }
-
-  @override
-  void updateRenderObject(BuildContext context, RenderParagraph renderObject) {
-    renderObject..text = text;
+  bool updateShouldNotify(EditorScopeAccess oldWidget) {
+    return scope != oldWidget.scope;
   }
 }

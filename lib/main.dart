@@ -2,7 +2,6 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/editor.dart';
-import 'package:inday/stela_flutter/text_field.dart' as StelaFlutter;
 
 void main() => runApp(MyApp());
 
@@ -26,11 +25,10 @@ class MyApp extends StatelessWidget {
         body: SafeArea(
             child: Column(
           children: <Widget>[
-            // StelaEditor(
-            //   controller: EditorEditingController.fromEditor(editor),
-            //   focusNode: FocusNode(),
-            // ),
-            StelaFlutter.TextField()
+            StelaEditor(
+              controller: EditorEditingController.fromEditor(editor),
+              focusNode: FocusNode(),
+            ),
           ],
         )),
       ),
