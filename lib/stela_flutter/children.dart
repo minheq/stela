@@ -43,7 +43,7 @@ class _StelaChildrenState extends State<StelaChildren> {
       } else {
         // Text nodes are handled within [StelaElement] instead of here.
         // The reason is that we want to rely on [TextPainter], and that forces us
-        // to merge texts into a single [RenderObject]
+        // to merge texts into a single [RenderStelaRichText] RenderObject
       }
     }
 

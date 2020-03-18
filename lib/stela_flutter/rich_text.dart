@@ -8,6 +8,21 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 
+const double _kCaretGap = 1.0; // pixels
+const double _kCaretHeightOffset = 2.0; // pixels
+
+// The additional size on the x and y axis with which to expand the prototype
+// cursor to render the floating cursor in pixels.
+const Offset _kFloatingCaretSizeIncrease = Offset(0.5, 1.0);
+
+// The corner radius of the floating cursor in pixels.
+const double _kFloatingCaretRadius = 1.0;
+
+/// Signature for the callback that reports when the caret location changes.
+///
+/// Used by [RenderEditable.onCaretChanged].
+typedef CaretChangedHandler = void Function(Rect caretRect);
+
 class StelaRichText extends MultiChildRenderObjectWidget {
   StelaRichText({
     Key key,
@@ -94,7 +109,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   /// It's rarely necessary to set this property. By default its value
   /// is inherited from the enclosing app with `Localizations.localeOf(context)`.
   ///
-  /// See [RenderParagraph.locale] for more information.
+  /// See [RenderStelaRichText.locale] for more information.
   final Locale locale;
 
   /// {@macro flutter.painting.textPainter.strutStyle}
@@ -107,9 +122,9 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   final ui.TextHeightBehavior textHeightBehavior;
 
   @override
-  RenderParagraph createRenderObject(BuildContext context) {
+  RenderStelaRichText createRenderObject(BuildContext context) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
-    return RenderParagraph(
+    return RenderStelaRichText(
       text,
       textAlign: textAlign,
       textDirection: textDirection ?? Directionality.of(context),
@@ -125,7 +140,8 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   }
 
   @override
-  void updateRenderObject(BuildContext context, RenderParagraph renderObject) {
+  void updateRenderObject(
+      BuildContext context, RenderStelaRichText renderObject) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
     renderObject
       ..text = text
@@ -185,7 +201,7 @@ enum TextOverflow {
 
 const String _kEllipsis = '\u2026';
 
-/// Parent data for use with [RenderParagraph].
+/// Parent data for use with [RenderStelaRichText].
 class TextParentData extends ContainerBoxParentData<RenderBox> {
   /// The scaling of the text.
   double scale;
@@ -202,7 +218,7 @@ class TextParentData extends ContainerBoxParentData<RenderBox> {
 }
 
 /// A render object that displays a paragraph of text.
-class RenderParagraph extends RenderBox
+class RenderStelaRichText extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, TextParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, TextParentData>,
@@ -214,7 +230,7 @@ class RenderParagraph extends RenderBox
   ///
   /// The [maxLines] property may be null (and indeed defaults to null), but if
   /// it is not null, it must be greater than zero.
-  RenderParagraph(
+  RenderStelaRichText(
     InlineSpan text, {
     TextAlign textAlign = TextAlign.start,
     @required TextDirection textDirection,
@@ -226,6 +242,19 @@ class RenderParagraph extends RenderBox
     StrutStyle strutStyle,
     TextWidthBasis textWidthBasis = TextWidthBasis.parent,
     ui.TextHeightBehavior textHeightBehavior,
+    TextSelection selection,
+    Color selectionColor,
+    this.onCaretChanged,
+    Color cursorColor,
+    Color backgroundCursorColor,
+    ValueNotifier<bool> showCursor,
+    double cursorWidth = 1.0,
+    Radius cursorRadius,
+    ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
+    ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
+    bool paintCursorAboveText = false,
+    Offset cursorOffset,
+    double devicePixelRatio = 1.0,
     List<RenderBox> children,
   })  : assert(text != null),
         assert(text.debugAssertIsValid()),
@@ -236,6 +265,9 @@ class RenderParagraph extends RenderBox
         assert(textScaleFactor != null),
         assert(maxLines == null || maxLines > 0),
         assert(textWidthBasis != null),
+        assert(paintCursorAboveText != null),
+        assert(selectionHeightStyle != null),
+        assert(selectionWidthStyle != null),
         _softWrap = softWrap,
         _overflow = overflow,
         _textPainter = TextPainter(
@@ -248,7 +280,22 @@ class RenderParagraph extends RenderBox
             locale: locale,
             strutStyle: strutStyle,
             textWidthBasis: textWidthBasis,
-            textHeightBehavior: textHeightBehavior) {
+            textHeightBehavior: textHeightBehavior),
+        _cursorColor = cursorColor,
+        _backgroundCursorColor = backgroundCursorColor,
+        _showCursor = showCursor ?? ValueNotifier<bool>(false),
+        _selectionColor = selectionColor,
+        _selection = selection,
+        _cursorWidth = cursorWidth,
+        _cursorRadius = cursorRadius,
+        _paintCursorOnTop = paintCursorAboveText,
+        _cursorOffset = cursorOffset,
+        _devicePixelRatio = devicePixelRatio,
+        _selectionHeightStyle = selectionHeightStyle,
+        _selectionWidthStyle = selectionWidthStyle {
+    assert(_showCursor != null);
+    assert(!_showCursor.value || cursorColor != null);
+    this.hasFocus = hasFocus ?? false;
     addAll(children);
     _extractPlaceholderSpans(text);
   }
@@ -279,7 +326,7 @@ class RenderParagraph extends RenderBox
         _textPainter.text = value;
         _overflowShader = null;
         _extractPlaceholderSpans(value);
-        markNeedsLayout();
+        markNeedsTextLayout();
         break;
     }
   }
@@ -323,7 +370,7 @@ class RenderParagraph extends RenderBox
     assert(value != null);
     if (_textPainter.textDirection == value) return;
     _textPainter.textDirection = value;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   /// Whether the text should break at soft line breaks.
@@ -339,7 +386,7 @@ class RenderParagraph extends RenderBox
     assert(value != null);
     if (_softWrap == value) return;
     _softWrap = value;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   /// How visual overflow should be handled.
@@ -350,7 +397,7 @@ class RenderParagraph extends RenderBox
     if (_overflow == value) return;
     _overflow = value;
     _textPainter.ellipsis = value == TextOverflow.ellipsis ? _kEllipsis : null;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   /// The number of font pixels for each logical pixel.
@@ -363,7 +410,7 @@ class RenderParagraph extends RenderBox
     if (_textPainter.textScaleFactor == value) return;
     _textPainter.textScaleFactor = value;
     _overflowShader = null;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   /// An optional maximum number of lines for the text to span, wrapping if
@@ -378,7 +425,7 @@ class RenderParagraph extends RenderBox
     if (_textPainter.maxLines == value) return;
     _textPainter.maxLines = value;
     _overflowShader = null;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   /// Used by this paragraph's internal [TextPainter] to select a
@@ -396,7 +443,7 @@ class RenderParagraph extends RenderBox
     if (_textPainter.locale == value) return;
     _textPainter.locale = value;
     _overflowShader = null;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   /// {@macro flutter.painting.textPainter.strutStyle}
@@ -407,7 +454,7 @@ class RenderParagraph extends RenderBox
     if (_textPainter.strutStyle == value) return;
     _textPainter.strutStyle = value;
     _overflowShader = null;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   /// {@macro flutter.widgets.basic.TextWidthBasis}
@@ -417,7 +464,7 @@ class RenderParagraph extends RenderBox
     if (_textPainter.textWidthBasis == value) return;
     _textPainter.textWidthBasis = value;
     _overflowShader = null;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   /// {@macro flutter.dart:ui.textHeightBehavior}
@@ -427,7 +474,7 @@ class RenderParagraph extends RenderBox
     if (_textPainter.textHeightBehavior == value) return;
     _textPainter.textHeightBehavior = value;
     _overflowShader = null;
-    markNeedsLayout();
+    markNeedsTextLayout();
   }
 
   @override
@@ -649,6 +696,8 @@ class RenderParagraph extends RenderBox
   void systemFontsDidChange() {
     super.systemFontsDidChange();
     _textPainter.markNeedsLayout();
+    _textLayoutLastMaxWidth = null;
+    _textLayoutLastMinWidth = null;
   }
 
   // Placeholder dimensions representing the sizes of child inline widgets.
@@ -732,6 +781,7 @@ class RenderParagraph extends RenderBox
     _layoutChildren(constraints);
     _layoutTextWithConstraints(constraints);
     _setParentData();
+    _caretPrototype = _getCaretPrototype;
 
     // We grab _textPainter.size and _textPainter.didExceedMaxLines here because
     // assigning to `size` will trigger us to validate our intrinsic sizes,
@@ -937,6 +987,8 @@ class RenderParagraph extends RenderBox
     return _textPainter.size;
   }
 
+  // Semantics
+
   /// Collected during [describeSemanticsConfiguration], used by
   /// [assembleSemanticsNode] and [_combineSemanticsInfo].
   List<InlineSpanSemanticsInformation> _semanticsInfo;
@@ -1116,5 +1168,298 @@ class RenderParagraph extends RenderBox
       defaultValue: null,
     ));
     properties.add(IntProperty('maxLines', maxLines, ifNull: 'unlimited'));
+  }
+
+  // Selection
+
+  List<ui.TextBox> _selectionRects;
+
+  /// The region of text that is selected, if any.
+  TextSelection get selection => _selection;
+  TextSelection _selection;
+  set selection(TextSelection value) {
+    if (_selection == value) return;
+    _selection = value;
+    _selectionRects = null;
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
+  }
+
+  /// The color to use when painting the cursor.
+  Color get cursorColor => _cursorColor;
+  Color _cursorColor;
+  set cursorColor(Color value) {
+    if (_cursorColor == value) return;
+    _cursorColor = value;
+    markNeedsPaint();
+  }
+
+  /// The color to use when painting the cursor aligned to the text while
+  /// rendering the floating cursor.
+  ///
+  /// The default is light grey.
+  Color get backgroundCursorColor => _backgroundCursorColor;
+  Color _backgroundCursorColor;
+  set backgroundCursorColor(Color value) {
+    if (backgroundCursorColor == value) return;
+    _backgroundCursorColor = value;
+    markNeedsPaint();
+  }
+
+  /// Whether to paint the cursor.
+  ValueNotifier<bool> get showCursor => _showCursor;
+  ValueNotifier<bool> _showCursor;
+  set showCursor(ValueNotifier<bool> value) {
+    assert(value != null);
+    if (_showCursor == value) return;
+    if (attached) _showCursor.removeListener(markNeedsPaint);
+    _showCursor = value;
+    if (attached) _showCursor.addListener(markNeedsPaint);
+    markNeedsPaint();
+  }
+
+  /// Controls how tall the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxHeightStyle] for details on available styles.
+  ui.BoxHeightStyle get selectionHeightStyle => _selectionHeightStyle;
+  ui.BoxHeightStyle _selectionHeightStyle;
+  set selectionHeightStyle(ui.BoxHeightStyle value) {
+    assert(value != null);
+    if (_selectionHeightStyle == value) return;
+    _selectionHeightStyle = value;
+    markNeedsPaint();
+  }
+
+  /// Controls how wide the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxWidthStyle] for details on available styles.
+  ui.BoxWidthStyle get selectionWidthStyle => _selectionWidthStyle;
+  ui.BoxWidthStyle _selectionWidthStyle;
+  set selectionWidthStyle(ui.BoxWidthStyle value) {
+    assert(value != null);
+    if (_selectionWidthStyle == value) return;
+    _selectionWidthStyle = value;
+    markNeedsPaint();
+  }
+
+  /// The color to use when painting the selection.
+  Color get selectionColor => _selectionColor;
+  Color _selectionColor;
+  set selectionColor(Color value) {
+    if (_selectionColor == value) return;
+    _selectionColor = value;
+    markNeedsPaint();
+  }
+
+  /// {@template flutter.rendering.editable.paintCursorOnTop}
+  /// If the cursor should be painted on top of the text or underneath it.
+  ///
+  /// By default, the cursor should be painted on top for iOS platforms and
+  /// underneath for Android platforms.
+  /// {@endtemplate}
+  bool get paintCursorAboveText => _paintCursorOnTop;
+  bool _paintCursorOnTop;
+  set paintCursorAboveText(bool value) {
+    if (_paintCursorOnTop == value) return;
+    _paintCursorOnTop = value;
+    markNeedsLayout();
+  }
+
+  /// {@template flutter.rendering.editable.cursorOffset}
+  /// The offset that is used, in pixels, when painting the cursor on screen.
+  ///
+  /// By default, the cursor position should be set to an offset of
+  /// (-[cursorWidth] * 0.5, 0.0) on iOS platforms and (0, 0) on Android
+  /// platforms. The origin from where the offset is applied to is the arbitrary
+  /// location where the cursor ends up being rendered from by default.
+  /// {@endtemplate}
+  Offset get cursorOffset => _cursorOffset;
+  Offset _cursorOffset;
+  set cursorOffset(Offset value) {
+    if (_cursorOffset == value) return;
+    _cursorOffset = value;
+    markNeedsLayout();
+  }
+
+  /// How rounded the corners of the cursor should be.
+  Radius get cursorRadius => _cursorRadius;
+  Radius _cursorRadius;
+  set cursorRadius(Radius value) {
+    if (_cursorRadius == value) return;
+    _cursorRadius = value;
+    markNeedsPaint();
+  }
+
+  /// How thick the cursor will be.
+  double get cursorWidth => _cursorWidth;
+  double _cursorWidth = 1.0;
+  set cursorWidth(double value) {
+    if (_cursorWidth == value) return;
+    _cursorWidth = value;
+    markNeedsLayout();
+  }
+
+  /// The pixel ratio of the current device.
+  ///
+  /// Should be obtained by querying MediaQuery for the devicePixelRatio.
+  double get devicePixelRatio => _devicePixelRatio;
+  double _devicePixelRatio;
+  set devicePixelRatio(double value) {
+    if (devicePixelRatio == value) return;
+    _devicePixelRatio = value;
+    markNeedsTextLayout();
+  }
+
+  double _textLayoutLastMaxWidth;
+  double _textLayoutLastMinWidth;
+
+  /// Marks the render object as needing to be laid out again and have its text
+  /// metrics recomputed.
+  ///
+  /// Implies [markNeedsTextLayout].
+  @protected
+  void markNeedsTextLayout() {
+    _textLayoutLastMaxWidth = null;
+    _textLayoutLastMinWidth = null;
+    markNeedsTextLayout();
+  }
+
+  /// Whether the editable is currently focused.
+  bool get hasFocus => _hasFocus;
+  bool _hasFocus = false;
+  bool _listenerAttached = false;
+  set hasFocus(bool value) {
+    assert(value != null);
+    if (_hasFocus == value) return;
+    _hasFocus = value;
+    if (_hasFocus) {
+      assert(!_listenerAttached);
+      // TODO: Add keyboard support
+      // RawKeyboard.instance.addListener(_handleKeyEvent);
+      _listenerAttached = true;
+    } else {
+      assert(_listenerAttached);
+      // TODO: Add keyboard support
+      // RawKeyboard.instance.removeListener(_handleKeyEvent);
+      _listenerAttached = false;
+    }
+    markNeedsSemanticsUpdate();
+  }
+
+  Rect _caretPrototype;
+  Rect _lastCaretRect;
+
+  bool _floatingCursorOn = false;
+  Offset _floatingCursorOffset;
+  TextPosition _floatingCursorTextPosition;
+
+  /// Called during the paint phase when the caret location changes.
+  CaretChangedHandler onCaretChanged;
+
+  Offset _getPixelPerfectCursorOffset(Rect caretRect) {
+    final Offset caretPosition = localToGlobal(caretRect.topLeft);
+    final double pixelMultiple = 1.0 / _devicePixelRatio;
+    final int quotientX = (caretPosition.dx / pixelMultiple).round();
+    final int quotientY = (caretPosition.dy / pixelMultiple).round();
+    final double pixelPerfectOffsetX =
+        quotientX * pixelMultiple - caretPosition.dx;
+    final double pixelPerfectOffsetY =
+        quotientY * pixelMultiple - caretPosition.dy;
+    return Offset(pixelPerfectOffsetX, pixelPerfectOffsetY);
+  }
+
+  /// An estimate of the height of a line in the text. See [TextPainter.preferredLineHeight].
+  /// This does not required the layout to be updated.
+  double get preferredLineHeight => _textPainter.preferredLineHeight;
+
+  // TODO(garyq): This is no longer producing the highest-fidelity caret
+  // heights for Android, especially when non-alphabetic languages
+  // are involved. The current implementation overrides the height set
+  // here with the full measured height of the text on Android which looks
+  // superior (subjectively and in terms of fidelity) in _paintCaret. We
+  // should rework this properly to once again match the platform. The constant
+  // _kCaretHeightOffset scales poorly for small font sizes.
+  //
+  /// On iOS, the cursor is taller than the cursor on Android. The height
+  /// of the cursor for iOS is approximate and obtained through an eyeball
+  /// comparison.
+  Rect get _getCaretPrototype {
+    assert(defaultTargetPlatform != null);
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return Rect.fromLTWH(0.0, 0.0, cursorWidth, preferredLineHeight + 2);
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        return Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth,
+            preferredLineHeight - 2.0 * _kCaretHeightOffset);
+    }
+    return null;
+  }
+
+  void _paintCaret(
+      Canvas canvas, Offset effectiveOffset, TextPosition textPosition) {
+    assert(
+        _textLayoutLastMaxWidth == constraints.maxWidth &&
+            _textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+
+    // If the floating cursor is enabled, the text cursor's color is [backgroundCursorColor] while
+    // the floating cursor's color is _cursorColor;
+    final Paint paint = Paint()
+      ..color = _floatingCursorOn ? backgroundCursorColor : _cursorColor;
+    final Offset caretOffset =
+        _textPainter.getOffsetForCaret(textPosition, _caretPrototype) +
+            effectiveOffset;
+    Rect caretRect = _caretPrototype.shift(caretOffset);
+    if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
+
+    final double caretHeight =
+        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype);
+    if (caretHeight != null) {
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.iOS:
+        case TargetPlatform.macOS:
+          final double heightDiff = caretHeight - caretRect.height;
+          // Center the caret vertically along the text.
+          caretRect = Rect.fromLTWH(
+            caretRect.left,
+            caretRect.top + heightDiff / 2,
+            caretRect.width,
+            caretRect.height,
+          );
+          break;
+        case TargetPlatform.android:
+        case TargetPlatform.fuchsia:
+        case TargetPlatform.linux:
+        case TargetPlatform.windows:
+          // Override the height to take the full height of the glyph at the TextPosition
+          // when not on iOS. iOS has special handling that creates a taller caret.
+          // TODO(garyq): See the TODO for _getCaretPrototype.
+          caretRect = Rect.fromLTWH(
+            caretRect.left,
+            caretRect.top - _kCaretHeightOffset,
+            caretRect.width,
+            caretHeight,
+          );
+          break;
+      }
+    }
+
+    caretRect = caretRect.shift(_getPixelPerfectCursorOffset(caretRect));
+
+    if (cursorRadius == null) {
+      canvas.drawRect(caretRect, paint);
+    } else {
+      final RRect caretRRect = RRect.fromRectAndRadius(caretRect, cursorRadius);
+      canvas.drawRRect(caretRRect, paint);
+    }
+
+    if (caretRect != _lastCaretRect) {
+      _lastCaretRect = caretRect;
+      if (onCaretChanged != null) onCaretChanged(caretRect);
+    }
   }
 }
