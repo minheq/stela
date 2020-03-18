@@ -677,6 +677,8 @@ class RenderStelaRichText extends RenderBox
   bool _needsClipping = false;
   ui.Shader _overflowShader;
 
+  double get _caretMargin => _kCaretGap + cursorWidth;
+
   /// Whether this paragraph currently has a [dart:ui.Shader] for its overflow
   /// effect.
   ///
@@ -686,10 +688,22 @@ class RenderStelaRichText extends RenderBox
 
   void _layoutText({double minWidth = 0.0, double maxWidth = double.infinity}) {
     final bool widthMatters = softWrap || overflow == TextOverflow.ellipsis;
+
+    assert(maxWidth != null && minWidth != null);
+
+    if (_textLayoutLastMaxWidth == maxWidth &&
+        _textLayoutLastMinWidth == minWidth) return;
+    final double availableMaxWidth = math.max(0.0, maxWidth - _caretMargin);
+    final double availableMinWidth = math.min(minWidth, availableMaxWidth);
+    final double textMaxWidth =
+        widthMatters ? availableMaxWidth : double.infinity;
+    final double textMinWidth = availableMinWidth;
     _textPainter.layout(
-      minWidth: minWidth,
-      maxWidth: widthMatters ? maxWidth : double.infinity,
+      minWidth: textMinWidth,
+      maxWidth: textMaxWidth,
     );
+    _textLayoutLastMinWidth = minWidth;
+    _textLayoutLastMaxWidth = maxWidth;
   }
 
   @override
@@ -855,8 +869,49 @@ class RenderStelaRichText extends RenderBox
     }
   }
 
+  ValueListenable<bool> get selectionStartInViewport =>
+      _selectionStartInViewport;
+  final ValueNotifier<bool> _selectionStartInViewport =
+      ValueNotifier<bool>(true);
+
+  ValueListenable<bool> get selectionEndInViewport => _selectionEndInViewport;
+  final ValueNotifier<bool> _selectionEndInViewport = ValueNotifier<bool>(true);
+
+  void _updateSelectionExtentsVisibility(Offset effectiveOffset) {
+    final Rect visibleRegion = Offset.zero & size;
+
+    final Offset startOffset = _textPainter.getOffsetForCaret(
+      TextPosition(offset: _selection.start, affinity: _selection.affinity),
+      _caretPrototype,
+    );
+    // TODO(justinmc): https://github.com/flutter/flutter/issues/31495
+    // Check if the selection is visible with an approximation because a
+    // difference between rounded and unrounded values causes the caret to be
+    // reported as having a slightly (< 0.5) negative y offset. This rounding
+    // happens in paragraph.cc's layout and TextPainer's
+    // _applyFloatingPointHack. Ideally, the rounding mismatch will be fixed and
+    // this can be changed to be a strict check instead of an approximation.
+    const double visibleRegionSlop = 0.5;
+    _selectionStartInViewport.value = visibleRegion
+        .inflate(visibleRegionSlop)
+        .contains(startOffset + effectiveOffset);
+
+    final Offset endOffset = _textPainter.getOffsetForCaret(
+      TextPosition(offset: _selection.end, affinity: _selection.affinity),
+      _caretPrototype,
+    );
+    _selectionEndInViewport.value = visibleRegion
+        .inflate(visibleRegionSlop)
+        .contains(endOffset + effectiveOffset);
+  }
+
   @override
   void paint(PaintingContext context, Offset offset) {
+    assert(
+        _textLayoutLastMaxWidth == constraints.maxWidth &&
+            _textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    final Offset effectiveOffset = offset;
     // Ideally we could compute the min/max intrinsic width/height with a
     // non-destructive operation. However, currently, computing these values
     // will destroy state inside the painter. If that happens, we need to get
@@ -868,6 +923,22 @@ class RenderStelaRichText extends RenderBox
     // If you remove this call, make sure that changing the textAlign still
     // works properly.
     _layoutTextWithConstraints(constraints);
+
+    bool showSelection = false;
+    bool showCaret = false;
+
+    if (_selection != null && !_floatingCursorOn) {
+      if (_selection.isCollapsed && _showCursor.value && cursorColor != null)
+        showCaret = true;
+      else if (!_selection.isCollapsed && _selectionColor != null)
+        showSelection = true;
+      _updateSelectionExtentsVisibility(effectiveOffset);
+    }
+
+    // if (showSelection) {
+    //   _selectionRects ??= _textPainter.getBoxesForSelection(_selection, boxHeightStyle: _selectionHeightStyle, boxWidthStyle: _selectionWidthStyle);
+    //   _paintSelection(context.canvas, effectiveOffset);
+    // }
 
     assert(() {
       if (debugRepaintTextRainbowEnabled) {
@@ -888,7 +959,23 @@ class RenderStelaRichText extends RenderBox
       }
       context.canvas.clipRect(bounds);
     }
-    _textPainter.paint(context.canvas, offset);
+
+    // On iOS, the cursor is painted over the text, on Android, it's painted
+    // under it.
+    if (paintCursorAboveText)
+      _textPainter.paint(context.canvas, effectiveOffset);
+
+    if (showCaret)
+      _paintCaret(context.canvas, effectiveOffset, _selection.extent);
+
+    if (!paintCursorAboveText)
+      _textPainter.paint(context.canvas, effectiveOffset);
+
+    // if (_floatingCursorOn) {
+    //   if (_resetFloatingCursorAnimationValue == null)
+    //     _paintCaret(context.canvas, effectiveOffset, _floatingCursorTextPosition);
+    //   _paintFloatingCaret(context.canvas, _floatingCursorOffset);
+    // }
 
     RenderBox child = firstChild;
     int childIndex = 0;
