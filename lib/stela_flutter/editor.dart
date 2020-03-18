@@ -78,7 +78,8 @@ class StelaEditor extends StatefulWidget {
         assert(focusNode != null),
         super(key: key);
 
-  final Widget Function(Stela.Element element) elementBuilder;
+  final Widget Function(Stela.Element element, StelaChildren children)
+      elementBuilder;
   final TextSpan Function(Stela.Text text) textBuilder;
 
   final EditorEditingController controller;
@@ -133,19 +134,15 @@ class _StelaEditorState extends State<StelaEditor>
 }
 
 TextSpan defaultTextBuilder(Stela.Text text) {
-  return TextSpan(text: text.text);
+  return TextSpan(
+      text: text.text, style: TextStyle(color: Colors.black, fontSize: 16));
 }
 
-Widget defaultElementBuilder(Stela.Element element) {
-  if (element is Stela.Inline) {
-    return Text('inline');
-  }
-
-  if (element is Stela.Block) {
-    return StelaElement(node: element);
-  }
-
-  throw Exception('Unidentified element ${element.toString()}');
+Widget defaultElementBuilder(Stela.Element element, StelaChildren children) {
+  return DefaultElement(
+    element: element,
+    children: children,
+  );
 }
 
 class EditorScope extends ChangeNotifier {

@@ -18,7 +18,8 @@ class StelaChildren extends StatefulWidget {
         super(key: key);
 
   final Stela.Ancestor node;
-  final Widget Function(Stela.Element element) elementBuilder;
+  final Widget Function(Stela.Element element, StelaChildren children)
+      elementBuilder;
   final TextSpan Function(Stela.Text text) textBuilder;
   final Stela.Range selection;
 
@@ -40,7 +41,9 @@ class _StelaChildrenState extends State<StelaChildren> {
           selection: widget.selection,
         ));
       } else {
-        // Handle text?
+        // Text nodes are handled within [StelaElement] instead of here.
+        // The reason is that we want to rely on [TextPainter], and that forces us
+        // to merge texts into a single [RenderObject]
       }
     }
 

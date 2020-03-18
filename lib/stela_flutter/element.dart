@@ -19,7 +19,8 @@ class StelaElement extends StatefulWidget {
         super(key: key);
 
   final Stela.Ancestor node;
-  final Widget Function(Stela.Element element) elementBuilder;
+  final Widget Function(Stela.Element element, StelaChildren children)
+      elementBuilder;
   final TextSpan Function(Stela.Text text) textBuilder;
   final Stela.Range selection;
 
@@ -34,32 +35,40 @@ class _StelaElementState extends State<StelaElement> {
         widget.node is Stela.Block && widget.node.children.first is Stela.Text;
 
     if (isRichText == false) {
-      return Container(
-          child: StelaChildren(
+      StelaChildren children = StelaChildren(
         node: widget.node,
         elementBuilder: widget.elementBuilder,
         textBuilder: widget.textBuilder,
         selection: widget.selection,
-      ));
+      );
+
+      return widget.elementBuilder(widget.node, children);
     }
 
-    List<InlineSpan> children = [];
+    List<InlineSpan> inlineSpans = [];
 
-    for (Stela.Node blockChild in widget.node.children) {
-      if (blockChild is Stela.Text) {
-        children.add(TextSpan(
-            text: blockChild.text,
-            style: TextStyle(color: Colors.black, fontSize: 16)));
-      }
-
-      if (blockChild is Stela.Inline) {
-        // TODO: implement inline stuff for things like hyperlinks
-        children.add(WidgetSpan(child: Text('inline')));
+    for (Stela.Node child in widget.node.children) {
+      if (child is Stela.Text) {
+        inlineSpans.add(widget.textBuilder(child));
+      } else {
+        throw Exception('Inline not supported');
       }
     }
 
-    TextSpan textSpan = TextSpan(children: children);
+    return StelaRichText(
+      text: TextSpan(children: inlineSpans),
+    );
+  }
+}
 
-    return StelaRichText(text: textSpan);
+class DefaultElement extends StatelessWidget {
+  DefaultElement({this.element, this.children});
+
+  final Stela.Element element;
+  final StelaChildren children;
+
+  @override
+  Widget build(BuildContext context) {
+    return Container(child: children);
   }
 }
