@@ -21,10 +21,6 @@ const Duration _kCursorBlinkHalfPeriod = Duration(milliseconds: 500);
 // transparent.
 const Duration _kCursorBlinkWaitForStart = Duration(milliseconds: 150);
 
-// Number of cursor ticks during which the most recently entered character
-// is shown in an obscured text field.
-const int _kObscureShowLatestCharCursorTicks = 3;
-
 /// Signature for the callback that reports when the user changes the selection
 /// (including the cursor location).
 typedef SelectionChangedCallback = void Function(
@@ -141,10 +137,6 @@ class StelaEditor extends StatefulWidget {
 class StelaEditorState extends State<StelaEditor>
     with TickerProviderStateMixin<StelaEditor>
     implements EditorSelectionDelegate {
-  // #region Scope
-  StelaScope _scope;
-  // #endregion
-
   // #region State lifecycle
   @override
   void initState() {
@@ -327,7 +319,6 @@ class StelaEditorState extends State<StelaEditor>
   }
 
   int _obscureShowCharTicksPending = 0;
-  int _obscureLatestCharIndex;
 
   void _cursorTick(Timer timer) {
     _targetCursorVisibility = !_targetCursorVisibility;
@@ -400,7 +391,14 @@ class StelaEditorState extends State<StelaEditor>
   Widget build(BuildContext context) {
     return StelaScopeProvider(
       scope: StelaScope(
-          controller: widget.controller, focusNode: widget.focusNode),
+          controller: widget.controller,
+          focusNode: widget.focusNode,
+          showCursor: _cursorVisibilityNotifier,
+          cursorColor: _cursorColor,
+          backgroundCursorColor: widget.backgroundCursorColor,
+          cursorWidth: widget.cursorWidth,
+          hasFocus: _hasFocus,
+          cursorRadius: widget.cursorRadius),
       child: ListBody(
         children: widget.children,
       ),
@@ -410,28 +408,24 @@ class StelaEditorState extends State<StelaEditor>
 
 class StelaScope extends ChangeNotifier {
   StelaScope({
-    @required EditorEditingController controller,
-    @required FocusNode focusNode,
-  })  : assert(controller != null),
-        assert(focusNode != null),
-        _controller = controller,
-        _focusNode = focusNode;
+    @required this.controller,
+    @required this.focusNode,
+    this.showCursor,
+    this.cursorColor,
+    this.hasFocus,
+    this.backgroundCursorColor,
+    this.cursorWidth,
+    this.cursorRadius,
+  });
 
-  EditorEditingController _controller;
-  EditorEditingController get controller => _controller;
-  set controller(EditorEditingController value) {
-    if (_controller != value) {
-      _controller = value;
-    }
-  }
-
-  FocusNode _focusNode;
-  FocusNode get focusNode => _focusNode;
-  set focusNode(FocusNode value) {
-    if (_focusNode != value) {
-      _focusNode = value;
-    }
-  }
+  EditorEditingController controller;
+  FocusNode focusNode;
+  ValueNotifier<bool> showCursor;
+  Color cursorColor;
+  bool hasFocus;
+  Color backgroundCursorColor;
+  double cursorWidth;
+  Radius cursorRadius;
 
   static StelaScope of(BuildContext context) {
     return context

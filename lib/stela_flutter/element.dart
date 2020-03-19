@@ -5,6 +5,7 @@ import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/rich_text.dart';
 import 'package:inday/stela_flutter/children.dart';
+import 'package:inday/stela_flutter/editor.dart';
 
 class StelaElement extends StatefulWidget {
   StelaElement(
@@ -31,38 +32,39 @@ class StelaElement extends StatefulWidget {
 class _StelaElementState extends State<StelaElement> {
   @override
   Widget build(BuildContext context) {
-    ThemeData themeData = Theme.of(context);
+    StelaScope scope = StelaScope.of(context);
+
     bool isRichText =
         widget.node is Stela.Block && widget.node.children.first is Stela.Text;
 
     if (isRichText == false) {
-      StelaChildren children = StelaChildren(
-        node: widget.node,
-        elementBuilder: widget.elementBuilder,
-        textBuilder: widget.textBuilder,
-        selection: widget.selection,
-      );
-
-      return widget.elementBuilder(widget.node, children);
+      return widget.elementBuilder(
+          widget.node,
+          StelaChildren(
+            node: widget.node,
+            elementBuilder: widget.elementBuilder,
+            textBuilder: widget.textBuilder,
+            selection: widget.selection,
+          ));
     }
 
-    List<InlineSpan> inlineSpans = [];
+    List<InlineSpan> children = [];
 
     for (Stela.Node child in widget.node.children) {
       if (child is Stela.Text) {
-        inlineSpans.add(widget.textBuilder(child));
+        children.add(widget.textBuilder(child));
       } else {
         throw Exception('Inline not supported');
       }
     }
 
     return StelaRichText(
-      text: TextSpan(children: inlineSpans),
-      showCursor: ValueNotifier<bool>(true),
-      cursorColor: themeData.cursorColor,
-      hasFocus: true,
+      text: TextSpan(children: children),
       selection: TextSelection(baseOffset: 1, extentOffset: 1),
-      cursorRadius: Radius.circular(2.0),
+      showCursor: scope.showCursor,
+      cursorColor: scope.cursorColor,
+      hasFocus: scope.hasFocus,
+      cursorRadius: scope.cursorRadius,
     );
   }
 }
