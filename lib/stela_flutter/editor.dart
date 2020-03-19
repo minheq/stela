@@ -135,12 +135,22 @@ class StelaEditor extends StatefulWidget {
 }
 
 class StelaEditorState extends State<StelaEditor>
-    with TickerProviderStateMixin<StelaEditor>
+    with
+        AutomaticKeepAliveClientMixin<StelaEditor>,
+        TickerProviderStateMixin<StelaEditor>
     implements EditorSelectionDelegate {
   // #region State lifecycle
   @override
   void initState() {
     super.initState();
+    // #region Cursor
+    _cursorBlinkOpacityController =
+        AnimationController(vsync: this, duration: _fadeDuration);
+    _cursorBlinkOpacityController.addListener(_onCursorColorTick);
+    _cursorVisibilityNotifier.value = widget.showCursor;
+    _startCursorTimer();
+    // #endregion Cursor
+
     // widget.controller.addListener(_didChangeTextEditingValue);
     // _focusAttachment = widget.focusNode.attach(context);
     widget.focusNode.addListener(_handleFocusChanged);
@@ -148,12 +158,6 @@ class StelaEditorState extends State<StelaEditor>
     // _scrollController.addListener(() { _selectionOverlay?.updateForScroll(); });
     // _floatingCursorResetController = AnimationController(vsync: this);
     // _floatingCursorResetController.addListener(_onFloatingCursorResetTick);
-
-    // Cursor blink
-    _cursorBlinkOpacityController =
-        AnimationController(vsync: this, duration: _fadeDuration);
-    _cursorBlinkOpacityController.addListener(_onCursorColorTick);
-    _cursorVisibilityNotifier.value = widget.showCursor;
   }
 
   @override
@@ -186,7 +190,7 @@ class StelaEditorState extends State<StelaEditor>
       // _focusAttachment?.detach();
       // _focusAttachment = widget.focusNode.attach(context);
       widget.focusNode.addListener(_handleFocusChanged);
-      // updateKeepAlive();
+      updateKeepAlive();
     }
     // if (widget.readOnly) {
     //   _closeInputConnectionIfNeeded();
@@ -212,8 +216,11 @@ class StelaEditorState extends State<StelaEditor>
 
   @override
   void dispose() {
-    // widget.controller.removeListener(_didChangeTextEditingValue);
+    // #region Cursor
     _cursorBlinkOpacityController.removeListener(_onCursorColorTick);
+    // #endregion
+
+    // widget.controller.removeListener(_didChangeTextEditingValue);
     // _floatingCursorResetController.removeListener(_onFloatingCursorResetTick);
     // _closeInputConnectionIfNeeded();
     // assert(!_hasInputConnection);
@@ -228,8 +235,12 @@ class StelaEditorState extends State<StelaEditor>
 
   // #endregion
 
-  // #region EditorSelectionDelegate
+  // #region AutomaticKeepAliveClientMixin
+  @override
+  bool get wantKeepAlive => _hasFocus;
+  // #endregion
 
+  // #region EditorSelectionDelegate
   EditorEditingValue get _value => widget.controller.value;
   set _value(EditorEditingValue value) {
     widget.controller.value = value;
@@ -263,7 +274,7 @@ class StelaEditorState extends State<StelaEditor>
   // #region Focus
   bool _didAutoFocus = false;
 
-  bool get _hasFocus => widget.focusNode.hasFocus;
+  bool get _hasFocus => true;
 
   void _handleFocusChanged() {
     // _openOrCloseInputConnectionIfNeeded();
@@ -283,7 +294,7 @@ class StelaEditorState extends State<StelaEditor>
       // Clear the selection and composition state if this widget lost focus.
       // _value = TextEditingValue(text: _value.text);
     }
-    // updateKeepAlive();
+    updateKeepAlive();
   }
   // #endregion
 
@@ -318,29 +329,15 @@ class StelaEditorState extends State<StelaEditor>
         widget.showCursor && _cursorBlinkOpacityController.value > 0;
   }
 
-  int _obscureShowCharTicksPending = 0;
-
   void _cursorTick(Timer timer) {
     _targetCursorVisibility = !_targetCursorVisibility;
     final double targetOpacity = _targetCursorVisibility ? 1.0 : 0.0;
+
     if (widget.cursorOpacityAnimates) {
-      // If we want to show the cursor, we will animate the opacity to the value
-      // of 1.0, and likewise if we want to make it disappear, to 0.0. An easing
-      // curve is used for the animation to mimic the aesthetics of the native
-      // iOS cursor.
-      //
-      // These values and curves have been obtained through eyeballing, so are
-      // likely not exactly the same as the values for native iOS.
       _cursorBlinkOpacityController.animateTo(targetOpacity,
           curve: Curves.easeOut);
     } else {
       _cursorBlinkOpacityController.value = targetOpacity;
-    }
-
-    if (_obscureShowCharTicksPending > 0) {
-      setState(() {
-        _obscureShowCharTicksPending--;
-      });
     }
   }
 
@@ -353,7 +350,6 @@ class StelaEditorState extends State<StelaEditor>
   void _startCursorTimer() {
     _targetCursorVisibility = true;
     _cursorBlinkOpacityController.value = 1.0;
-    if (EditableText.debugDeterministicCursor) return;
     if (widget.cursorOpacityAnimates) {
       _cursorTimer =
           Timer.periodic(_kCursorBlinkWaitForStart, _cursorWaitForStart);
@@ -367,8 +363,6 @@ class StelaEditorState extends State<StelaEditor>
     _cursorTimer = null;
     _targetCursorVisibility = false;
     _cursorBlinkOpacityController.value = 0.0;
-    if (EditableText.debugDeterministicCursor) return;
-    if (resetCharTicks) _obscureShowCharTicksPending = 0;
     if (widget.cursorOpacityAnimates) {
       _cursorBlinkOpacityController.stop();
       _cursorBlinkOpacityController.value = 0.0;
@@ -378,17 +372,19 @@ class StelaEditorState extends State<StelaEditor>
   void _startOrStopCursorTimerIfNeeded() {
     if (_cursorTimer == null &&
         _hasFocus &&
-        Stela.RangeUtils.isCollapsed(_value.selection))
+        Stela.RangeUtils.isCollapsed(_value.selection)) {
       _startCursorTimer();
-    else if (_cursorTimer != null &&
-        (!_hasFocus || !Stela.RangeUtils.isCollapsed(_value.selection)))
+    } else if (_cursorTimer != null &&
+        (!_hasFocus || !Stela.RangeUtils.isCollapsed(_value.selection))) {
       _stopCursorTimer();
+    }
   }
-
   // #endregion
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // See AutomaticKeepAliveClientMixin.
+
     return StelaScopeProvider(
       scope: StelaScope(
           controller: widget.controller,

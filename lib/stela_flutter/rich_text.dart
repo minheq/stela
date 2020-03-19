@@ -313,6 +313,30 @@ class RenderStelaRichText extends RenderBox
       child.parentData = TextParentData();
   }
 
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    // TODO
+    // _tap = TapGestureRecognizer(debugOwner: this)
+    //   ..onTapDown = _handleTapDown
+    //   ..onTap = _handleTap;
+    // _longPress = LongPressGestureRecognizer(debugOwner: this)..onLongPress = _handleLongPress;
+    // _offset.addListener(markNeedsPaint);
+    _showCursor.addListener(markNeedsPaint);
+  }
+
+  @override
+  void detach() {
+    _showCursor.removeListener(markNeedsPaint);
+    // TODO
+    // _tap.dispose();
+    // _longPress.dispose();
+    // _offset.removeListener(markNeedsPaint);
+    // if (_listenerAttached)
+    //   RawKeyboard.instance.removeListener(_handleKeyEvent);
+    super.detach();
+  }
+
   final TextPainter _textPainter;
 
   /// The text to display.

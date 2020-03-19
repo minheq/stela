@@ -30,9 +30,14 @@ class MyApp extends StatelessWidget {
               controller: EditorEditingController.fromEditor(editor),
               cursorColor: themeData.cursorColor,
               backgroundCursorColor: CupertinoColors.inactiveGray,
+              cursorOpacityAnimates: true,
               focusNode: FocusNode(),
               children: [StelaEditable()],
             ),
+            TextFormField(
+              initialValue:
+                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
+            )
           ],
         )),
       ),
