@@ -31,7 +31,7 @@ class StelaChildren extends StatefulWidget {
 class _StelaChildrenState extends State<StelaChildren> {
   @override
   Widget build(BuildContext context) {
-    StelaScope scope = StelaScope.of(context);
+    StelaEditorScope scope = StelaEditorScope.of(context);
     Stela.Ancestor node = widget.node;
     Stela.Editor editor = scope.controller.value;
     Stela.Range selection = scope.controller.selection;

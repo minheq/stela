@@ -3,6 +3,7 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
+import 'package:inday/stela_flutter/editable.dart';
 import 'package:inday/stela_flutter/rich_text.dart';
 import 'package:inday/stela_flutter/children.dart';
 import 'package:inday/stela_flutter/editor.dart';
@@ -32,7 +33,8 @@ class StelaElement extends StatefulWidget {
 class _StelaElementState extends State<StelaElement> {
   @override
   Widget build(BuildContext context) {
-    StelaScope scope = StelaScope.of(context);
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
 
     bool isRichText =
         widget.node is Stela.Block && widget.node.children.first is Stela.Text;
@@ -58,14 +60,19 @@ class _StelaElementState extends State<StelaElement> {
       }
     }
 
-    TextSelection textSelection = TextSelection(
-        baseOffset: widget.selection.anchor.offset,
-        extentOffset: widget.selection.focus.offset);
+    TextSelection textSelection;
+
+    if (widget.selection != null) {
+      textSelection = TextSelection(
+          baseOffset: widget.selection.anchor.offset,
+          extentOffset: widget.selection.focus.offset);
+    }
 
     return StelaRichText(
       text: TextSpan(children: children),
       selection: textSelection,
       showCursor: scope.showCursor,
+      editableScope: editableScope,
       cursorColor: scope.cursorColor,
       hasFocus: scope.hasFocus,
       cursorRadius: scope.cursorRadius,

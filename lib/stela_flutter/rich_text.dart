@@ -7,6 +7,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:inday/stela_flutter/editable.dart';
+import 'package:inday/stela_flutter/editor.dart';
 
 const double _kCaretGap = 1.0; // pixels
 const double _kCaretHeightOffset = 2.0; // pixels
@@ -23,7 +25,7 @@ const double _kFloatingCaretRadius = 1.0;
 /// Used by [RenderEditable.onCaretChanged].
 typedef CaretChangedHandler = void Function(Rect caretRect);
 
-class StelaRichText extends MultiChildRenderObjectWidget {
+class StelaRichText extends StatefulWidget {
   StelaRichText({
     Key key,
     @required this.text,
@@ -41,6 +43,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     this.selection,
     this.onCaretChanged,
     this.selectionColor,
+    this.editableScope,
     this.hasFocus,
     this.backgroundCursorColor,
     this.showCursor,
@@ -57,8 +60,339 @@ class StelaRichText extends MultiChildRenderObjectWidget {
         assert(overflow != null),
         assert(textScaleFactor != null),
         assert(maxLines == null || maxLines > 0),
-        assert(textWidthBasis != null),
-        super(key: key, children: _extractChildren(text));
+        assert(textWidthBasis != null);
+
+  final Color cursorColor;
+  final Color backgroundCursorColor;
+  final ValueNotifier<bool> showCursor;
+  final bool hasFocus;
+  final Color selectionColor;
+  final TextSelection selection;
+  final CaretChangedHandler onCaretChanged;
+  final double cursorWidth;
+  final Radius cursorRadius;
+  final Offset cursorOffset;
+  final bool paintCursorAboveText;
+  final StelaEditableScope editableScope;
+  final ui.BoxHeightStyle selectionHeightStyle;
+  final ui.BoxWidthStyle selectionWidthStyle;
+  final double devicePixelRatio;
+  final InlineSpan text;
+  final TextAlign textAlign;
+  final TextDirection textDirection;
+  final bool softWrap;
+  final TextOverflow overflow;
+  final double textScaleFactor;
+  final int maxLines;
+  final Locale locale;
+  final StrutStyle strutStyle;
+  final TextWidthBasis textWidthBasis;
+  final ui.TextHeightBehavior textHeightBehavior;
+
+  @override
+  _StelaRichTextState createState() => _StelaRichTextState();
+}
+
+class _StelaRichTextState extends State<StelaRichText> {
+  /// Whether to show the selection toolbar.
+  ///
+  /// It is based on the signal source when a [onTapDown] is called. This getter
+  /// will return true if current [onTapDown] event is triggered by a touch or
+  /// a stylus.
+  bool get shouldShowSelectionToolbar => _shouldShowSelectionToolbar;
+  bool _shouldShowSelectionToolbar = true;
+
+  /// Handler for [TextSelectionGestureDetector.onTapDown].
+  ///
+  /// By default, it forwards the tap to [RenderEditable.handleTapDown] and sets
+  /// [shouldShowSelectionToolbar] to true if the tap was initiated by a finger or stylus.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onTapDown], which triggers this callback.
+  @protected
+  void onTapDown(TapDownDetails details) {
+    // renderEditable.handleTapDown(details);
+    // The selection overlay should only be shown when the user is interacting
+    // through a touch screen (via either a finger or a stylus). A mouse shouldn't
+    // trigger the selection overlay.
+    // For backwards-compatibility, we treat a null kind the same as touch.
+    final PointerDeviceKind kind = details.kind;
+    _shouldShowSelectionToolbar = kind == null ||
+        kind == PointerDeviceKind.touch ||
+        kind == PointerDeviceKind.stylus;
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onForcePressStart].
+  ///
+  /// By default, it selects the word at the position of the force press,
+  /// if selection is enabled.
+  ///
+  /// This callback is only applicable when force press is enabled.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onForcePressStart], which triggers this
+  ///    callback.
+  @protected
+  void onForcePressStart(ForcePressDetails details) {
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    assert(scope.forcePressEnabled);
+    _shouldShowSelectionToolbar = true;
+    if (scope.selectionEnabled) {
+      // renderEditable.selectWordsInRange(
+      //   from: details.globalPosition,
+      //   cause: SelectionChangedCause.forcePress,
+      // );
+    }
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onForcePressEnd].
+  ///
+  /// By default, it selects words in the range specified in [details] and shows
+  /// toolbar if it is necessary.
+  ///
+  /// This callback is only applicable when force press is enabled.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onForcePressEnd], which triggers this
+  ///    callback.
+  @protected
+  void onForcePressEnd(ForcePressDetails details) {
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    assert(scope.forcePressEnabled);
+    // renderEditable.selectWordsInRange(
+    //   from: details.globalPosition,
+    //   cause: SelectionChangedCause.forcePress,
+    // );
+    if (shouldShowSelectionToolbar) {
+      // editableText.showToolbar();
+    }
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onSingleTapUp].
+  ///
+  /// By default, it selects word edge if selection is enabled.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onSingleTapUp], which triggers
+  ///    this callback.
+  @protected
+  void onSingleTapUp(TapUpDetails details) {
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    if (scope.selectionEnabled) {
+      // renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
+    }
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onSingleTapCancel].
+  ///
+  /// By default, it services as place holder to enable subclass override.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onSingleTapCancel], which triggers
+  ///    this callback.
+  @protected
+  void onSingleTapCancel() {
+    /* Subclass should override this method if needed. */
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onSingleLongTapStart].
+  ///
+  /// By default, it selects text position specified in [details] if selection
+  /// is enabled.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onSingleLongTapStart], which triggers
+  ///    this callback.
+  @protected
+  void onSingleLongTapStart(LongPressStartDetails details) {
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    if (scope.selectionEnabled) {
+      // renderEditable.selectPositionAt(
+      //   from: details.globalPosition,
+      //   cause: SelectionChangedCause.longPress,
+      // );
+    }
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onSingleLongTapMoveUpdate].
+  ///
+  /// By default, it updates the selection location specified in [details] if
+  /// selection is enabled.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onSingleLongTapMoveUpdate], which
+  ///    triggers this callback.
+  @protected
+  void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    if (scope.selectionEnabled) {
+      // renderEditable.selectPositionAt(
+      //   from: details.globalPosition,
+      //   cause: SelectionChangedCause.longPress,
+      // );
+    }
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onSingleLongTapEnd].
+  ///
+  /// By default, it shows toolbar if necessary.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onSingleLongTapEnd], which triggers this
+  ///    callback.
+  @protected
+  void onSingleLongTapEnd(LongPressEndDetails details) {
+    // if (shouldShowSelectionToolbar) {
+    //   editableText.showToolbar();
+    // }
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onDoubleTapDown].
+  ///
+  /// By default, it selects a word through [renderEditable.selectWord] if
+  /// selectionEnabled and shows toolbar if necessary.
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onDoubleTapDown], which triggers this
+  ///    callback.
+  @protected
+  void onDoubleTapDown(TapDownDetails details) {
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    // if (scope.selectionEnabled) {
+    //   renderEditable.selectWord(cause: SelectionChangedCause.tap);
+    //   if (shouldShowSelectionToolbar)
+    //     editableText.showToolbar();
+    // }
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onDragSelectionStart].
+  ///
+  /// By default, it selects a text position specified in [details].
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onDragSelectionStart], which triggers
+  ///    this callback.
+  @protected
+  void onDragSelectionStart(DragStartDetails details) {
+    // renderEditable.selectPositionAt(
+    //   from: details.globalPosition,
+    //   cause: SelectionChangedCause.drag,
+    // );
+  }
+
+  /// Handler for [TextSelectionGestureDetector.onDragSelectionUpdate].
+  ///
+  /// By default, it updates the selection location specified in [details].
+  ///
+  /// See also:
+  ///
+  ///  * [TextSelectionGestureDetector.onDragSelectionUpdate], which triggers
+  ///    this callback./lib/src/material/text_field.dart
+  @protected
+  void onDragSelectionUpdate(
+      DragStartDetails startDetails, DragUpdateDetails updateDetails) {
+    // renderEditable.selectPositionAt(
+    //   from: startDetails.globalPosition,
+    //   to: updateDetails.globalPosition,
+    //   cause: SelectionChangedCause.drag,
+    // );
+  }
+
+  @protected
+  void onDragSelectionEnd(DragEndDetails details) {
+    /* Subclass should override this method if needed. */
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    StelaEditorScope scope = StelaEditorScope.of(context);
+
+    return TextSelectionGestureDetector(
+      behavior: HitTestBehavior.translucent,
+      onTapDown: onTapDown,
+      onForcePressStart: scope.forcePressEnabled ? onForcePressStart : null,
+      onForcePressEnd: scope.forcePressEnabled ? onForcePressEnd : null,
+      onSingleTapUp: onSingleTapUp,
+      onSingleTapCancel: onSingleTapCancel,
+      onSingleLongTapStart: onSingleLongTapStart,
+      onSingleLongTapMoveUpdate: onSingleLongTapMoveUpdate,
+      onSingleLongTapEnd: onSingleLongTapEnd,
+      onDoubleTapDown: onDoubleTapDown,
+      onDragSelectionStart: onDragSelectionStart,
+      onDragSelectionUpdate: onDragSelectionUpdate,
+      onDragSelectionEnd: onDragSelectionEnd,
+      child: _StelaRichText(
+        cursorColor: widget.cursorColor,
+        backgroundCursorColor: widget.backgroundCursorColor,
+        showCursor: widget.showCursor,
+        hasFocus: widget.hasFocus,
+        selectionColor: widget.selectionColor,
+        selection: widget.selection,
+        onCaretChanged: widget.onCaretChanged,
+        cursorWidth: widget.cursorWidth,
+        cursorRadius: widget.cursorRadius,
+        cursorOffset: widget.cursorOffset,
+        paintCursorAboveText: widget.paintCursorAboveText,
+        editableScope: widget.editableScope,
+        selectionHeightStyle: widget.selectionHeightStyle,
+        selectionWidthStyle: widget.selectionWidthStyle,
+        devicePixelRatio: widget.devicePixelRatio,
+        text: widget.text,
+        textAlign: widget.textAlign,
+        textDirection: widget.textDirection,
+        softWrap: widget.softWrap,
+        overflow: widget.overflow,
+        textScaleFactor: widget.textScaleFactor,
+        maxLines: widget.maxLines,
+        locale: widget.locale,
+        strutStyle: widget.strutStyle,
+        textWidthBasis: widget.textWidthBasis,
+        textHeightBehavior: widget.textHeightBehavior,
+      ),
+    );
+  }
+}
+
+class _StelaRichText extends MultiChildRenderObjectWidget {
+  _StelaRichText({
+    Key key,
+    @required this.text,
+    this.textAlign = TextAlign.start,
+    this.textDirection,
+    this.softWrap = true,
+    this.overflow = TextOverflow.clip,
+    this.textScaleFactor = 1.0,
+    this.maxLines,
+    this.locale,
+    this.strutStyle,
+    this.textWidthBasis = TextWidthBasis.parent,
+    this.textHeightBehavior,
+    this.cursorColor,
+    this.selection,
+    this.onCaretChanged,
+    this.selectionColor,
+    this.editableScope,
+    this.hasFocus,
+    this.backgroundCursorColor,
+    this.showCursor,
+    this.cursorWidth = 2.0,
+    this.cursorRadius,
+    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
+    this.paintCursorAboveText = false,
+    this.cursorOffset,
+    this.devicePixelRatio = 1.0,
+  }) : super(key: key, children: _extractChildren(text));
 
   // Traverses the InlineSpan tree and depth-first collects the list of
   // child widgets that are created in WidgetSpans.
@@ -84,6 +418,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   final Radius cursorRadius;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
+  final StelaEditableScope editableScope;
   final ui.BoxHeightStyle selectionHeightStyle;
   final ui.BoxWidthStyle selectionWidthStyle;
   final double devicePixelRatio;

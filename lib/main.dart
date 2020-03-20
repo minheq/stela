@@ -11,15 +11,12 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     final ThemeData themeData = Theme.of(context);
 
-    Stela.Editor editor = Stela.Editor(
-        selection: Stela.Range(Stela.Point(Stela.Path([0, 0]), 1),
-            Stela.Point(Stela.Path([0, 0]), 1)),
-        children: [
-          Stela.Block(children: [
-            Stela.Text(
-                'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.'),
-          ]),
-        ]);
+    Stela.Editor editor = Stela.Editor(children: [
+      Stela.Block(children: [
+        Stela.Text(
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.'),
+      ]),
+    ]);
 
     return MaterialApp(
       home: Scaffold(

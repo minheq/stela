@@ -469,8 +469,8 @@ class StelaEditorState extends State<StelaEditor>
         break;
     }
 
-    return StelaScopeProvider(
-      scope: StelaScope(
+    return StelaEditorScopeProvider(
+      scope: StelaEditorScope(
           controller: widget.controller,
           focusNode: widget.focusNode,
           showCursor: StelaEditor.debugDeterministicCursor
@@ -491,8 +491,8 @@ class StelaEditorState extends State<StelaEditor>
   }
 }
 
-class StelaScope extends ChangeNotifier {
-  StelaScope({
+class StelaEditorScope extends ChangeNotifier {
+  StelaEditorScope({
     @required this.controller,
     @required this.focusNode,
     this.showCursor,
@@ -518,22 +518,22 @@ class StelaScope extends ChangeNotifier {
   Radius cursorRadius;
   Stela.Path Function(Stela.Node) findPath;
 
-  static StelaScope of(BuildContext context) {
+  static StelaEditorScope of(BuildContext context) {
     return context
-        .dependOnInheritedWidgetOfExactType<StelaScopeProvider>()
+        .dependOnInheritedWidgetOfExactType<StelaEditorScopeProvider>()
         .scope;
   }
 }
 
-class StelaScopeProvider extends InheritedWidget {
-  final StelaScope scope;
+class StelaEditorScopeProvider extends InheritedWidget {
+  final StelaEditorScope scope;
 
-  StelaScopeProvider({
+  StelaEditorScopeProvider({
     Key key,
     @required this.scope,
     @required Widget child,
   }) : super(key: key, child: child);
 
   @override
-  bool updateShouldNotify(StelaScopeProvider old) => true;
+  bool updateShouldNotify(StelaEditorScopeProvider old) => true;
 }
