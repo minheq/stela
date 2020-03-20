@@ -40,6 +40,11 @@ class Path implements Location {
     return "Path([${_path.join(', ')}])";
   }
 
+  /// Adds [position] to the start of the `Path`, extending the length by one.
+  void prepend(int position) {
+    return _path.insert(0, position);
+  }
+
   /// Adds [position] to the end of the `Path`, extending the length by one.
   void add(int position) {
     return _path.add(position);

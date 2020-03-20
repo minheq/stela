@@ -11,12 +11,12 @@ import 'package:inday/stela/range_ref.dart';
 import 'package:inday/stela/text.dart';
 import 'package:inday/stela/transforms.dart';
 
-Expando<List<Path>> _dirtyPaths = Expando();
-Expando<bool> _flushing = Expando();
-Expando<bool> _normalizing = Expando();
-Expando<Set<PathRef>> _pathRefs = Expando();
-Expando<Set<PointRef>> _pointRefs = Expando();
-Expando<Set<RangeRef>> _rangeRefs = Expando();
+Map<Editor, List<Path>> _dirtyPaths = Map();
+Map<Editor, bool> _flushing = Map();
+Map<Editor, bool> _normalizing = Map();
+Map<Editor, Set<PathRef>> _pathRefs = Map();
+Map<Editor, Set<PointRef>> _pointRefs = Map();
+Map<Editor, Set<RangeRef>> _rangeRefs = Map();
 
 /// The `Editor` interface stores all the state of a Stela editor. It is extended
 /// by plugins that wish to add their own helpers and implement new behaviors.
