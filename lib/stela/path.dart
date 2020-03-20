@@ -50,6 +50,13 @@ class Path implements Location {
     return _path.add(position);
   }
 
+  /// Adds [position] to the end of the `Path`, extending the length by one.
+  Path copyAndAdd(int position) {
+    Path newPath = Path(_path);
+    newPath.add(position);
+    return newPath;
+  }
+
   /// Appends all objects of [iterable] to the end of this list.
   ///
   /// Extends the length of the list by the number of objects in [iterable]. Throws an [UnsupportedError] if this list is fixed-length.

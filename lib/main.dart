@@ -13,7 +13,7 @@ class MyApp extends StatelessWidget {
 
     Stela.Editor editor = Stela.Editor(
         selection: Stela.Range(Stela.Point(Stela.Path([0, 0]), 1),
-            Stela.Point(Stela.Path([0, 0]), 10)),
+            Stela.Point(Stela.Path([0, 0]), 1)),
         children: [
           Stela.Block(children: [
             Stela.Text(
@@ -29,15 +29,16 @@ class MyApp extends StatelessWidget {
             StelaEditor(
               controller: EditorEditingController.fromEditor(editor),
               cursorColor: themeData.cursorColor,
+              showCursor: true,
               backgroundCursorColor: CupertinoColors.inactiveGray,
-              cursorOpacityAnimates: true,
+              // cursorOpacityAnimates: true,
               focusNode: FocusNode(),
               children: [StelaEditable()],
             ),
-            TextFormField(
-              initialValue:
-                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
-            )
+            // TextFormField(
+            //   initialValue:
+            //       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
+            // )
           ],
         )),
       ),

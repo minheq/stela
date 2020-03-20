@@ -4,6 +4,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/element.dart';
+import 'package:inday/stela_flutter/editor.dart';
 
 class StelaChildren extends StatefulWidget {
   StelaChildren(
@@ -30,21 +31,44 @@ class StelaChildren extends StatefulWidget {
 class _StelaChildrenState extends State<StelaChildren> {
   @override
   Widget build(BuildContext context) {
+    StelaScope scope = StelaScope.of(context);
+    Stela.Ancestor node = widget.node;
+    Stela.Editor editor = scope.controller.value;
+    Stela.Range selection = scope.controller.selection;
+    Stela.Path path = scope.findPath(node);
+    bool isLeafBlock = node is Stela.Element &&
+        node is Stela.Inline == false &&
+        Stela.EditorUtils.hasInlines(scope.controller.value, node);
+
     List<Widget> children = [];
 
-    for (Stela.Descendant child in widget.node.children) {
+    for (int i = 0; i < node.children.length; i++) {
+      Stela.Descendant child = node.children[i];
+      Stela.Path p = path.copyAndAdd(i);
+      Stela.Descendant n = node.children[i];
+      // const key = ReactEditor.findKey(editor, n)
+      Stela.Range range = Stela.EditorUtils.range(editor, p, null);
+      Stela.Range subSelection;
+
+      if (selection != null) {
+        subSelection = Stela.RangeUtils.intersection(range, selection);
+      }
+
       if (child is Stela.Element) {
         children.add(StelaElement(
           node: child,
           elementBuilder: widget.elementBuilder,
           textBuilder: widget.textBuilder,
-          selection: widget.selection,
+          selection: subSelection,
         ));
       } else {
         // Text nodes are handled within [StelaElement] instead of here.
         // The reason is that we want to rely on [TextPainter], and that forces us
         // to merge texts into a single [RenderStelaRichText] RenderObject
       }
+
+      nodeToIndex[n] = i;
+      nodeToParent[n] = node;
     }
 
     return ListBody(children: children);

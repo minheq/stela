@@ -58,9 +58,13 @@ class _StelaElementState extends State<StelaElement> {
       }
     }
 
+    TextSelection textSelection = TextSelection(
+        baseOffset: widget.selection.anchor.offset,
+        extentOffset: widget.selection.focus.offset);
+
     return StelaRichText(
       text: TextSpan(children: children),
-      selection: TextSelection(baseOffset: 1, extentOffset: 1),
+      selection: textSelection,
       showCursor: scope.showCursor,
       cursorColor: scope.cursorColor,
       hasFocus: scope.hasFocus,

@@ -12,6 +12,9 @@ import 'package:inday/stela_flutter/children.dart';
 import 'package:inday/stela_flutter/element.dart';
 import 'package:inday/stela_flutter/selection.dart';
 
+Map<Stela.Node, int> nodeToIndex = Map();
+Map<Stela.Node, Stela.Ancestor> nodeToParent = Map();
+
 // The time it takes for the cursor to fade from fully opaque to fully
 // transparent and vice versa. A full cursor blink, from transparent to opaque
 // to transparent, is twice this duration.
@@ -117,6 +120,7 @@ class StelaEditor extends StatefulWidget {
   final Radius cursorRadius;
   final bool autofocus;
   final bool cursorOpacityAnimates;
+  static bool debugDeterministicCursor = true;
 
   ///{@macro flutter.rendering.editable.cursorOffset}
   final Offset cursorOffset;
@@ -350,6 +354,10 @@ class StelaEditorState extends State<StelaEditor>
   void _startCursorTimer() {
     _targetCursorVisibility = true;
     _cursorBlinkOpacityController.value = 1.0;
+    if (EditableText.debugDeterministicCursor) {
+      return;
+    }
+
     if (widget.cursorOpacityAnimates) {
       _cursorTimer =
           Timer.periodic(_kCursorBlinkWaitForStart, _cursorWaitForStart);
@@ -363,6 +371,9 @@ class StelaEditorState extends State<StelaEditor>
     _cursorTimer = null;
     _targetCursorVisibility = false;
     _cursorBlinkOpacityController.value = 0.0;
+    if (EditableText.debugDeterministicCursor) {
+      return;
+    }
     if (widget.cursorOpacityAnimates) {
       _cursorBlinkOpacityController.stop();
       _cursorBlinkOpacityController.value = 0.0;
@@ -381,6 +392,36 @@ class StelaEditorState extends State<StelaEditor>
   }
   // #endregion
 
+  // #region Stela functions
+  Stela.Path findPath(Stela.Node node) {
+    Stela.Path path = Stela.Path([]);
+    Stela.Node child = node;
+
+    while (true) {
+      Stela.Node parent = nodeToParent[child];
+
+      if (parent == null) {
+        if (child is Stela.Editor) {
+          return path;
+        } else {
+          break;
+        }
+      }
+
+      int i = nodeToIndex[child];
+
+      if (i == null) {
+        break;
+      }
+
+      path.prepend(i);
+      child = parent;
+    }
+
+    throw Exception("Unable to find the path for node: ${node.toString()}");
+  }
+  // #endregion
+
   @override
   Widget build(BuildContext context) {
     super.build(context); // See AutomaticKeepAliveClientMixin.
@@ -389,10 +430,13 @@ class StelaEditorState extends State<StelaEditor>
       scope: StelaScope(
           controller: widget.controller,
           focusNode: widget.focusNode,
-          showCursor: _cursorVisibilityNotifier,
+          showCursor: StelaEditor.debugDeterministicCursor
+              ? ValueNotifier<bool>(widget.showCursor)
+              : _cursorVisibilityNotifier,
           cursorColor: _cursorColor,
           backgroundCursorColor: widget.backgroundCursorColor,
           cursorWidth: widget.cursorWidth,
+          findPath: findPath,
           hasFocus: _hasFocus,
           cursorRadius: widget.cursorRadius),
       child: ListBody(
@@ -411,6 +455,7 @@ class StelaScope extends ChangeNotifier {
     this.hasFocus,
     this.backgroundCursorColor,
     this.cursorWidth,
+    this.findPath,
     this.cursorRadius,
   });
 
@@ -422,6 +467,7 @@ class StelaScope extends ChangeNotifier {
   Color backgroundCursorColor;
   double cursorWidth;
   Radius cursorRadius;
+  Stela.Path Function(Stela.Node) findPath;
 
   static StelaScope of(BuildContext context) {
     return context
