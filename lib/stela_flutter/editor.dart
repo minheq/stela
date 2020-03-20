@@ -98,6 +98,7 @@ class StelaEditor extends StatefulWidget {
     this.cursorWidth = 2.0,
     this.cursorRadius,
     this.children,
+    this.enableInteractiveSelection = true,
     this.cursorOpacityAnimates = false,
     this.cursorOffset,
     this.paintCursorAboveText = false,
@@ -120,6 +121,7 @@ class StelaEditor extends StatefulWidget {
   final Radius cursorRadius;
   final bool autofocus;
   final bool cursorOpacityAnimates;
+  final bool enableInteractiveSelection;
   static bool debugDeterministicCursor = true;
 
   ///{@macro flutter.rendering.editable.cursorOffset}
@@ -141,8 +143,7 @@ class StelaEditor extends StatefulWidget {
 class StelaEditorState extends State<StelaEditor>
     with
         AutomaticKeepAliveClientMixin<StelaEditor>,
-        TickerProviderStateMixin<StelaEditor>
-    implements EditorSelectionDelegate {
+        TickerProviderStateMixin<StelaEditor> {
   // #region State lifecycle
   @override
   void initState() {
@@ -152,7 +153,6 @@ class StelaEditorState extends State<StelaEditor>
         AnimationController(vsync: this, duration: _fadeDuration);
     _cursorBlinkOpacityController.addListener(_onCursorColorTick);
     _cursorVisibilityNotifier.value = widget.showCursor;
-    _startCursorTimer();
     // #endregion Cursor
 
     // widget.controller.addListener(_didChangeTextEditingValue);
@@ -278,7 +278,7 @@ class StelaEditorState extends State<StelaEditor>
   // #region Focus
   bool _didAutoFocus = false;
 
-  bool get _hasFocus => true;
+  bool get _hasFocus => widget.focusNode.hasFocus;
 
   void _handleFocusChanged() {
     // _openOrCloseInputConnectionIfNeeded();
@@ -392,6 +392,16 @@ class StelaEditorState extends State<StelaEditor>
   }
   // #endregion
 
+  // #region Selection
+  /// {@macro flutter.rendering.editable.selectionEnabled}
+  bool get selectionEnabled => widget.enableInteractiveSelection;
+  // #endregion
+
+  // #region Gestures
+  /// {@macro flutter.rendering.editable.selectionEnabled}
+  bool forcePressEnabled;
+  // #endregion
+
   // #region Stela functions
   Stela.Path findPath(Stela.Node node) {
     Stela.Path path = Stela.Path([]);
@@ -425,6 +435,39 @@ class StelaEditorState extends State<StelaEditor>
   @override
   Widget build(BuildContext context) {
     super.build(context); // See AutomaticKeepAliveClientMixin.
+    ThemeData themeData = Theme.of(context);
+
+    TextSelectionControls textSelectionControls;
+    bool paintCursorAboveText;
+    bool cursorOpacityAnimates;
+    Offset cursorOffset;
+    Color cursorColor = widget.cursorColor;
+    Radius cursorRadius = widget.cursorRadius;
+
+    switch (themeData.platform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        forcePressEnabled = true;
+        textSelectionControls = cupertinoTextSelectionControls;
+        paintCursorAboveText = true;
+        cursorOpacityAnimates = true;
+        cursorColor ??= CupertinoTheme.of(context).primaryColor;
+        cursorRadius ??= const Radius.circular(2.0);
+        cursorOffset = Offset(
+            iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
+        break;
+
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        forcePressEnabled = false;
+        textSelectionControls = materialTextSelectionControls;
+        paintCursorAboveText = false;
+        cursorOpacityAnimates = false;
+        cursorColor ??= themeData.cursorColor;
+        break;
+    }
 
     return StelaScopeProvider(
       scope: StelaScope(
@@ -435,6 +478,8 @@ class StelaEditorState extends State<StelaEditor>
               : _cursorVisibilityNotifier,
           cursorColor: _cursorColor,
           backgroundCursorColor: widget.backgroundCursorColor,
+          forcePressEnabled: forcePressEnabled,
+          selectionEnabled: selectionEnabled,
           cursorWidth: widget.cursorWidth,
           findPath: findPath,
           hasFocus: _hasFocus,
@@ -454,6 +499,8 @@ class StelaScope extends ChangeNotifier {
     this.cursorColor,
     this.hasFocus,
     this.backgroundCursorColor,
+    this.forcePressEnabled,
+    this.selectionEnabled,
     this.cursorWidth,
     this.findPath,
     this.cursorRadius,
@@ -464,6 +511,8 @@ class StelaScope extends ChangeNotifier {
   ValueNotifier<bool> showCursor;
   Color cursorColor;
   bool hasFocus;
+  bool forcePressEnabled;
+  bool selectionEnabled;
   Color backgroundCursorColor;
   double cursorWidth;
   Radius cursorRadius;
