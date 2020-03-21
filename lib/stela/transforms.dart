@@ -9,6 +9,8 @@ import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
 
 class Transforms {
+  // #region Node transforms
+
   /// Insert nodes at a specific location in the Editor.
   ///
   /// [select] when true, after inserting the nodes the user selection
@@ -23,7 +25,7 @@ class Transforms {
     bool select,
     bool voids = false,
   }) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       if (nodes.isEmpty) {
         return;
       }
@@ -37,7 +39,7 @@ class Transforms {
         if (editor.selection != null) {
           at = editor.selection;
         } else if (editor.children.length > 0) {
-          at = EditorUtils.end(editor, Path([]));
+          at = editor.end(Path([]));
         } else {
           at = Path([0]);
         }
@@ -51,7 +53,7 @@ class Transforms {
 
       if (at is Range) {
         if (!hanging) {
-          at = EditorUtils.unhangRange(editor, at);
+          at = editor.unhangRange(at);
         }
 
         if ((at as Range).isCollapsed) {
@@ -60,12 +62,11 @@ class Transforms {
           Edges edges = (at as Range).edges();
           Point end = edges.end;
 
-          PointRef pointRef = EditorUtils.pointRef(editor, end);
+          PointRef pointRef = editor.pointRef(end);
 
           Transforms.delete(editor, at: at);
 
-          Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
-          at = pointRef.unref(editorPointRefs);
+          at = pointRef.unref(editor.pointRefs);
         }
       }
 
@@ -77,7 +78,7 @@ class Transforms {
             };
           } else if (node is Inline) {
             match = (n) {
-              return (n is Text) || EditorUtils.isInline(editor, n);
+              return (n is Text) || editor.isInline(n);
             };
           } else {
             match = (n) {
@@ -86,7 +87,7 @@ class Transforms {
           }
         }
 
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
             at: (at as Point).path, match: match, mode: mode, voids: voids));
 
         if (entries.isEmpty) {
@@ -96,26 +97,24 @@ class Transforms {
         NodeEntry entry = entries.first;
 
         Path matchPath = entry.path;
-        PathRef pathRef = EditorUtils.pathRef(editor, matchPath);
-        bool isAtEnd = EditorUtils.isEnd(editor, at, matchPath);
+        PathRef pathRef = editor.pathRef(matchPath);
+        bool isAtEnd = editor.isEnd(at, matchPath);
         Transforms.splitNodes(editor,
             at: at, match: match, mode: mode, voids: voids);
 
-        Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
-        Path path = pathRef.unref(editorPathRefs);
+        Path path = pathRef.unref(editor.pathRefs);
         at = isAtEnd ? path.next : path;
       }
 
       Path parentPath = (at as Path).parent;
       int index = (at as Path).last;
 
-      if (!voids && EditorUtils.matchVoid(editor, at: parentPath) != null) {
+      if (!voids && editor.matchVoid(at: parentPath) != null) {
         return;
       }
 
       for (Node node in nodes) {
-        Path path = parentPath.copy();
-        path.add(index);
+        Path path = parentPath.copyAndAdd(index);
 
         index++;
 
@@ -123,7 +122,7 @@ class Transforms {
       }
 
       if (select != false) {
-        Point point = EditorUtils.end(editor, at);
+        Point point = editor.end(at);
 
         if (point != null) {
           Transforms.select(editor, point);
@@ -139,7 +138,7 @@ class Transforms {
       NodeMatch match,
       Mode mode = Mode.lowest,
       bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       at = at ?? editor.selection;
 
       if (match == null) {
@@ -156,29 +155,27 @@ class Transforms {
 
       List<NodeEntry> matches = [];
 
-      for (NodeEntry entry in EditorUtils.nodes(editor,
-          at: at, match: match, mode: mode, voids: voids)) {
+      for (NodeEntry entry
+          in editor.nodes(at: at, match: match, mode: mode, voids: voids)) {
         matches.add(entry);
       }
 
       Set<PathRef> pathRefs = Set();
 
       for (NodeEntry match in matches) {
-        PathRef pathRef = EditorUtils.pathRef(editor, match.path);
+        PathRef pathRef = editor.pathRef(match.path);
         pathRefs.add(pathRef);
       }
 
-      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
-
       for (PathRef pathRef in pathRefs) {
-        Path path = pathRef.unref(editorPathRefs);
+        Path path = pathRef.unref(editor.pathRefs);
 
         if (path.length < 2) {
           throw Exception(
               'Cannot lift node at a path [$path] because it has a depth of less than \`2\`.');
         }
 
-        NodeEntry parentEntry = EditorUtils.node(editor, path.parent);
+        NodeEntry parentEntry = editor.node(path.parent);
         Ancestor parent = parentEntry.node;
         Path parentPath = parentEntry.path;
 
@@ -212,7 +209,7 @@ class Transforms {
       Mode mode = Mode.lowest,
       bool hanging = false,
       bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       Location prevAt = at;
       at = at ?? editor.selection;
 
@@ -222,7 +219,7 @@ class Transforms {
 
       if (match == null) {
         if (at is Path) {
-          NodeEntry<Ancestor> entry = EditorUtils.parent(editor, at);
+          NodeEntry<Ancestor> entry = editor.parent(at);
           Ancestor parent = entry.node;
           match = (n) {
             return parent.children.contains(n);
@@ -235,7 +232,7 @@ class Transforms {
       }
 
       if (!hanging && at is Range) {
-        at = EditorUtils.unhangRange(editor, at);
+        at = editor.unhangRange(at);
       }
 
       if (at is Range) {
@@ -244,10 +241,9 @@ class Transforms {
         } else {
           Edges edge = (at as Range).edges();
           Point end = edge.end;
-          PointRef pointRef = EditorUtils.pointRef(editor, end);
+          PointRef pointRef = editor.pointRef(end);
           Transforms.delete(editor, at: at);
-          Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
-          at = pointRef.unref(editorPointRefs);
+          at = pointRef.unref(editor.pointRefs);
 
           if (prevAt == null) {
             Transforms.select(editor, at);
@@ -255,11 +251,11 @@ class Transforms {
         }
       }
 
-      List<NodeEntry> currentNodes = List.from(EditorUtils.nodes(editor,
-          at: at, match: match, voids: voids, mode: mode));
+      List<NodeEntry> currentNodes = List.from(
+          editor.nodes(at: at, match: match, voids: voids, mode: mode));
       NodeEntry current = currentNodes.first;
-      NodeEntry prev = EditorUtils.previous(editor,
-          at: at, match: match, voids: voids, mode: mode);
+      NodeEntry prev =
+          editor.previous(at: at, match: match, voids: voids, mode: mode);
 
       if (current == null || prev == null) {
         return;
@@ -278,7 +274,7 @@ class Transforms {
       Path commonPath = path.common(prevPath);
       bool isPreviousSibling = path.isSibling(prevPath);
 
-      List<NodeEntry> entries = List.from(EditorUtils.levels(editor, at: path));
+      List<NodeEntry> entries = List.from(editor.levels(at: path));
       List<Node> levels = [];
 
       for (int i = 0; i < entries.length; i++) {
@@ -291,14 +287,18 @@ class Transforms {
 
       // Determine if the merge will leave an ancestor of the path empty as a
       // result, in which case we'll want to remove it after merging.
-      NodeEntry emptyAncestor =
-          EditorUtils.above(editor, at: path, mode: Mode.highest, match: (n) {
-        return levels.contains(n) && (n is Element) && n.children.length == 1;
-      });
+      NodeEntry emptyAncestor = editor.above(
+          at: path,
+          mode: Mode.highest,
+          match: (n) {
+            return levels.contains(n) &&
+                (n is Element) &&
+                n.children.length == 1;
+          });
 
       PathRef emptyRef;
       if (emptyAncestor != null) {
-        emptyRef = EditorUtils.pathRef(editor, emptyAncestor.path);
+        emptyRef = editor.pathRef(emptyAncestor.path);
       }
       Map<String, dynamic> props;
       int position;
@@ -332,7 +332,7 @@ class Transforms {
       // of merging the two. This is a common rich text editor behavior to
       // prevent losing formatting when deleting entire nodes when you have a
       // hanging selection.
-      if ((prevNode is Element && EditorUtils.isEmpty(editor, prevNode)) ||
+      if ((prevNode is Element && editor.isEmpty(prevNode)) ||
           (prevNode is Text && prevNode.text == '')) {
         Transforms.removeNodes(editor, at: prevPath, voids: voids);
       } else {
@@ -340,8 +340,7 @@ class Transforms {
       }
 
       if (emptyRef != null) {
-        Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
-        emptyRef.unref(editorPathRefs);
+        emptyRef.unref(editor.pathRefs);
       }
     });
   }
@@ -353,7 +352,7 @@ class Transforms {
       Mode mode = Mode.lowest,
       Path to,
       bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       at = at ?? editor.selection;
 
       if (at == null) {
@@ -368,18 +367,17 @@ class Transforms {
               };
       }
 
-      PathRef toRef = EditorUtils.pathRef(editor, to);
-      List<NodeEntry> targets = List.from(EditorUtils.nodes(editor,
-          at: at, match: match, mode: mode, voids: voids));
+      PathRef toRef = editor.pathRef(to);
+      List<NodeEntry> targets = List.from(
+          editor.nodes(at: at, match: match, mode: mode, voids: voids));
       List<PathRef> pathRefs = [];
 
       for (NodeEntry entry in targets) {
-        pathRefs.add(EditorUtils.pathRef(editor, entry.path));
+        pathRefs.add(editor.pathRef(entry.path));
       }
 
-      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
       for (PathRef pathRef in pathRefs) {
-        Path path = pathRef.unref(editorPathRefs);
+        Path path = pathRef.unref(editor.pathRefs);
         Path newPath = toRef.current;
 
         if (path.isNotEmpty) {
@@ -387,7 +385,7 @@ class Transforms {
         }
       }
 
-      toRef.unref(editorPathRefs);
+      toRef.unref(editor.pathRefs);
     });
   }
 
@@ -398,7 +396,7 @@ class Transforms {
       Mode mode = Mode.lowest,
       bool hanging = false,
       bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       at = at ?? editor.selection;
 
       if (at == null) {
@@ -414,26 +412,24 @@ class Transforms {
       }
 
       if (!hanging && at is Range) {
-        at = EditorUtils.unhangRange(editor, at);
+        at = editor.unhangRange(at);
       }
 
-      List<NodeEntry> depths = List.from(EditorUtils.nodes(editor,
-          at: at, match: match, mode: mode, voids: voids));
+      List<NodeEntry> depths = List.from(
+          editor.nodes(at: at, match: match, mode: mode, voids: voids));
 
       Set<PathRef> pathRefs = Set();
 
       for (NodeEntry depth in depths) {
-        PathRef pathRef = EditorUtils.pathRef(editor, depth.path);
+        PathRef pathRef = editor.pathRef(depth.path);
         pathRefs.add(pathRef);
       }
 
-      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
-
       for (PathRef pathRef in pathRefs) {
-        Path path = pathRef.unref(editorPathRefs);
+        Path path = pathRef.unref(editor.pathRefs);
 
         if (path != null) {
-          NodeEntry entry = EditorUtils.node(editor, path);
+          NodeEntry entry = editor.node(path);
           Node node = entry.node;
 
           editor.apply(RemoveNodeOperation(path, node));
@@ -450,7 +446,7 @@ class Transforms {
       bool hanging = false,
       bool split = false,
       bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       Location prevAt = at;
       at = at ?? editor.selection;
 
@@ -467,12 +463,11 @@ class Transforms {
       }
 
       if (!hanging && at is Range) {
-        at = EditorUtils.unhangRange(editor, at);
+        at = editor.unhangRange(at);
       }
 
       if (split && at is Range) {
-        RangeRef rangeRef =
-            EditorUtils.rangeRef(editor, at, affinity: Affinity.inward);
+        RangeRef rangeRef = editor.rangeRef(at, affinity: Affinity.inward);
         Edges edges = (at as Range).edges();
         Point start = edges.start;
         Point end = edges.end;
@@ -488,8 +483,7 @@ class Transforms {
         Transforms.splitNodes(editor,
             at: start, match: match, mode: splitMode, voids: voids);
 
-        Set<RangeRef> editorRangeRefs = EditorUtils.rangeRefs(editor);
-        at = rangeRef.unref(editorRangeRefs);
+        at = rangeRef.unref(editor.rangeRefs);
 
         if (prevAt == null) {
           Transforms.select(editor, at);
@@ -498,8 +492,7 @@ class Transforms {
 
       Map<String, dynamic> argProps = props;
 
-      for (NodeEntry entry in EditorUtils.nodes(
-        editor,
+      for (NodeEntry entry in editor.nodes(
         at: at,
         match: match,
         mode: mode,
@@ -539,7 +532,7 @@ class Transforms {
     int height = 0,
     bool voids = false,
   }) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       Location prevAt = at;
       at = at ?? editor.selection;
 
@@ -557,8 +550,8 @@ class Transforms {
       // counters need to account for us potentially splitting at a non-leaf.
       if (at is Path) {
         Path path = at;
-        Point point = EditorUtils.point(editor, path);
-        NodeEntry<Ancestor> entry = EditorUtils.parent(editor, path);
+        Point point = editor.point(path);
+        NodeEntry<Ancestor> entry = editor.parent(path);
         Ancestor parent = entry.node;
         match = (n) {
           return n == parent;
@@ -572,10 +565,9 @@ class Transforms {
         return;
       }
 
-      PointRef beforeRef =
-          EditorUtils.pointRef(editor, at, affinity: Affinity.backward);
-      List<NodeEntry> entries = List.from(EditorUtils.nodes(editor,
-          at: at, match: match, mode: mode, voids: voids));
+      PointRef beforeRef = editor.pointRef(at, affinity: Affinity.backward);
+      List<NodeEntry> entries = List.from(
+          editor.nodes(at: at, match: match, mode: mode, voids: voids));
       NodeEntry highest = entries.first;
 
       if (highest == null) {
@@ -583,7 +575,7 @@ class Transforms {
       }
 
       NodeEntry<Element> voidMatch =
-          EditorUtils.matchVoid(editor, at: at, mode: Mode.highest);
+          editor.matchVoid(at: at, mode: Mode.highest);
       int nudge = 0;
 
       if (voids == false && voidMatch != null) {
@@ -591,13 +583,13 @@ class Transforms {
         Path voidPath = voidMatch.path;
 
         if (voidNode is Element && voidNode is Inline) {
-          Point after = EditorUtils.after(editor, voidPath);
+          Point after = editor.after(voidPath);
 
           if (after == null) {
             Text text = Text('');
             Path afterPath = voidPath.next;
             Transforms.insertNodes(editor, [text], at: afterPath, voids: voids);
-            after = EditorUtils.point(editor, afterPath);
+            after = editor.point(afterPath);
           }
 
           at = after;
@@ -609,7 +601,7 @@ class Transforms {
         always = true;
       }
 
-      PointRef afterRef = EditorUtils.pointRef(editor, at);
+      PointRef afterRef = editor.pointRef(at);
       int depth = (at as Point).path.length - height;
       Path highestPath = highest.path;
       Path lowestPath = (at as Point).path.slice(0, depth);
@@ -618,24 +610,22 @@ class Transforms {
           : (at as Point).path[depth] + nudge;
       int target;
 
-      for (NodeEntry entry in EditorUtils.levels(editor,
-          at: lowestPath, reverse: true, voids: voids)) {
+      for (NodeEntry entry
+          in editor.levels(at: lowestPath, reverse: true, voids: voids)) {
         Node node = entry.node;
         Path path = entry.path;
         bool split = false;
 
         if (path.length < highestPath.length ||
             path.length == 0 ||
-            (!voids && EditorUtils.isVoid(editor, node))) {
+            (node is Element && !voids && node.isVoid)) {
           break;
         }
 
         Point point = beforeRef.current;
-        bool isEnd = EditorUtils.isEnd(editor, point, path);
+        bool isEnd = editor.isEnd(point, path);
 
-        if (always ||
-            beforeRef == null ||
-            !EditorUtils.isEdge(editor, point, path)) {
+        if (always || beforeRef == null || !editor.isEdge(point, path)) {
           split = true;
           editor.apply(SplitNodeOperation(path, position, target, node.props));
         }
@@ -645,13 +635,12 @@ class Transforms {
       }
 
       if (prevAt == null) {
-        Point point = afterRef.current ?? EditorUtils.end(editor, Path([]));
+        Point point = afterRef.current ?? editor.end(Path([]));
         Transforms.select(editor, point);
       }
 
-      Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
-      beforeRef.unref(editorPointRefs);
-      afterRef.unref(editorPointRefs);
+      beforeRef.unref(editor.pointRefs);
+      afterRef.unref(editor.pointRefs);
     });
   }
 
@@ -687,7 +676,7 @@ class Transforms {
       Mode mode = Mode.lowest,
       bool split = false,
       bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       at = at ?? editor.selection;
 
       if (at == null) {
@@ -703,33 +692,30 @@ class Transforms {
       }
 
       if (at is Path) {
-        at = EditorUtils.range(editor, at, null);
+        at = editor.range(at, null);
       }
 
-      RangeRef rangeRef =
-          (at is Range) ? EditorUtils.rangeRef(editor, at) : null;
+      RangeRef rangeRef = (at is Range) ? editor.rangeRef(at) : null;
 
       List<NodeEntry> matches = [];
 
-      for (NodeEntry entry in EditorUtils.nodes(editor,
-          at: at, match: match, mode: mode, voids: voids)) {
+      for (NodeEntry entry
+          in editor.nodes(at: at, match: match, mode: mode, voids: voids)) {
         matches.add(entry);
       }
 
       Set<PathRef> pathRefs = Set();
 
       for (NodeEntry match in matches) {
-        PathRef pathRef = EditorUtils.pathRef(editor, match.path);
+        PathRef pathRef = editor.pathRef(match.path);
         pathRefs.add(pathRef);
       }
 
-      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
-
       for (PathRef pathRef in pathRefs) {
-        Path path = pathRef.unref(editorPathRefs);
-        NodeEntry entry = EditorUtils.node(editor, path);
+        Path path = pathRef.unref(editor.pathRefs);
+        NodeEntry entry = editor.node(path);
         Ancestor node = entry.node;
-        Range range = EditorUtils.range(editor, path, null);
+        Range range = editor.range(path, null);
 
         if (split && rangeRef != null) {
           range = rangeRef.current.intersection(range);
@@ -745,10 +731,8 @@ class Transforms {
         );
       }
 
-      Set<RangeRef> editorRangeRefs = EditorUtils.rangeRefs(editor);
-
       if (rangeRef != null) {
-        rangeRef.unref(editorRangeRefs);
+        rangeRef.unref(editor.rangeRefs);
       }
     });
   }
@@ -761,7 +745,7 @@ class Transforms {
       Mode mode = Mode.lowest,
       bool split = false,
       bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       Location prevAt = at;
       at = at ?? editor.selection;
 
@@ -774,7 +758,7 @@ class Transforms {
           match = matchPath(editor, at);
         } else if (element is Inline) {
           match = (n) {
-            return EditorUtils.isInline(editor, n) || (n is Text);
+            return editor.isInline(n) || (n is Text);
           };
         } else {
           match = (n) {
@@ -788,20 +772,17 @@ class Transforms {
         Point start = edges.start;
         Point end = edges.end;
 
-        RangeRef rangeRef =
-            EditorUtils.rangeRef(editor, at, affinity: Affinity.inward);
+        RangeRef rangeRef = editor.rangeRef(at, affinity: Affinity.inward);
         Transforms.splitNodes(editor, at: end, match: match, voids: voids);
         Transforms.splitNodes(editor, at: start, match: match, voids: voids);
-        Set<RangeRef> editorRangeRefs = EditorUtils.rangeRefs(editor);
-        at = rangeRef.unref(editorRangeRefs);
+        at = rangeRef.unref(editor.rangeRefs);
 
         if (prevAt == null) {
           Transforms.select(editor, at);
         }
       }
 
-      List<NodeEntry> roots = List.from(EditorUtils.nodes(
-        editor,
+      List<NodeEntry> roots = List.from(editor.nodes(
         at: at,
         match: element is Inline
             ? (n) {
@@ -816,16 +797,15 @@ class Transforms {
 
       for (NodeEntry root in roots) {
         Location a = at is Range
-            ? (at as Range)
-                .intersection(EditorUtils.range(editor, root.path, null))
+            ? (at as Range).intersection(editor.range(root.path, null))
             : at;
 
         if (a == null) {
           continue;
         }
 
-        List<NodeEntry> matches = List.from(EditorUtils.nodes(editor,
-            at: a, match: match, mode: mode, voids: voids));
+        List<NodeEntry> matches = List.from(
+            editor.nodes(at: a, match: match, mode: mode, voids: voids));
 
         if (matches.length > 0) {
           NodeEntry first = matches.first;
@@ -837,8 +817,8 @@ class Transforms {
               ? firstPath.parent
               : firstPath.common(lastPath);
 
-          Range range = EditorUtils.range(editor, firstPath, lastPath);
-          NodeEntry common = EditorUtils.node(editor, commonPath);
+          Range range = editor.range(firstPath, lastPath);
+          NodeEntry common = editor.node(commonPath);
           Ancestor commonNode = common.node;
           int depth = commonPath.length + 1;
           Path wrapperPath = lastPath.slice(0, depth).next;
@@ -933,8 +913,8 @@ class Transforms {
 
     if (edge == null || edge == Edge.anchor) {
       Point point = reverse
-          ? EditorUtils.before(editor, anchor, distance: distance, unit: unit)
-          : EditorUtils.after(editor, anchor, distance: distance, unit: unit);
+          ? editor.before(anchor, distance: distance, unit: unit)
+          : editor.after(anchor, distance: distance, unit: unit);
 
       if (point != null) {
         newSelection.anchor = point;
@@ -943,8 +923,8 @@ class Transforms {
 
     if (edge == null || edge == Edge.focus) {
       Point point = reverse
-          ? EditorUtils.before(editor, focus, distance: distance, unit: unit)
-          : EditorUtils.after(editor, focus, distance: distance, unit: unit);
+          ? editor.before(focus, distance: distance, unit: unit)
+          : editor.after(focus, distance: distance, unit: unit);
 
       if (point != null) {
         newSelection.focus = point;
@@ -957,7 +937,7 @@ class Transforms {
   /// Set the selection to a new value.
   static void select(Editor editor, Location target) {
     Range selection = editor.selection;
-    target = EditorUtils.range(editor, target, null);
+    target = editor.range(target, null);
 
     if (selection != null) {
       Transforms.setSelection(editor, target);
@@ -1035,7 +1015,9 @@ class Transforms {
     }
   }
 
-  // Text transforms
+  // #endregion
+
+  // #region Text transforms
 
   /// Delete content in the editor.
   static void delete(Editor editor,
@@ -1045,7 +1027,7 @@ class Transforms {
       bool reverse = false,
       bool hanging = false,
       bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       Location prevAt = at;
       at = at ?? editor.selection;
 
@@ -1059,18 +1041,17 @@ class Transforms {
 
       if (at is Point) {
         NodeEntry<Element> furthestVoid =
-            EditorUtils.matchVoid(editor, at: at, mode: Mode.highest);
+            editor.matchVoid(at: at, mode: Mode.highest);
 
         if (voids == false && furthestVoid != null) {
           Path voidPath = furthestVoid.path;
           at = voidPath;
         } else {
           Point target = reverse
-              ? EditorUtils.before(editor, at,
-                      unit: unit, distance: distance) ??
-                  EditorUtils.start(editor, Path([]))
-              : EditorUtils.after(editor, at, unit: unit, distance: distance) ??
-                  EditorUtils.end(editor, Path([]));
+              ? editor.before(at, unit: unit, distance: distance) ??
+                  editor.start(Path([]))
+              : editor.after(at, unit: unit, distance: distance) ??
+                  editor.end(Path([]));
           at = Range(at, target);
           hanging = true;
         }
@@ -1086,33 +1067,37 @@ class Transforms {
       }
 
       if (!hanging) {
-        at = EditorUtils.unhangRange(editor, at, voids: voids);
+        at = editor.unhangRange(at, voids: voids);
       }
 
       Edges edges = (at as Range).edges();
       Point start = edges.start;
       Point end = edges.end;
 
-      NodeEntry<Block> startBlock = EditorUtils.above(editor, match: (n) {
-        return n is Block;
-      }, at: start, voids: voids);
-      NodeEntry<Block> endBlock = EditorUtils.above(editor, match: (n) {
-        return n is Block;
-      }, at: end, voids: voids);
+      NodeEntry<Block> startBlock = editor.above(
+          match: (n) {
+            return n is Block;
+          },
+          at: start,
+          voids: voids);
+      NodeEntry<Block> endBlock = editor.above(
+          match: (n) {
+            return n is Block;
+          },
+          at: end,
+          voids: voids);
       bool isAcrossBlocks = startBlock != null &&
           endBlock != null &&
           !startBlock.path.equals(endBlock.path);
       bool isSingleText = start.path.equals(end.path);
-      NodeEntry<Element> startVoid = voids
-          ? null
-          : EditorUtils.matchVoid(editor, at: start, mode: Mode.highest);
-      NodeEntry<Element> endVoid = voids
-          ? null
-          : EditorUtils.matchVoid(editor, at: end, mode: Mode.highest);
+      NodeEntry<Element> startVoid =
+          voids ? null : editor.matchVoid(at: start, mode: Mode.highest);
+      NodeEntry<Element> endVoid =
+          voids ? null : editor.matchVoid(at: end, mode: Mode.highest);
 
       // If the start or end points are inside an inline void, nudge them out.
       if (startVoid != null) {
-        Point before = EditorUtils.before(editor, start);
+        Point before = editor.before(start);
 
         if (before != null &&
             startBlock != null &&
@@ -1122,7 +1107,7 @@ class Transforms {
       }
 
       if (endVoid != null) {
-        Point after = EditorUtils.after(editor, end);
+        Point after = editor.after(end);
 
         if (after != null &&
             endBlock != null &&
@@ -1136,7 +1121,7 @@ class Transforms {
       List<NodeEntry> matches = [];
       Path lastPath;
 
-      for (NodeEntry entry in EditorUtils.nodes(editor, at: at, voids: voids)) {
+      for (NodeEntry entry in editor.nodes(at: at, voids: voids)) {
         Node node = entry.node;
         Path path = entry.path;
 
@@ -1144,7 +1129,7 @@ class Transforms {
           continue;
         }
 
-        if ((!voids && EditorUtils.isVoid(editor, node)) ||
+        if ((node is Element && !voids && node.isVoid) ||
             (!path.isCommon(start.path) && !path.isCommon(end.path))) {
           matches.add(entry);
           lastPath = path;
@@ -1154,16 +1139,16 @@ class Transforms {
       Set<PathRef> pathRefs = Set();
 
       for (NodeEntry match in matches) {
-        PathRef pathRef = EditorUtils.pathRef(editor, match.path);
+        PathRef pathRef = editor.pathRef(match.path);
         pathRefs.add(pathRef);
       }
 
-      PointRef startRef = EditorUtils.pointRef(editor, start);
-      PointRef endRef = EditorUtils.pointRef(editor, end);
+      PointRef startRef = editor.pointRef(start);
+      PointRef endRef = editor.pointRef(end);
 
       if (!isSingleText && startVoid == null) {
         Point point = startRef.current;
-        NodeEntry<Text> entry = EditorUtils.leaf(editor, point);
+        NodeEntry<Text> entry = editor.leaf(point);
         Text node = entry.node;
         Path path = point.path;
         int offset = start.offset;
@@ -1173,16 +1158,14 @@ class Transforms {
         editor.apply(RemoveTextOperation(path, offset, text));
       }
 
-      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
-
       for (PathRef pathRef in pathRefs) {
-        Path path = pathRef.unref(editorPathRefs);
+        Path path = pathRef.unref(editor.pathRefs);
         Transforms.removeNodes(editor, at: path, voids: voids);
       }
 
       if (endVoid == null) {
         Point point = endRef.current;
-        NodeEntry<Text> entry = EditorUtils.leaf(editor, point);
+        NodeEntry<Text> entry = editor.leaf(point);
         Text node = entry.node;
         Path path = point.path;
 
@@ -1204,9 +1187,8 @@ class Transforms {
         );
       }
 
-      Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
       Point point =
-          endRef.unref(editorPointRefs) ?? startRef.unref(editorPointRefs);
+          endRef.unref(editor.pointRefs) ?? startRef.unref(editor.pointRefs);
 
       if (prevAt == null && point != null) {
         Transforms.select(editor, point);
@@ -1217,7 +1199,7 @@ class Transforms {
   /// Insert a fragment at a specific location in the editor.
   static void insertFragment(Editor editor, List<Node> fragment,
       {Location at, bool hanging = false, bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       Location prevAt = at;
       at = at ?? editor.selection;
 
@@ -1229,7 +1211,7 @@ class Transforms {
         return;
       } else if (at is Range) {
         if (hanging == false) {
-          at = EditorUtils.unhangRange(editor, at);
+          at = editor.unhangRange(at);
         }
 
         if ((at as Range).isCollapsed) {
@@ -1238,45 +1220,46 @@ class Transforms {
           Edges edges = (at as Range).edges();
           Point end = edges.end;
 
-          if (!voids && EditorUtils.matchVoid(editor, at: end) != null) {
+          if (!voids && editor.matchVoid(at: end) != null) {
             return;
           }
 
-          PointRef pointRef = EditorUtils.pointRef(editor, end);
+          PointRef pointRef = editor.pointRef(end);
           Transforms.delete(editor, at: at);
 
-          Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
-          at = pointRef.unref(editorPointRefs);
+          at = pointRef.unref(editor.pointRefs);
         }
       } else if (at is Path) {
-        at = EditorUtils.start(editor, at);
+        at = editor.start(at);
       }
 
-      if (!voids && EditorUtils.matchVoid(editor, at: at) != null) {
+      if (!voids && editor.matchVoid(at: at) != null) {
         return;
       }
 
       // If the insert point is at the edge of an inline node, move it outside
       // instead since it will need to be split otherwise.
-      NodeEntry inlineElementMatch =
-          EditorUtils.above(editor, at: at, match: (n) {
-        return EditorUtils.isInline(editor, n);
-      }, mode: Mode.highest, voids: voids);
+      NodeEntry inlineElementMatch = editor.above(
+          at: at,
+          match: (n) {
+            return editor.isInline(n);
+          },
+          mode: Mode.highest,
+          voids: voids);
 
       if (inlineElementMatch != null) {
         Path inlinePath = inlineElementMatch.path;
 
-        if (EditorUtils.isEnd(editor, at, inlinePath)) {
-          Point after = EditorUtils.after(editor, inlinePath);
+        if (editor.isEnd(at, inlinePath)) {
+          Point after = editor.after(inlinePath);
           at = after;
-        } else if (EditorUtils.isStart(editor, at, inlinePath)) {
-          Point before = EditorUtils.before(editor, inlinePath);
+        } else if (editor.isStart(at, inlinePath)) {
+          Point before = editor.before(inlinePath);
           at = before;
         }
       }
 
-      NodeEntry blockMatch = EditorUtils.above(
-        editor,
+      NodeEntry blockMatch = editor.above(
         match: (n) {
           return n is Block;
         },
@@ -1285,8 +1268,8 @@ class Transforms {
       );
 
       Path blockPath = blockMatch.path;
-      bool isBlockStart = EditorUtils.isStart(editor, at, blockPath);
-      bool isBlockEnd = EditorUtils.isEnd(editor, at, blockPath);
+      bool isBlockStart = editor.isStart(at, blockPath);
+      bool isBlockEnd = editor.isEnd(at, blockPath);
       bool mergeStart = !isBlockStart || (isBlockStart && isBlockEnd);
       bool mergeEnd = !isBlockEnd;
       NodeEntry first = NodeUtils.first(Element(children: fragment), Path([]));
@@ -1302,16 +1285,16 @@ class Transforms {
 
         if (mergeStart &&
             p.isAncestor(firstPath) &&
-            (n is Element) &&
-            !editor.isVoid(n) &&
+            n is Element &&
+            !n.isVoid &&
             !(n is Inline)) {
           return false;
         }
 
         if (mergeEnd &&
             p.isAncestor(lastPath) &&
-            (n is Element) &&
-            !editor.isVoid(n) &&
+            n is Element &&
+            !n.isVoid &&
             !(n is Inline)) {
           return false;
         }
@@ -1346,29 +1329,31 @@ class Transforms {
         }
       }
 
-      List<NodeEntry> inlines =
-          List.from(EditorUtils.nodes(editor, at: at, match: (n) {
-        return (n is Text) || EditorUtils.isInline(editor, n);
-      }, mode: Mode.highest, voids: voids));
+      List<NodeEntry> inlines = List.from(editor.nodes(
+          at: at,
+          match: (n) {
+            return (n is Text) || editor.isInline(n);
+          },
+          mode: Mode.highest,
+          voids: voids));
 
       NodeEntry inlineMatch = inlines.first;
       Path inlinePath = inlineMatch.path;
 
-      bool isInlineStart = EditorUtils.isStart(editor, at, inlinePath);
-      bool isInlineEnd = EditorUtils.isEnd(editor, at, inlinePath);
+      bool isInlineStart = editor.isStart(at, inlinePath);
+      bool isInlineEnd = editor.isEnd(at, inlinePath);
 
       PathRef middleRef =
-          EditorUtils.pathRef(editor, isBlockEnd ? blockPath.next : blockPath);
+          editor.pathRef(isBlockEnd ? blockPath.next : blockPath);
 
-      PathRef endRef = EditorUtils.pathRef(
-          editor, isInlineEnd ? inlinePath.next : inlinePath);
+      PathRef endRef =
+          editor.pathRef(isInlineEnd ? inlinePath.next : inlinePath);
 
       Transforms.splitNodes(editor, at: at, match: (n) {
         return hasBlocks ? n is Block : n is Text || n is Inline;
       }, mode: hasBlocks ? Mode.lowest : Mode.highest, voids: voids);
 
-      PathRef startRef = EditorUtils.pathRef(
-          editor,
+      PathRef startRef = editor.pathRef(
           !isInlineStart || (isInlineStart && isInlineEnd)
               ? inlinePath.next
               : inlinePath);
@@ -1378,7 +1363,7 @@ class Transforms {
         starts,
         at: startRef.current,
         match: (n) {
-          return (n is Text) || EditorUtils.isInline(editor, n);
+          return (n is Text) || editor.isInline(n);
         },
         mode: Mode.highest,
         voids: voids,
@@ -1390,7 +1375,7 @@ class Transforms {
       }, mode: Mode.lowest, voids: voids);
 
       Transforms.insertNodes(editor, ends, at: endRef.current, match: (n) {
-        return (n is Text) || EditorUtils.isInline(editor, n);
+        return (n is Text) || editor.isInline(n);
       }, mode: Mode.highest, voids: voids);
 
       if (prevAt == null) {
@@ -1404,22 +1389,20 @@ class Transforms {
           path = startRef.current.previous;
         }
 
-        Point end = EditorUtils.end(editor, path);
+        Point end = editor.end(path);
         Transforms.select(editor, end);
       }
 
-      Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
-
-      startRef.unref(editorPathRefs);
-      middleRef.unref(editorPathRefs);
-      endRef.unref(editorPathRefs);
+      startRef.unref(editor.pathRefs);
+      middleRef.unref(editor.pathRefs);
+      endRef.unref(editor.pathRefs);
     });
   }
 
   /// Insert a string of text in the Editor.
   static void insertText(Editor editor, String text,
       {Location at, bool voids = false}) {
-    EditorUtils.withoutNormalizing(editor, () {
+    editor.withoutNormalizing(() {
       at = at ?? editor.selection;
 
       if (at == null) {
@@ -1427,7 +1410,7 @@ class Transforms {
       }
 
       if (at is Path) {
-        at = EditorUtils.range(editor, at, null);
+        at = editor.range(at, null);
       }
 
       if (at is Range) {
@@ -1436,19 +1419,18 @@ class Transforms {
         } else {
           Point end = (at as Range).end;
 
-          if (!voids && EditorUtils.matchVoid(editor, at: end) != null) {
+          if (!voids && editor.matchVoid(at: end) != null) {
             return;
           }
 
-          PointRef pointRef = EditorUtils.pointRef(editor, end);
+          PointRef pointRef = editor.pointRef(end);
           Transforms.delete(editor, at: at, voids: voids);
-          Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
-          at = pointRef.unref(editorPointRefs);
+          at = pointRef.unref(editor.pointRefs);
           Transforms.setSelection(editor, Range(at, at));
         }
       }
 
-      if (!voids && EditorUtils.matchVoid(editor, at: at) != null) {
+      if (!voids && editor.matchVoid(at: at) != null) {
         return;
       }
 
@@ -1457,6 +1439,8 @@ class Transforms {
       editor.apply(InsertTextOperation(path, offset, text));
     });
   }
+
+  // #endregion
 }
 
 /// Convert a range into a point by deleting it's content.
@@ -1468,17 +1452,16 @@ Point Function(Editor editor, Range range) deleteRange =
     Edges edges = range.edges();
     Point end = edges.end;
 
-    PointRef pointRef = EditorUtils.pointRef(editor, end);
+    PointRef pointRef = editor.pointRef(end);
     Transforms.delete(editor, at: range);
 
-    Set<PointRef> editorPointRefs = EditorUtils.pointRefs(editor);
-    return pointRef.unref(editorPointRefs);
+    return pointRef.unref(editor.pointRefs);
   }
 };
 
 bool Function(Node node) Function(Editor editor, Path path) matchPath =
     (Editor editor, Path path) {
-  NodeEntry entry = EditorUtils.node(editor, path);
+  NodeEntry entry = editor.node(path);
   Node node = entry.node;
 
   return (n) {

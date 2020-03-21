@@ -38,7 +38,7 @@ class _StelaChildrenState extends State<StelaChildren> {
     Stela.Path path = scope.findPath(node);
     bool isLeafBlock = node is Stela.Element &&
         node is Stela.Inline == false &&
-        Stela.EditorUtils.hasInlines(scope.controller.value, node);
+        editor.hasInlines(node);
 
     List<Widget> children = [];
 
@@ -47,7 +47,7 @@ class _StelaChildrenState extends State<StelaChildren> {
       Stela.Path p = path.copyAndAdd(i);
       Stela.Descendant n = node.children[i];
       // const key = ReactEditor.findKey(editor, n)
-      Stela.Range range = Stela.EditorUtils.range(editor, p, null);
+      Stela.Range range = editor.range(p, null);
       Stela.Range subSelection;
 
       if (selection != null) {

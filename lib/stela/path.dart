@@ -52,8 +52,7 @@ class Path implements Location {
 
   /// Adds [position] to the end of the `Path`, extending the length by one.
   Path copyAndAdd(int position) {
-    Path newPath = Path(_path);
-    newPath.add(position);
+    Path newPath = copy()..add(position);
     return newPath;
   }
 

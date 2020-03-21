@@ -13,7 +13,7 @@ void main() {
       Block block = Block(children: <Node>[]);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>
@@ -37,7 +37,7 @@ void main() {
       ]);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>
@@ -62,7 +62,7 @@ void main() {
       ]);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>
@@ -87,7 +87,7 @@ void main() {
         Block(children: <Node>[Text('two')])
       ]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>two</block>
@@ -108,7 +108,7 @@ void main() {
         Block(children: <Node>[Text('two')])
       ]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>two</block>
@@ -133,7 +133,7 @@ void main() {
       ]);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>
@@ -173,7 +173,7 @@ void main() {
       ]);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>
@@ -205,7 +205,7 @@ void main() {
       ]);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>
@@ -229,7 +229,7 @@ void main() {
       ]);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>
@@ -253,7 +253,7 @@ void main() {
       ]);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>
@@ -273,7 +273,7 @@ void main() {
       Block block = Block(children: <Node>[], isVoid: true);
       Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <void>
@@ -286,14 +286,17 @@ void main() {
 
     test('inline insert text', () {
       // <editor>
-      //   <text />
-      //   <inline void />
-      //   <text />
+      //   <block>
+      //     <text />
+      //     <inline void />
+      //     <text />
+      //   </block>
       // </editor>
       Inline inline = Inline(children: <Node>[], isVoid: true);
-      Editor editor = Editor(children: <Node>[Text(''), inline, Text('')]);
+      Block block = Block(children: <Node>[Text(''), inline, Text('')]);
+      Editor editor = Editor(children: <Node>[block]);
 
-      EditorUtils.normalize(editor, force: true);
+      editor.normalize(force: true);
 
       // <editor>
       //   <block>

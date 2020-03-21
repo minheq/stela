@@ -8,13 +8,6 @@ import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
 import 'package:inday/stela/transforms.dart';
 
-Map<Editor, List<Path>> _dirtyPaths = Map();
-Map<Editor, bool> _flushing = Map();
-Map<Editor, bool> _normalizing = Map();
-Map<Editor, Set<PathRef>> _pathRefs = Map();
-Map<Editor, Set<PointRef>> _pointRefs = Map();
-Map<Editor, Set<RangeRef>> _rangeRefs = Map();
-
 /// The `Editor` interface stores all the state of a Stela editor. It is extended
 /// by plugins that wish to add their own helpers and implement new behaviors.
 class Editor implements Ancestor {
@@ -29,6 +22,13 @@ class Editor implements Ancestor {
         operations = operations ?? [],
         marks = marks ?? {},
         props = props ?? {};
+
+  List<Path> _dirtyPaths = [];
+  bool _isFlushing = false;
+  bool _isNormalizing = true;
+  Set<PathRef> pathRefs = Set();
+  Set<PointRef> pointRefs = Set();
+  Set<RangeRef> rangeRefs = Set();
 
   /// Custom properties that can extend the `Element` behavior
   Map<String, dynamic> props;
@@ -85,10 +85,6 @@ class Editor implements Ancestor {
     );
   }
 
-  bool isVoid(Element element) {
-    return element.isVoid;
-  }
-
   void onChange() {
     return;
   }
@@ -103,10 +99,9 @@ class Editor implements Ancestor {
     }
 
     // Ensure that block and inline nodes have at least one text child.
-    if ((node is Element) && node.children.isEmpty) {
+    if (node is Element && node.children.isEmpty) {
       Text child = Text('');
-      Path at = path.copy();
-      at.add(0);
+      Path at = path.copyAndAdd(0);
 
       Transforms.insertNodes(
         this,
@@ -120,7 +115,7 @@ class Editor implements Ancestor {
     // Determine whether the node should have block or inline children.
     bool shouldHaveInlines = node is Editor
         ? false
-        : (node is Element) &&
+        : node is Element &&
             (node is Inline ||
                 node.children.isEmpty ||
                 (node.children.first is Text) ||
@@ -149,8 +144,7 @@ class Editor implements Ancestor {
       // other inline nodes, or parent blocks that only contain inlines and
       // text.
       if (isInlineOrText != shouldHaveInlines) {
-        Path at = path.copy();
-        at.add(n);
+        Path at = path.copyAndAdd(n);
 
         transforms.add(() {
           Transforms.removeNodes(this, at: at, voids: true);
@@ -160,16 +154,14 @@ class Editor implements Ancestor {
         // Ensure that inline nodes are surrounded by text nodes.
         if (child is Inline) {
           if (prev == null || !(prev is Text)) {
-            Path at = path.copy();
-            at.add(n);
+            Path at = path.copyAndAdd(n);
             Text newChild = Text('');
             transforms.add(() {
               Transforms.insertNodes(this, [newChild], at: at, voids: true);
             });
             n++;
           } else if (isLast) {
-            Path at = path.copy();
-            at.add(n + 1);
+            Path at = path.copyAndAdd(n + 1);
             Text newChild = Text('');
             transforms.add(() {
               Transforms.insertNodes(
@@ -184,17 +176,15 @@ class Editor implements Ancestor {
         }
       } else {
         // Merge adjacent text nodes that are empty or match.
-        if (prev != null && (prev is Text)) {
+        if (prev != null && prev is Text) {
           if (TextUtils.propsEquals(child, prev)) {
-            Path at = path.copy();
-            at.add(n);
+            Path at = path.copyAndAdd(n);
             transforms.add(() {
               Transforms.mergeNodes(this, at: at, voids: true);
             });
             n--;
           } else if (prev.text == '') {
-            Path at = path.copy();
-            at.add(n - 1);
+            Path at = path.copyAndAdd(n - 1);
             transforms.add(() {
               Transforms.removeNodes(
                 this,
@@ -204,8 +194,7 @@ class Editor implements Ancestor {
             });
             n--;
           } else if (isLast && (child as Text).text == '') {
-            Path at = path.copy();
-            at.add(n);
+            Path at = path.copyAndAdd(n);
             transforms.add(() {
               Transforms.removeNodes(
                 this,
@@ -224,7 +213,10 @@ class Editor implements Ancestor {
     }
   }
 
-  // Overrideable core actions.
+  /// Add a custom property to the leaf text nodes in the current selection.
+  ///
+  /// If the selection is currently collapsed, the marks will be added to the
+  /// `editor.marks` property instead, and applied when text is inserted next.
   void addMark(String key, dynamic value) {
     Map<String, dynamic> props = Map.from({
       [key]: value
@@ -243,9 +235,6 @@ class Editor implements Ancestor {
   }
 
   void apply(Operation op) {
-    Set<PathRef> pathRefs = EditorUtils.pathRefs(this);
-    Set<RangeRef> rangeRefs = EditorUtils.rangeRefs(this);
-    Set<PointRef> pointRefs = EditorUtils.pointRefs(this);
     Set<PathRef> unrefPathRefs = Set();
     Set<RangeRef> unrefRangeRefs = Set();
     Set<PointRef> unrefPointRefs = Set();
@@ -297,7 +286,7 @@ class Editor implements Ancestor {
       }
     };
 
-    List<Path> oldDirtyPaths = _dirtyPaths[this] ?? [];
+    List<Path> oldDirtyPaths = _dirtyPaths ?? [];
     List<Path> newDirtyPaths = getDirtyPaths(op);
 
     for (Path path in oldDirtyPaths) {
@@ -309,71 +298,88 @@ class Editor implements Ancestor {
       add(path);
     }
 
-    _dirtyPaths[this] = dirtyPaths;
-    EditorUtils.transform(this, op);
-    this.operations.add(op);
-    EditorUtils.normalize(this);
+    _dirtyPaths = dirtyPaths;
+    transform(op);
+    operations.add(op);
+    normalize();
 
     // Clear any formats applied to the cursor if the selection changes.
     if (op is SetSelectionOperation) {
-      this.marks = null;
+      marks = null;
     }
 
-    if (_flushing[this] == null) {
-      _flushing[this] = true;
+    if (_isFlushing == false) {
+      _isFlushing = true;
 
       Future.microtask(() {
-        _flushing[this] = false;
-        this.onChange();
-        this.operations = [];
+        _isFlushing = false;
+        onChange();
+        operations = [];
       });
     }
   }
 
+  /// Delete content in the editor backward from the current selection.
   void deleteBackward(Unit unit) {
     if (selection != null && selection.isCollapsed) {
       Transforms.delete(this, unit: unit, reverse: true);
     }
   }
 
+  /// Delete content in the editor forward from the current selection.
   void deleteForward(Unit unit) {
     if (selection != null && selection.isCollapsed) {
       Transforms.delete(this, unit: unit);
     }
   }
 
+  /// Delete the content in the current selection.
   void deleteFragment() {
     if (selection != null && selection.isExpanded) {
       Transforms.delete(this);
     }
   }
 
+  /// Insert a block break at the current selection.
+  ///
+  /// If the selection is currently expanded, it will be deleted first.
   void insertBreak() {
     Transforms.splitNodes(this, always: true);
   }
 
+  /// Insert a fragment at the current selection.
+  ///
+  /// If the selection is currently expanded, it will be deleted first.
   void insertFragment(List<Node> fragment) {
     Transforms.insertFragment(this, fragment);
   }
 
+  /// Insert a node at the current selection.
+  ///
+  /// If the selection is currently expanded, it will be deleted first.
   void insertNode(Node node) {
     Transforms.insertNodes(this, [node]);
   }
 
+  /// Insert text at the current selection.
+  ///
+  /// If the selection is currently expanded, it will be deleted first.
   void insertText(String text) {
     if (selection != null) {
       // If the cursor is at the end of an inline, move it outside of
       // the inline before inserting
       if (selection.isCollapsed) {
-        NodeEntry inline = EditorUtils.above(this, match: (n) {
-          return EditorUtils.isInline(this, n);
-        }, mode: Mode.highest);
+        NodeEntry inline = above(
+            match: (n) {
+              return isInline(n);
+            },
+            mode: Mode.highest);
 
         if (inline != null) {
           Path inlinePath = inline.path;
 
-          if (EditorUtils.isEnd(this, selection.anchor, inlinePath)) {
-            Point point = EditorUtils.after(this, inlinePath);
+          if (isEnd(selection.anchor, inlinePath)) {
+            Point point = after(inlinePath);
             Transforms.setSelection(this, Range(point, point));
           }
         }
@@ -390,6 +396,11 @@ class Editor implements Ancestor {
     }
   }
 
+  /// Remove a custom property from all of the leaf text nodes in the current
+  /// selection.
+  ///
+  /// If the selection is currently collapsed, the removal will be stored on
+  /// `editor.marks` and applied to the text inserted next.
   void removeMark(String key) {
     if (selection != null) {
       if (selection.isExpanded) {
@@ -407,73 +418,44 @@ class Editor implements Ancestor {
       }
     }
   }
-}
 
-typedef NodeMatch<T extends Node> = bool Function(Node node);
-
-enum Mode { all, highest, lowest }
-
-enum Unit {
-  offset,
-  character,
-  word,
-  line,
-  block,
-}
-
-enum Edge { anchor, focus, start, end }
-
-class EditorUtils {
   /// Get the ancestor above a location in the document.
-  static NodeEntry<T> above<T extends Ancestor>(Editor editor,
+  NodeEntry<T> above<T extends Ancestor>(
       {Location at,
       NodeMatch<T> match,
       Mode mode = Mode.lowest,
       bool voids = false}) {
-    at = at ?? editor.selection;
+    at = at ?? selection;
 
     if (at == null) {
       return null;
     }
 
-    Path path = EditorUtils.path(editor, at);
+    Path p = path(at);
     bool reverse = mode == Mode.lowest;
-    List<NodeEntry> levels = List.from(EditorUtils.levels(editor,
-        at: path, voids: voids, match: match, reverse: reverse));
+    List<NodeEntry> ls =
+        List.from(levels(at: p, voids: voids, match: match, reverse: reverse));
 
-    for (NodeEntry entry in levels) {
-      Node n = entry.node;
-      Path p = entry.path;
-
-      if (!(n is Text) && !path.equals(p)) {
-        return NodeEntry(n, p);
+    for (NodeEntry entry in ls) {
+      if (!(entry.node is Text) && !p.equals(entry.path)) {
+        return NodeEntry(entry.node, entry.path);
       }
     }
 
     return null;
   }
 
-  /// Add a custom property to the leaf text nodes in the current selection.
-  ///
-  /// If the selection is currently collapsed, the marks will be added to the
-  /// `editor.marks` property instead, and applied when text is inserted next.
-  static void addMark(Editor editor, String key, dynamic value) {
-    editor.addMark(key, value);
-  }
-
   /// Get the point after a location.
-  static Point after(Editor editor, Location at,
-      {int distance = 1, Unit unit = Unit.offset}) {
-    Point anchor = EditorUtils.point(editor, at, edge: Edge.end);
-    Point focus = EditorUtils.end(editor, Path([]));
+  Point after(Location at, {int distance = 1, Unit unit = Unit.offset}) {
+    Point anchor = point(at, edge: Edge.end);
+    Point focus = end(Path([]));
     Range range = Range(anchor, focus);
     int d = 0;
     Point target;
 
-    List<Point> positions =
-        List.from(EditorUtils.positions(editor, at: range, unit: unit));
+    List<Point> ps = List.from(positions(at: range, unit: unit));
 
-    for (Point p in positions) {
+    for (Point p in ps) {
       if (d > distance) {
         break;
       }
@@ -489,17 +471,15 @@ class EditorUtils {
   }
 
   /// Get the point before a location.
-  static Point before(Editor editor, Location at,
-      {int distance = 1, Unit unit = Unit.offset}) {
-    Point anchor = EditorUtils.start(editor, Path([]));
-    Point focus = EditorUtils.point(editor, at, edge: Edge.start);
+  Point before(Location at, {int distance = 1, Unit unit = Unit.offset}) {
+    Point anchor = start(Path([]));
+    Point focus = point(at, edge: Edge.start);
     Range range = Range(anchor, focus);
 
     int d = 0;
     Point target;
 
-    for (Point p in EditorUtils.positions(editor,
-        at: range, reverse: true, unit: unit)) {
+    for (Point p in positions(at: range, reverse: true, unit: unit)) {
       if (d > distance) {
         break;
       }
@@ -514,46 +494,31 @@ class EditorUtils {
     return target;
   }
 
-  /// Delete content in the editor backward from the current selection.
-  static void deleteBackward(Editor editor, {Unit unit = Unit.character}) {
-    editor.deleteBackward(unit);
-  }
-
-  /// Delete content in the editor forward from the current selection.
-  static void deleteForward(Editor editor, {Unit unit = Unit.character}) {
-    editor.deleteForward(unit);
-  }
-
-  /// Delete the content in the current selection.
-  static void deleteFragment(Editor editor) {
-    editor.deleteFragment();
-  }
-
   /// Get the start and end points of a location.
-  static Edges edges(Editor editor, Location at) {
-    return Edges(EditorUtils.start(editor, at), EditorUtils.end(editor, at));
+  Edges edges(Location at) {
+    return Edges(start(at), end(at));
   }
 
   /// Get the end point of a location.
-  static Point end(Editor editor, Location at) {
-    return EditorUtils.point(editor, at, edge: Edge.end);
+  Point end(Location at) {
+    return point(at, edge: Edge.end);
   }
 
   /// Get the first node at a location.
-  static NodeEntry first(Editor editor, Location at) {
-    Path path = EditorUtils.path(editor, at, edge: Edge.start);
-    return EditorUtils.node(editor, path);
+  NodeEntry first(Location at) {
+    Path p = path(at, edge: Edge.start);
+    return node(p);
   }
 
   /// Get the fragment at a location.
-  static List<Descendant> fragment(Editor editor, Location at) {
-    Range range = EditorUtils.range(editor, at, null);
-    List<Descendant> fragment = NodeUtils.fragment(editor, range);
+  List<Descendant> fragment(Location at) {
+    Range r = range(at, null);
+    List<Descendant> fragment = NodeUtils.fragment(this, r);
     return fragment;
   }
 
   /// Check if a node has block children.
-  static bool hasBlocks(Editor editor, Element element) {
+  bool hasBlocks(Element element) {
     bool hasBlocks = false;
 
     for (Node node in element.children) {
@@ -567,11 +532,11 @@ class EditorUtils {
   }
 
   /// Check if a node has inline and text children.
-  static bool hasInlines(Editor editor, Element element) {
+  bool hasInlines(Element element) {
     bool hasInlines = false;
 
     for (Node node in element.children) {
-      if (node is Text || EditorUtils.isInline(editor, node)) {
+      if (node is Text || isInline(node)) {
         hasInlines = true;
         break;
       }
@@ -581,7 +546,7 @@ class EditorUtils {
   }
 
   /// Check if a node has text children.
-  static bool hasTexts(Editor editor, Element element) {
+  bool hasTexts(Element element) {
     bool hasTexts = false;
 
     for (Node node in element.children) {
@@ -594,115 +559,69 @@ class EditorUtils {
     return hasTexts;
   }
 
-  /// Insert a block break at the current selection.
-  ///
-  /// If the selection is currently expanded, it will be deleted first.
-  static void insertBreak(Editor editor) {
-    editor.insertBreak();
-  }
-
-  /// Insert a fragment at the current selection.
-  ///
-  /// If the selection is currently expanded, it will be deleted first.
-  static void insertFragment(Editor editor, List<Node> fragment) {
-    editor.insertFragment(fragment);
-  }
-
-  /// Insert a node at the current selection.
-  ///
-  /// If the selection is currently expanded, it will be deleted first.
-  static void insertNode(Editor editor, Node node) {
-    editor.insertNode(node);
-  }
-
-  /// Insert text at the current selection.
-  ///
-  /// If the selection is currently expanded, it will be deleted first.
-  static void insertText(Editor editor, String text) {
-    editor.insertText(text);
-  }
-
   /// Check if a point is the end point of a location.
 
-  static bool isEnd(Editor editor, Point point, Location at) {
-    Point end = EditorUtils.end(editor, at);
-    return point.equals(end);
+  bool isEnd(Point point, Location at) {
+    return point.equals(end(at));
   }
 
   /// Check if a point is an edge of a location.
-  static bool isEdge(Editor editor, Point point, Location at) {
-    return EditorUtils.isStart(editor, point, at) ||
-        EditorUtils.isEnd(editor, point, at);
+  bool isEdge(Point point, Location at) {
+    return isStart(point, at) || isEnd(point, at);
   }
 
   /// Check if an element is empty, accounting for void nodes.
-  static bool isEmpty(Editor editor, Element element) {
+  bool isEmpty(Element element) {
     List<Node> children = element.children;
     return (children.isEmpty ||
         (children.length == 1 &&
             (children.first is Text) &&
             (children.first as Text).text == '' &&
-            !editor.isVoid(element)));
+            !element.isVoid));
   }
 
   /// Check if a value is an inline `Element` object.
-  static bool isInline(Editor editor, Node node) {
+  bool isInline(Node node) {
     return (node is Element) && node is Inline;
   }
 
-  /// Check if the editor is currently _normalizing after each operation.
-  static bool isNormalizing(Editor editor) {
-    bool isNormalizing = _normalizing[editor];
-
-    return isNormalizing == null ? true : isNormalizing;
-  }
-
   /// Check if a point is the start point of a location.
-  static bool isStart(Editor editor, Point point, Location at) {
+  bool isStart(Point point, Location at) {
     // PERF: If the offset isn't `0` we know it's not the start.
     if (point.offset != 0) {
       return false;
     }
 
-    Point start = EditorUtils.start(editor, at);
+    Point s = start(at);
 
-    return point.equals(start);
-  }
-
-  /// Check if a value is a void `Element` object.
-  static bool isVoid(Editor editor, Node node) {
-    return (node is Element) && editor.isVoid(node);
+    return point.equals(s);
   }
 
   /// Get the last node at a location.
-  static NodeEntry last(Editor editor, Location at) {
-    Path path = EditorUtils.path(editor, at, edge: Edge.end);
-
-    return EditorUtils.node(editor, path);
+  NodeEntry last(Location at) {
+    return node(path(at, edge: Edge.end));
   }
 
   /// Get the leaf text node at a location.
-  static NodeEntry<Text> leaf(
-    Editor editor,
+  NodeEntry<Text> leaf(
     Location at, {
     int depth,
     Edge edge,
   }) {
-    Path path = EditorUtils.path(editor, at, depth: depth, edge: edge);
-    Node node = NodeUtils.leaf(editor, path);
+    Path p = path(at, depth: depth, edge: edge);
+    Node node = NodeUtils.leaf(this, p);
 
-    return NodeEntry(node, path);
+    return NodeEntry(node, p);
   }
 
   /// Iterate through all of the levels at a location.
-  static Iterable<NodeEntry<T>> levels<T extends Node>(
-    Editor editor, {
+  Iterable<NodeEntry<T>> levels<T extends Node>({
     Location at,
     NodeMatch<T> match,
     bool reverse = false,
     bool voids = false,
   }) sync* {
-    at = at ?? editor.selection;
+    at = at ?? selection;
 
     if (match == null) {
       match = (node) {
@@ -715,9 +634,9 @@ class EditorUtils {
     }
 
     List<NodeEntry<T>> levels = [];
-    Path path = EditorUtils.path(editor, at);
+    Path p = path(at);
 
-    for (NodeEntry entry in NodeUtils.levels(editor, path)) {
+    for (NodeEntry entry in NodeUtils.levels(this, p)) {
       Node n = entry.node;
 
       if (!match(n)) {
@@ -726,7 +645,7 @@ class EditorUtils {
 
       levels.add(entry);
 
-      if (!voids && EditorUtils.isVoid(editor, n)) {
+      if (n is Element && !voids && n.isVoid) {
         break;
       }
     }
@@ -743,10 +662,7 @@ class EditorUtils {
   }
 
   /// Get the marks that would be added to text at the current selection.
-  static Map<String, dynamic> marks(Editor editor) {
-    Map<String, dynamic> marks = editor.marks;
-    Range selection = editor.selection;
-
+  Map<String, dynamic> selectionMarks() {
     if (selection == null) {
       return null;
     }
@@ -756,11 +672,10 @@ class EditorUtils {
     }
 
     if (selection.isExpanded) {
-      List<NodeEntry> nodes =
-          List.from(EditorUtils.nodes(editor, match: (node) {
+      List<NodeEntry> ns = List.from(nodes(match: (node) {
         return (node is Text);
       }));
-      NodeEntry match = nodes[0];
+      NodeEntry match = ns[0];
 
       if (match != null) {
         Text node = match.node;
@@ -774,14 +689,16 @@ class EditorUtils {
     Point anchor = selection.anchor;
     Path path = anchor.path;
 
-    NodeEntry entry = EditorUtils.leaf(editor, path);
+    NodeEntry entry = leaf(path);
     Text node = entry.node;
 
     if (anchor.offset == 0) {
-      NodeEntry prev = EditorUtils.previous(editor, at: path, match: (node) {
-        return (node is Text);
-      });
-      NodeEntry block = EditorUtils.above(editor, match: (node) {
+      NodeEntry prev = previous(
+          at: path,
+          match: (node) {
+            return (node is Text);
+          });
+      NodeEntry block = above(match: (node) {
         return node is Block;
       });
 
@@ -800,21 +717,21 @@ class EditorUtils {
   }
 
   /// Get the matching node in the branch of the document after a location.
-  static NodeEntry<T> next<T extends Node>(Editor editor,
+  NodeEntry<T> next<T extends Node>(
       {Location at,
       NodeMatch<T> match,
       Mode mode = Mode.lowest,
       bool voids = false}) {
-    at = at ?? editor.selection;
+    at = at ?? selection;
 
     if (at == null) {
       return null;
     }
 
-    NodeEntry fromNode = EditorUtils.last(editor, at);
+    NodeEntry fromNode = last(at);
     Path from = fromNode.path;
 
-    NodeEntry toNode = EditorUtils.last(editor, Path([]));
+    NodeEntry toNode = last(Path([]));
     Path to = toNode.path;
 
     Span span = Span(from, to);
@@ -825,11 +742,11 @@ class EditorUtils {
 
     if (match == null) {
       if (at is Path) {
-        NodeEntry<Ancestor> entry = EditorUtils.parent(editor, at);
-        Ancestor parent = entry.node;
+        NodeEntry<Ancestor> entry = parent(at);
+        Ancestor p = entry.node;
 
         match = (node) {
-          return parent.children.contains(node);
+          return p.children.contains(node);
         };
       } else {
         match = (node) {
@@ -838,31 +755,29 @@ class EditorUtils {
       }
     }
 
-    List<NodeEntry> nodes = List.from(EditorUtils.nodes(editor,
-        at: span, match: match, mode: mode, voids: voids));
-    NodeEntry next = nodes[1];
+    List<NodeEntry> ns =
+        List.from(nodes(at: span, match: match, mode: mode, voids: voids));
+    NodeEntry next = ns[1];
 
     return next;
   }
 
   /// Get the node at a location.
-  static NodeEntry<T> node<T extends Node>(
-    Editor editor,
+  NodeEntry<T> node<T extends Node>(
     Location at, {
     int depth,
     Edge edge,
   }) {
-    Path path = EditorUtils.path(editor, at, edge: edge, depth: depth);
-    Node node = NodeUtils.get(editor, path);
+    Path p = path(at, edge: edge, depth: depth);
+    Node node = NodeUtils.get(this, p);
 
-    return NodeEntry(node, path);
+    return NodeEntry(node, p);
   }
 
   /// Iterate through all of the nodes in the Editor.
   ///
   /// [universal] ensures that the match occurs in every branch
-  static Iterable<NodeEntry<T>> nodes<T extends Node>(
-    Editor editor, {
+  Iterable<NodeEntry<T>> nodes<T extends Node>({
     Location at,
     NodeMatch<T> match,
     Mode mode = Mode.all,
@@ -870,7 +785,7 @@ class EditorUtils {
     bool reverse = false,
     bool voids = false,
   }) sync* {
-    at = at ?? editor.selection;
+    at = at ?? selection;
 
     if (match == null) {
       match = (node) {
@@ -889,16 +804,16 @@ class EditorUtils {
       from = at.path0;
       to = at.path1;
     } else {
-      Path first = EditorUtils.path(editor, at, edge: Edge.start);
-      Path last = EditorUtils.path(editor, at, edge: Edge.end);
+      Path first = path(at, edge: Edge.start);
+      Path last = path(at, edge: Edge.end);
       from = reverse ? last : first;
       to = reverse ? first : last;
     }
 
-    Iterable<NodeEntry<Node>> iterable = NodeUtils.nodes(editor,
+    Iterable<NodeEntry<Node>> iterable = NodeUtils.nodes(this,
         reverse: reverse, from: from, to: to, pass: (entry) {
-      Node node = entry.node;
-      return (voids ? false : EditorUtils.isVoid(editor, node));
+      Node n = entry.node;
+      return (voids ? false : n is Element && n.isVoid);
     });
 
     List<NodeEntry<T>> matches = [];
@@ -965,73 +880,67 @@ class EditorUtils {
   }
 
   /// Normalize any dirty objects in the editor.
-  static void normalize(Editor editor, {bool force = false}) {
-    List<Path> Function(Editor editor) getDirtyPaths = (Editor editor) {
-      return _dirtyPaths[editor] ?? [];
-    };
-
-    if (!EditorUtils.isNormalizing(editor)) {
+  void normalize({bool force = false}) {
+    if (_isNormalizing == false) {
       return null;
     }
 
     if (force) {
-      List<NodeEntry> nodes = List.from(NodeUtils.nodes(editor));
+      List<NodeEntry> nodes = List.from(NodeUtils.nodes(this));
       List<Path> allPaths = [];
       for (NodeEntry node in nodes) {
         allPaths.add(node.path);
       }
-      _dirtyPaths[editor] = allPaths;
+      _dirtyPaths = allPaths;
     }
 
-    if (getDirtyPaths(editor).isEmpty) {
+    if (_dirtyPaths.isEmpty) {
       return null;
     }
 
-    EditorUtils.withoutNormalizing(editor, () {
+    withoutNormalizing(() {
       // HACK: better way?
-      int max = getDirtyPaths(editor).length * 42;
+      int max = _dirtyPaths.length * 42;
       int m = 0;
 
-      while (getDirtyPaths(editor).isNotEmpty) {
+      while (_dirtyPaths.isNotEmpty) {
         if (m > max) {
           throw Exception(
               'Could not completely normalize the editor after $max iterations! This is usually due to incorrect normalization logic that leaves a node in an invalid state.');
         }
 
-        Path path = getDirtyPaths(editor).removeLast();
-        NodeEntry entry = EditorUtils.node(editor, path);
-        editor.normalizeNode(entry);
+        Path path = _dirtyPaths.removeLast();
+        NodeEntry entry = node(path);
+        normalizeNode(entry);
         m++;
       }
     });
   }
 
   /// Get the parent node of a location.
-  static NodeEntry<Ancestor> parent(
-    Editor editor,
+  NodeEntry<Ancestor> parent(
     Location at, {
     int depth,
     Edge edge,
   }) {
-    Path path = EditorUtils.path(editor, at, edge: edge, depth: depth);
-    Path parentPath = path.parent;
-    NodeEntry<Ancestor> entry = EditorUtils.node<Ancestor>(editor, parentPath);
+    Path p = path(at, edge: edge, depth: depth);
+    Path parentPath = p.parent;
+    NodeEntry<Ancestor> entry = node<Ancestor>(parentPath);
     return entry;
   }
 
   /// Get the path of a location.
-  static Path path(
-    Editor editor,
+  Path path(
     Location at, {
     int depth,
     Edge edge,
   }) {
     if (at is Path) {
       if (edge == Edge.start) {
-        NodeEntry<Node> first = NodeUtils.first(editor, at);
+        NodeEntry<Node> first = NodeUtils.first(this, at);
         at = first.path;
       } else if (edge == Edge.end) {
-        NodeEntry<Node> last = NodeUtils.last(editor, at);
+        NodeEntry<Node> last = NodeUtils.last(this, at);
         at = last.path;
       }
     }
@@ -1059,41 +968,27 @@ class EditorUtils {
 
   /// Create a mutable ref for a `Path` object, which will stay in sync as new
   /// operations are applied to the editor.
-  static PathRef pathRef(Editor editor, Path path,
-      {Affinity affinity = Affinity.forward}) {
+  PathRef pathRef(Path path, {Affinity affinity = Affinity.forward}) {
     PathRef ref = PathRef(current: path, affinity: affinity);
 
-    Set<PathRef> refs = EditorUtils.pathRefs(editor);
-    refs.add(ref);
+    pathRefs.add(ref);
     return ref;
   }
 
-  /// Get the set of currently tracked path refs of the editor.
-  static Set<PathRef> pathRefs(Editor editor) {
-    Set<PathRef> refs = _pathRefs[editor];
-
-    if (refs == null) {
-      refs = Set();
-      _pathRefs[editor] = refs;
-    }
-
-    return refs;
-  }
-
   /// Get the start or end point of a location.
-  static Point point(Editor editor, Location at, {Edge edge = Edge.start}) {
+  Point point(Location at, {Edge edge = Edge.start}) {
     if (at is Path) {
       Path path;
 
       if (edge == Edge.end) {
-        NodeEntry<Node> last = NodeUtils.last(editor, at);
+        NodeEntry<Node> last = NodeUtils.last(this, at);
         path = last.path;
       } else {
-        NodeEntry<Node> first = NodeUtils.first(editor, at);
+        NodeEntry<Node> first = NodeUtils.first(this, at);
         path = first.path;
       }
 
-      Node node = NodeUtils.get(editor, path);
+      Node node = NodeUtils.get(this, path);
 
       if (!(node is Text)) {
         throw Exception(
@@ -1113,25 +1008,11 @@ class EditorUtils {
 
   /// Create a mutable ref for a `Point` object, which will stay in sync as new
   /// operations are applied to the editor.
-  static PointRef pointRef(Editor editor, Point point,
-      {Affinity affinity = Affinity.forward}) {
+  PointRef pointRef(Point point, {Affinity affinity = Affinity.forward}) {
     PointRef ref = PointRef(current: point, affinity: affinity);
 
-    Set<PointRef> refs = EditorUtils.pointRefs(editor);
-    refs.add(ref);
+    pointRefs.add(ref);
     return ref;
-  }
-
-  /// Get the set of currently tracked point refs of the editor.
-  static Set<PointRef> pointRefs(Editor editor) {
-    Set<PointRef> refs = _pointRefs[editor];
-
-    if (refs == null) {
-      refs = Set();
-      _pointRefs[editor] = refs;
-    }
-
-    return refs;
   }
 
   /// Iterate through all of the positions in the document where a `Point` can be
@@ -1143,24 +1024,23 @@ class EditorUtils {
   ///
   /// Note: void nodes are treated as a single point, and iteration will not
   /// happen inside their content.
-  static Iterable<Point> positions(
-    Editor editor, {
+  Iterable<Point> positions({
     Location at,
     Unit unit = Unit.offset,
     bool reverse = false,
   }) sync* {
-    at = at ?? editor.selection;
+    at = at ?? selection;
 
     if (at == null) {
       return;
     }
 
-    Range range = EditorUtils.range(editor, at, null);
-    Edges edges = range.edges();
-    Point start = edges.start;
-    Point end = edges.end;
-    Point first = reverse ? edges.end : edges.start;
-    String string = '';
+    Range r = range(at, null);
+    Edges edges = r.edges();
+    Point es = edges.start;
+    Point ee = edges.end;
+    Point first = reverse ? ee : es;
+    String s = '';
     int available = 0;
     int offset = 0;
     int distance;
@@ -1169,16 +1049,16 @@ class EditorUtils {
     void Function() advance = () {
       if (distance == null) {
         if (unit == Unit.character) {
-          distance = StringUtils.getCharacterDistance(string);
+          distance = StringUtils.getCharacterDistance(s);
         } else if (unit == Unit.word) {
-          distance = StringUtils.getWordDistance(string);
+          distance = StringUtils.getWordDistance(s);
         } else if (unit == Unit.line || unit == Unit.block) {
-          distance = string.length;
+          distance = s.length;
         } else {
           distance = 1;
         }
 
-        string = string.substring(distance);
+        s = s.substring(distance);
       }
 
       // Add or subtract the offset.
@@ -1190,8 +1070,7 @@ class EditorUtils {
       distance = available >= 0 ? null : 0 - available;
     };
 
-    List<NodeEntry> entries =
-        List.from(EditorUtils.nodes(editor, at: at, reverse: reverse));
+    List<NodeEntry> entries = List.from(nodes(at: at, reverse: reverse));
 
     for (NodeEntry entry in entries) {
       Path path = entry.path;
@@ -1200,8 +1079,8 @@ class EditorUtils {
       if (node is Element) {
         // Void nodes are a special case, since we don't want to iterate over
         // their content. We instead always just yield their first point.
-        if (editor.isVoid(node)) {
-          yield EditorUtils.start(editor, path);
+        if (node.isVoid) {
+          yield start(path);
           continue;
         }
 
@@ -1209,15 +1088,12 @@ class EditorUtils {
           continue;
         }
 
-        if (EditorUtils.hasInlines(editor, node)) {
-          Point e =
-              path.isAncestor(end.path) ? end : EditorUtils.end(editor, path);
-          Point s = path.isAncestor(start.path)
-              ? start
-              : EditorUtils.start(editor, path);
+        if (hasInlines(node)) {
+          Point ep = path.isAncestor(ee.path) ? ee : end(path);
+          Point sp = path.isAncestor(es.path) ? es : start(path);
 
-          String text = EditorUtils.string(editor, Range(s, e));
-          string = reverse ? StringUtils.reverseText(text) : text;
+          String text = string(Range(sp, ep));
+          s = reverse ? StringUtils.reverseText(text) : text;
           isNewBlock = true;
         }
       }
@@ -1238,7 +1114,7 @@ class EditorUtils {
 
         while (true) {
           // If there's no more string, continue to the next block.
-          if (string == '') {
+          if (s == '') {
             break;
           } else {
             advance();
@@ -1259,21 +1135,21 @@ class EditorUtils {
   }
 
   /// Get the matching node in the branch of the document before a location.
-  static NodeEntry<T> previous<T extends Node>(Editor editor,
+  NodeEntry<T> previous<T extends Node>(
       {Location at,
       NodeMatch<T> match,
       Mode mode = Mode.lowest,
       bool voids = false}) {
-    at = at ?? editor.selection;
+    at = at ?? selection;
 
     if (at == null) {
       return null;
     }
 
-    NodeEntry fromEntry = EditorUtils.first(editor, at);
+    NodeEntry fromEntry = first(at);
     Path from = fromEntry.path;
 
-    NodeEntry toEntry = EditorUtils.first(editor, Path([]));
+    NodeEntry toEntry = first(Path([]));
     Path to = toEntry.path;
 
     Span span = Span(from, to);
@@ -1284,11 +1160,11 @@ class EditorUtils {
 
     if (match == null) {
       if (at is Path) {
-        NodeEntry entry = EditorUtils.parent(editor, at);
-        Ancestor parent = entry.node;
+        NodeEntry entry = parent(at);
+        Ancestor p = entry.node;
 
         match = (node) {
-          return parent.children.contains(node);
+          return p.children.contains(node);
         };
       } else {
         match = (node) {
@@ -1297,8 +1173,7 @@ class EditorUtils {
       }
     }
 
-    List<NodeEntry> nodes = List.from(EditorUtils.nodes(
-      editor,
+    List<NodeEntry> ns = List.from(nodes(
       reverse: true,
       at: span,
       match: match,
@@ -1306,77 +1181,56 @@ class EditorUtils {
       voids: voids,
     ));
 
-    NodeEntry previous = nodes[1];
+    NodeEntry previous = ns[1];
 
     return previous;
   }
 
   /// Get a range of a location.
-  static Range range(Editor editor, Location at, Location to) {
+  Range range(Location at, Location to) {
     if (at is Range && to == null) {
       return at;
     }
 
-    Point start = EditorUtils.start(editor, at);
-    Point end = EditorUtils.end(editor, to ?? at);
+    Point s = start(at);
+    Point e = end(to ?? at);
 
-    return Range(start, end);
+    return Range(s, e);
   }
 
   /// Create a mutable ref for a `Range` object, which will stay in sync as new
   /// operations are applied to the editor.
-  static RangeRef rangeRef(Editor editor, Range range,
-      {Affinity affinity = Affinity.forward}) {
+  RangeRef rangeRef(Range range, {Affinity affinity = Affinity.forward}) {
     RangeRef ref = RangeRef(
       current: range,
       affinity: affinity,
     );
 
-    Set<RangeRef> refs = EditorUtils.rangeRefs(editor);
-    refs.add(ref);
+    rangeRefs.add(ref);
     return ref;
   }
 
-  /// Get the set of currently tracked range refs of the editor.
-  static Set<RangeRef> rangeRefs(Editor editor) {
-    Set<RangeRef> refs = _rangeRefs[editor];
-
-    if (refs == null) {
-      refs = Set();
-      _rangeRefs[editor] = refs;
-    }
-
-    return refs;
-  }
-
-  /// Remove a custom property from all of the leaf text nodes in the current
-  /// selection.
-  ///
-  /// If the selection is currently collapsed, the removal will be stored on
-  /// `editor.marks` and applied to the text inserted next.
-  static void removeMark(Editor editor, String key) {
-    editor.removeMark(key);
-  }
-
   /// Get the start point of a location.
-  static Point start(Editor editor, Location at) {
-    return EditorUtils.point(editor, at, edge: Edge.start);
+  Point start(Location at) {
+    return point(at, edge: Edge.start);
   }
 
   /// Get the text string content of a location.
   ///
   /// Note: the text of void nodes is presumed to be an empty string, regardless
   /// of what their actual content is.
-  static String string(Editor editor, Location at) {
-    Range range = EditorUtils.range(editor, at, null);
-    Edges edges = range.edges();
+  String string(Location at) {
+    Range r = range(at, null);
+    Edges edges = r.edges();
     Point start = edges.start;
     Point end = edges.end;
     String text = '';
 
-    for (NodeEntry entry in EditorUtils.nodes(editor, at: range, match: (node) {
-      return node is Text;
-    })) {
+    for (NodeEntry entry in nodes(
+        at: r,
+        match: (node) {
+          return node is Text;
+        })) {
       Text node = entry.node;
       Path path = entry.path;
       String t = node.text;
@@ -1396,21 +1250,11 @@ class EditorUtils {
   }
 
   /// Transform the editor by an operation.
-  static void transform(Editor editor, Operation op) {
-    // Note that in original Slate's code, it used immer to produce
-    // a new copy of the editor's nodes. This had an effect on `normalizeNode` function
-    // where it seemingly allowed concurrent modification of the nodes.
-    // We work around that by using batched transforms in `normalizeNode`.
-    Range selection;
-
-    if (editor.selection != null) {
-      selection = editor.selection;
-    }
-
+  void transform(Operation op) {
     if (op is InsertNodeOperation) {
       Path path = op.path;
       Node node = op.node;
-      Ancestor parent = NodeUtils.parent(editor, path);
+      Ancestor parent = NodeUtils.parent(this, path);
       int index = path[path.length - 1];
       parent.children.insert(index, node);
 
@@ -1431,7 +1275,7 @@ class EditorUtils {
       Path path = op.path;
       int offset = op.offset;
       String text = op.text;
-      Text node = NodeUtils.leaf(editor, path);
+      Text node = NodeUtils.leaf(this, path);
       String before = node.text.substring(0, offset);
       String after = node.text.substring(offset);
       node.text = before + text + after;
@@ -1451,10 +1295,10 @@ class EditorUtils {
 
     if (op is MergeNodeOperation) {
       Path path = op.path;
-      Node node = NodeUtils.get(editor, path);
+      Node node = NodeUtils.get(this, path);
       Path prevPath = path.previous;
-      Node prev = NodeUtils.get(editor, prevPath);
-      Ancestor parent = NodeUtils.parent(editor, path);
+      Node prev = NodeUtils.get(this, prevPath);
+      Ancestor parent = NodeUtils.parent(this, path);
       int index = path[path.length - 1];
 
       if (node is Text && prev is Text) {
@@ -1490,8 +1334,8 @@ class EditorUtils {
             'Cannot move a path [${path.toString()}] to new path [$newPath] because the destination is inside itself.');
       }
 
-      Node node = NodeUtils.get(editor, path);
-      Ancestor parent = NodeUtils.parent(editor, path);
+      Node node = NodeUtils.get(this, path);
+      Ancestor parent = NodeUtils.parent(this, path);
       int index = path[path.length - 1];
 
       // This is tricky, but since the `path` and `newPath` both refer to
@@ -1502,7 +1346,7 @@ class EditorUtils {
       // the operation was applied.
       parent.children.removeAt(index);
       Path truePath = path.transform(op);
-      Ancestor newParent = NodeUtils.get(editor, truePath.parent);
+      Ancestor newParent = NodeUtils.get(this, truePath.parent);
       int newIndex = truePath[truePath.length - 1];
 
       newParent.children.insert(newIndex, node);
@@ -1523,7 +1367,7 @@ class EditorUtils {
     if (op is RemoveNodeOperation) {
       Path path = op.path;
       int index = path[path.length - 1];
-      Ancestor parent = NodeUtils.parent(editor, path);
+      Ancestor parent = NodeUtils.parent(this, path);
       parent.children.removeAt(index);
 
       // Transform all of the points in the value, but if the point was in the
@@ -1544,7 +1388,7 @@ class EditorUtils {
             NodeEntry<Text> prev;
             NodeEntry<Text> next;
 
-            for (NodeEntry entry in NodeUtils.texts(editor)) {
+            for (NodeEntry entry in NodeUtils.texts(this)) {
               Text n = entry.node;
               Path p = entry.path;
               if (p.compare(path) == -1) {
@@ -1562,7 +1406,7 @@ class EditorUtils {
               point.path = next.path;
               point.offset = 0;
             } else {
-              editor.selection = null;
+              selection = null;
             }
           }
         }
@@ -1573,7 +1417,7 @@ class EditorUtils {
       Path path = op.path;
       int offset = op.offset;
       String text = op.text;
-      Text node = NodeUtils.leaf(editor, path);
+      Text node = NodeUtils.leaf(this, path);
       String before = node.text.substring(0, offset);
       String after = node.text.substring(offset + text.length);
       node.text = before + after;
@@ -1599,7 +1443,7 @@ class EditorUtils {
         throw Exception('Cannot set properties on the root node!');
       }
 
-      Node node = NodeUtils.get(editor, path);
+      Node node = NodeUtils.get(this, path);
 
       for (String key in newProps.keys) {
         dynamic value = newProps[key];
@@ -1616,19 +1460,19 @@ class EditorUtils {
       Range newSelection = op.newSelection;
 
       if (newSelection == null) {
-        editor.selection = null;
+        selection = null;
       } else if (selection == null) {
-        editor.selection = newSelection;
+        selection = newSelection;
       } else {
         if (newSelection.anchor != null) {
-          editor.selection.anchor = newSelection.anchor;
+          selection.anchor = newSelection.anchor;
         }
 
         if (newSelection.focus != null) {
-          editor.selection.focus = newSelection.focus;
+          selection.focus = newSelection.focus;
         }
 
-        editor.selection.props.addAll(newSelection.props);
+        selection.props.addAll(newSelection.props);
       }
     }
 
@@ -1642,8 +1486,8 @@ class EditorUtils {
             'Cannot apply a SplitNodeOperation at path [${path.toString()}] because the root node cannot be split.');
       }
 
-      Node node = NodeUtils.get(editor, path);
-      Ancestor parent = NodeUtils.parent(editor, path);
+      Node node = NodeUtils.get(this, path);
+      Ancestor parent = NodeUtils.parent(this, path);
       int index = path[path.length - 1];
       Descendant newNode;
       Map<String, dynamic> newProps = Map.from(node.props);
@@ -1689,31 +1533,29 @@ class EditorUtils {
   /// Convert a range into a non-hanging one.
   ///
   /// A hanging range is when it is not collapsed and its focus is at the start of a node
-  static Range unhangRange(Editor editor, Range range, {bool voids = false}) {
+  Range unhangRange(Range range, {bool voids = false}) {
     Edges edges = range.edges();
-    Point start = edges.start;
-    Point end = edges.end;
+    Point es = edges.start;
+    Point ee = edges.end;
 
     // PERF: exit early if we can guarantee that the range isn't hanging.
-    if (start.offset != 0 || end.offset != 0 || range.isCollapsed) {
+    if (es.offset != 0 || ee.offset != 0 || range.isCollapsed) {
       return range;
     }
 
-    NodeEntry endBlock = EditorUtils.above(
-      editor,
-      at: end,
+    NodeEntry endBlock = above(
+      at: ee,
       match: (node) {
         return node is Block;
       },
     );
 
     Path blockPath = endBlock != null ? endBlock.path : Path([]);
-    Point first = EditorUtils.start(editor, Path([]));
-    Range before = Range(first, end);
+    Point first = start(Path([]));
+    Range before = Range(first, ee);
     bool skip = true;
 
-    for (NodeEntry entry in EditorUtils.nodes(
-      editor,
+    for (NodeEntry entry in nodes(
       at: before,
       match: (node) {
         return node is Text;
@@ -1730,33 +1572,35 @@ class EditorUtils {
       }
 
       if (node.text != '' || path.isBefore(blockPath)) {
-        end = Point(path, node.text.length);
+        ee = Point(path, node.text.length);
         break;
       }
     }
 
-    return Range(start, end);
+    return Range(es, ee);
   }
 
   /// Match a void node in the current branch of the editor.
-  static NodeEntry<Element> matchVoid(
-    Editor editor, {
+  NodeEntry<Element> matchVoid({
     Location at,
     Mode mode,
     bool voids,
   }) {
-    return EditorUtils.above(editor, at: at, mode: mode, match: (node) {
-      return EditorUtils.isVoid(editor, node);
-    });
+    return above(
+        at: at,
+        mode: mode,
+        match: (node) {
+          return node is Element && node.isVoid;
+        });
   }
 
   /// Call a function, deferring normalization until after it completes.
-  static void withoutNormalizing(Editor editor, void Function() fn) {
-    bool value = EditorUtils.isNormalizing(editor);
-    _normalizing[editor] = false;
+  void withoutNormalizing(void Function() fn) {
+    bool isNormalizing = _isNormalizing;
+    _isNormalizing = false;
     fn();
-    _normalizing[editor] = value;
-    EditorUtils.normalize(editor);
+    _isNormalizing = isNormalizing;
+    normalize();
   }
 }
 
@@ -2063,3 +1907,17 @@ List<Path> Function(Operation) getDirtyPaths = (Operation op) {
 
   return [];
 };
+
+typedef NodeMatch<T extends Node> = bool Function(Node node);
+
+enum Mode { all, highest, lowest }
+
+enum Unit {
+  offset,
+  character,
+  word,
+  line,
+  block,
+}
+
+enum Edge { anchor, focus, start, end }

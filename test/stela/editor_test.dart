@@ -20,10 +20,12 @@ void main() {
       ]);
       Editor editor = Editor(children: <Node>[highest]);
 
-      NodeEntry entry = EditorUtils.above(editor,
-          at: Path([0, 0, 0]), mode: Mode.highest, match: (node) {
-        return node is Block;
-      });
+      NodeEntry entry = editor.above(
+          at: Path([0, 0, 0]),
+          mode: Mode.highest,
+          match: (node) {
+            return node is Block;
+          });
 
       expect(entry.node, highest);
       expect(entry.path.equals(Path([0])), true);
@@ -40,10 +42,12 @@ void main() {
         Block(children: <Node>[lowest])
       ]);
 
-      NodeEntry entry = EditorUtils.above(editor,
-          at: Path([0, 0, 0]), mode: Mode.lowest, match: (node) {
-        return node is Block;
-      });
+      NodeEntry entry = editor.above(
+          at: Path([0, 0, 0]),
+          mode: Mode.lowest,
+          match: (node) {
+            return node is Block;
+          });
 
       expect(entry.node, lowest);
       expect(entry.path.equals(Path([0, 0])), true);
@@ -60,11 +64,11 @@ void main() {
         Block(children: <Node>[Text('one'), inline, Text('three')])
       ]);
 
-      NodeEntry entry =
-          EditorUtils.above(editor, at: Path([0, 1, 0]), match: (node) {
-        bool isInline = EditorUtils.isInline(editor, node);
-        return isInline;
-      });
+      NodeEntry entry = editor.above(
+          at: Path([0, 1, 0]),
+          match: (node) {
+            return node is Inline;
+          });
 
       expect(entry.node, inline);
       expect(entry.path.equals(Path([0, 1])), true);
@@ -82,7 +86,7 @@ void main() {
         Block(children: <Node>[Text('two')])
       ]);
 
-      Point point = EditorUtils.after(editor, Path([1, 0]));
+      Point point = editor.after(Path([1, 0]));
 
       expect(point, null);
     });
@@ -97,7 +101,7 @@ void main() {
         Block(children: <Node>[Text('two')])
       ]);
 
-      Point point = EditorUtils.after(editor, Path([0, 0]));
+      Point point = editor.after(Path([0, 0]));
 
       expect(point.equals(Point(Path([1, 0]), 0)), true);
     });
@@ -110,7 +114,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      Point point = EditorUtils.after(editor, Point(Path([0, 0]), 1));
+      Point point = editor.after(Point(Path([0, 0]), 1));
 
       expect(point.equals(Point(Path([0, 0]), 2)), true);
     });
@@ -125,8 +129,8 @@ void main() {
         Block(children: <Node>[Text('two')]),
       ]);
 
-      Point point = EditorUtils.after(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
+      Point point =
+          editor.after(Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
 
       expect(point.equals(Point(Path([1, 0]), 3)), true);
     });
@@ -143,7 +147,7 @@ void main() {
         Block(children: <Node>[Text('two')])
       ]);
 
-      Point point = EditorUtils.before(editor, Path([1, 0]));
+      Point point = editor.before(Path([1, 0]));
 
       expect(point.equals(Point(Path([0, 0]), 3)), true);
     });
@@ -156,7 +160,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      Point point = EditorUtils.before(editor, Point(Path([0, 0]), 1));
+      Point point = editor.before(Point(Path([0, 0]), 1));
 
       expect(point.equals(Point(Path([0, 0]), 0)), true);
     });
@@ -171,8 +175,8 @@ void main() {
         Block(children: <Node>[Text('two')]),
       ]);
 
-      Point point = EditorUtils.before(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)));
+      Point point =
+          editor.before(Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)));
 
       expect(point.equals(Point(Path([0, 0]), 0)), true);
     });
@@ -187,7 +191,7 @@ void main() {
         Block(children: <Node>[Text('two')])
       ]);
 
-      Point point = EditorUtils.before(editor, Path([0, 0]));
+      Point point = editor.before(Path([0, 0]));
 
       expect(point, null);
     });
@@ -202,7 +206,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      Edges edges = EditorUtils.edges(editor, Path([0]));
+      Edges edges = editor.edges(Path([0]));
       Point start = edges.start;
       Point end = edges.end;
 
@@ -218,7 +222,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      Edges edges = EditorUtils.edges(editor, Point(Path([0, 0]), 1));
+      Edges edges = editor.edges(Point(Path([0, 0]), 1));
       Point start = edges.start;
       Point end = edges.end;
 
@@ -234,8 +238,8 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      Edges edges = EditorUtils.edges(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)));
+      Edges edges =
+          editor.edges(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)));
       Point start = edges.start;
       Point end = edges.end;
 
@@ -253,7 +257,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      Point point = EditorUtils.end(editor, Path([0]));
+      Point point = editor.end(Path([0]));
 
       expect(point.equals(Point(Path([0, 0]), 3)), true);
     });
@@ -266,7 +270,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      Point point = EditorUtils.end(editor, Point(Path([0, 0]), 1));
+      Point point = editor.end(Point(Path([0, 0]), 1));
 
       expect(point.equals(Point(Path([0, 0]), 1)), true);
     });
@@ -279,8 +283,8 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      Point point = EditorUtils.end(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)));
+      Point point =
+          editor.end(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)));
 
       expect(point.equals(Point(Path([0, 0]), 2)), true);
     });
@@ -299,7 +303,7 @@ void main() {
         ]),
       ]);
 
-      expect(EditorUtils.hasBlocks(editor, editor.children[0]), true);
+      expect(editor.hasBlocks(editor.children[0]), true);
     });
 
     test('block', () {
@@ -310,7 +314,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      expect(EditorUtils.hasBlocks(editor, editor.children[0]), false);
+      expect(editor.hasBlocks(editor.children[0]), false);
     });
 
     test('inline nested', () {
@@ -336,9 +340,7 @@ void main() {
       ]);
 
       expect(
-          EditorUtils.hasBlocks(
-              editor, (editor.children[0] as Block).children[1]),
-          false);
+          editor.hasBlocks((editor.children[0] as Block).children[1]), false);
     });
 
     test('inline', () {
@@ -357,7 +359,7 @@ void main() {
         ]),
       ]);
 
-      expect(EditorUtils.hasBlocks(editor, editor.children[0]), false);
+      expect(editor.hasBlocks(editor.children[0]), false);
     });
   });
 
@@ -374,7 +376,7 @@ void main() {
         ]),
       ]);
 
-      expect(EditorUtils.hasInlines(editor, editor.children[0]), false);
+      expect(editor.hasInlines(editor.children[0]), false);
     });
 
     test('block', () {
@@ -385,7 +387,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      expect(EditorUtils.hasInlines(editor, editor.children[0]), true);
+      expect(editor.hasInlines(editor.children[0]), true);
     });
 
     test('inline nested', () {
@@ -411,9 +413,7 @@ void main() {
       ]);
 
       expect(
-          EditorUtils.hasInlines(
-              editor, (editor.children[0] as Block).children[1]),
-          true);
+          editor.hasInlines((editor.children[0] as Block).children[1]), true);
     });
 
     test('inline', () {
@@ -432,7 +432,7 @@ void main() {
         ]),
       ]);
 
-      expect(EditorUtils.hasInlines(editor, editor.children[0]), true);
+      expect(editor.hasInlines(editor.children[0]), true);
     });
   });
 
@@ -449,7 +449,7 @@ void main() {
         ]),
       ]);
 
-      expect(EditorUtils.hasTexts(editor, editor.children[0]), false);
+      expect(editor.hasTexts(editor.children[0]), false);
     });
 
     test('block', () {
@@ -460,7 +460,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      expect(EditorUtils.hasTexts(editor, editor.children[0]), true);
+      expect(editor.hasTexts(editor.children[0]), true);
     });
 
     test('inline nested', () {
@@ -485,10 +485,7 @@ void main() {
         ]),
       ]);
 
-      expect(
-          EditorUtils.hasTexts(
-              editor, (editor.children[0] as Block).children[1]),
-          true);
+      expect(editor.hasTexts((editor.children[0] as Block).children[1]), true);
     });
 
     test('inline', () {
@@ -507,7 +504,7 @@ void main() {
         ]),
       ]);
 
-      expect(EditorUtils.hasTexts(editor, editor.children[0]), true);
+      expect(editor.hasTexts(editor.children[0]), true);
     });
   });
 
@@ -556,8 +553,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(
-          EditorUtils.isEdge(editor, editor.selection.anchor, Path([0])), true);
+      expect(editor.isEdge(editor.selection.anchor, Path([0])), true);
     });
 
     test('path middle', () {
@@ -572,8 +568,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
       ]);
 
-      expect(EditorUtils.isEdge(editor, editor.selection.anchor, Path([0])),
-          false);
+      expect(editor.isEdge(editor.selection.anchor, Path([0])), false);
     });
 
     test('path start', () {
@@ -588,8 +583,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(
-          EditorUtils.isEdge(editor, editor.selection.anchor, Path([0])), true);
+      expect(editor.isEdge(editor.selection.anchor, Path([0])), true);
     });
   });
 
@@ -604,7 +598,7 @@ void main() {
         Block(children: <Node>[Text('')])
       ]);
 
-      expect(EditorUtils.isEmpty(editor, editor.children[0]), true);
+      expect(editor.isEmpty(editor.children[0]), true);
     });
 
     test('block empty', () {
@@ -613,7 +607,7 @@ void main() {
       // </editor>
       Editor editor = Editor(children: <Node>[Block(children: <Node>[])]);
 
-      expect(EditorUtils.isEmpty(editor, editor.children[0]), true);
+      expect(editor.isEmpty(editor.children[0]), true);
     });
 
     test('block full', () {
@@ -624,7 +618,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(EditorUtils.isEmpty(editor, editor.children[0]), false);
+      expect(editor.isEmpty(editor.children[0]), false);
     });
 
     test('block void', () {
@@ -637,7 +631,7 @@ void main() {
         Block(children: <Node>[Text('')], isVoid: true)
       ]);
 
-      expect(EditorUtils.isEmpty(editor, editor.children[0]), false);
+      expect(editor.isEmpty(editor.children[0]), false);
     });
 
     test('inline blank', () {
@@ -658,10 +652,7 @@ void main() {
         ])
       ]);
 
-      expect(
-          EditorUtils.isEmpty(
-              editor, (editor.children[0] as Block).children[1]),
-          true);
+      expect(editor.isEmpty((editor.children[0] as Block).children[1]), true);
     });
 
     test('inline empty', () {
@@ -680,10 +671,7 @@ void main() {
         ])
       ]);
 
-      expect(
-          EditorUtils.isEmpty(
-              editor, (editor.children[0] as Block).children[1]),
-          true);
+      expect(editor.isEmpty((editor.children[0] as Block).children[1]), true);
     });
 
     test('inline full', () {
@@ -700,10 +688,7 @@ void main() {
         ])
       ]);
 
-      expect(
-          EditorUtils.isEmpty(
-              editor, (editor.children[0] as Block).children[1]),
-          false);
+      expect(editor.isEmpty((editor.children[0] as Block).children[1]), false);
     });
 
     test('inline void', () {
@@ -724,10 +709,7 @@ void main() {
         ])
       ]);
 
-      expect(
-          EditorUtils.isEmpty(
-              editor, (editor.children[0] as Block).children[1]),
-          false);
+      expect(editor.isEmpty((editor.children[0] as Block).children[1]), false);
     });
   });
 
@@ -744,8 +726,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(
-          EditorUtils.isEnd(editor, editor.selection.anchor, Path([0])), true);
+      expect(editor.isEnd(editor.selection.anchor, Path([0])), true);
     });
 
     test('path middle', () {
@@ -760,8 +741,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(
-          EditorUtils.isEnd(editor, editor.selection.anchor, Path([0])), false);
+      expect(editor.isEnd(editor.selection.anchor, Path([0])), false);
     });
 
     test('path start', () {
@@ -776,8 +756,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(
-          EditorUtils.isEnd(editor, editor.selection.anchor, Path([0])), false);
+      expect(editor.isEnd(editor.selection.anchor, Path([0])), false);
     });
   });
 
@@ -790,7 +769,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(EditorUtils.isInline(editor, editor.children[0]), false);
+      expect(editor.isInline(editor.children[0]), false);
     });
 
     test('inline', () {
@@ -804,10 +783,7 @@ void main() {
         ]),
       ]);
 
-      expect(
-          EditorUtils.isInline(
-              editor, (editor.children[0] as Block).children[1]),
-          true);
+      expect(editor.isInline((editor.children[0] as Block).children[1]), true);
     });
   });
 
@@ -824,8 +800,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(EditorUtils.isStart(editor, editor.selection.anchor, Path([0])),
-          false);
+      expect(editor.isStart(editor.selection.anchor, Path([0])), false);
     });
 
     test('path middle', () {
@@ -840,8 +815,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(EditorUtils.isStart(editor, editor.selection.anchor, Path([0])),
-          false);
+      expect(editor.isStart(editor.selection.anchor, Path([0])), false);
     });
 
     test('path start', () {
@@ -856,8 +830,7 @@ void main() {
         Block(children: <Node>[Text('one')])
       ]);
 
-      expect(EditorUtils.isStart(editor, editor.selection.anchor, Path([0])),
-          true);
+      expect(editor.isStart(editor.selection.anchor, Path([0])), true);
     });
   });
 
@@ -872,7 +845,7 @@ void main() {
         ], isVoid: true),
       ]);
 
-      expect(EditorUtils.isVoid(editor, editor.children[0]), true);
+      expect((editor.children[0] as Element).isVoid, true);
     });
 
     test('block', () {
@@ -885,7 +858,7 @@ void main() {
         ]),
       ]);
 
-      expect(EditorUtils.isVoid(editor, editor.children[0]), false);
+      expect((editor.children[0] as Element).isVoid, false);
     });
 
     test('inline void', () {
@@ -902,9 +875,7 @@ void main() {
         ])
       ]);
 
-      expect(
-          EditorUtils.isVoid(
-              editor, (editor.children[0] as Ancestor).children[1]),
+      expect(((editor.children[0] as Ancestor).children[1] as Element).isVoid,
           true);
     });
 
@@ -922,9 +893,7 @@ void main() {
         ])
       ]);
 
-      expect(
-          EditorUtils.isVoid(
-              editor, (editor.children[0] as Ancestor).children[1]),
+      expect(((editor.children[0] as Ancestor).children[1] as Element).isVoid,
           false);
     });
   });
@@ -942,10 +911,11 @@ void main() {
         element,
       ]);
 
-      List<NodeEntry> entries =
-          List.from(EditorUtils.levels(editor, at: Path([0, 0]), match: (node) {
-        return node.props['a'] != null;
-      }));
+      List<NodeEntry> entries = List.from(editor.levels(
+          at: Path([0, 0]),
+          match: (node) {
+            return node.props['a'] != null;
+          }));
 
       expect(entries[0].node, element);
       expect(entries[0].path.equals(Path([0])), true);
@@ -966,8 +936,8 @@ void main() {
         element,
       ]);
 
-      List<NodeEntry> entries = List.from(
-          EditorUtils.levels(editor, at: Path([0, 0]), reverse: true));
+      List<NodeEntry> entries =
+          List.from(editor.levels(at: Path([0, 0]), reverse: true));
 
       expect(entries[0].node, text);
       expect(entries[0].path.equals(Path([0, 0])), true);
@@ -991,8 +961,7 @@ void main() {
         element,
       ]);
 
-      List<NodeEntry> entries =
-          List.from(EditorUtils.levels(editor, at: Path([0, 0])));
+      List<NodeEntry> entries = List.from(editor.levels(at: Path([0, 0])));
 
       expect(entries[0].node, editor);
       expect(entries[0].path.equals(Path([])), true);
@@ -1015,7 +984,7 @@ void main() {
       Editor editor = Editor(children: <Node>[element]);
 
       List<NodeEntry> entries = List.from(
-        EditorUtils.levels(editor, at: Path([0, 0])),
+        editor.levels(at: Path([0, 0])),
       );
 
       expect(entries[0].node, editor);
@@ -1036,7 +1005,7 @@ void main() {
       Editor editor = Editor(children: <Node>[element]);
 
       List<NodeEntry> entries = List.from(
-        EditorUtils.levels(editor, at: Path([0, 0]), voids: true),
+        editor.levels(at: Path([0, 0]), voids: true),
       );
 
       expect(entries[0].node, editor);
@@ -1060,9 +1029,11 @@ void main() {
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
-      NodeEntry next = EditorUtils.next(editor, at: Path([0]), match: (node) {
-        return node is Block;
-      });
+      NodeEntry next = editor.next(
+          at: Path([0]),
+          match: (node) {
+            return node is Block;
+          });
 
       expect(next.node, editor.children[1]);
       expect(next.path.equals(Path([1])), true);
@@ -1077,7 +1048,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
-      NodeEntry next = EditorUtils.next(editor, at: Path([0]));
+      NodeEntry next = editor.next(at: Path([0]));
 
       expect(next.node, editor.children[1]);
       expect(next.path.equals(Path([1])), true);
@@ -1093,9 +1064,11 @@ void main() {
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[text]),
       ]);
-      NodeEntry next = EditorUtils.next(editor, at: Path([0]), match: (node) {
-        return node is Text;
-      });
+      NodeEntry next = editor.next(
+          at: Path([0]),
+          match: (node) {
+            return node is Text;
+          });
 
       expect(next.node, text);
       expect(next.path.equals(Path([1, 0])), true);
@@ -1110,7 +1083,7 @@ void main() {
       Editor editor = Editor(children: <Node>[
         Block(children: <Node>[Text('one')]),
       ]);
-      NodeEntry entry = EditorUtils.node(editor, Path([0]));
+      NodeEntry entry = editor.node(Path([0]));
 
       expect(entry.node, editor.children[0]);
       expect(entry.path.equals(Path([0])), true);
@@ -1124,7 +1097,7 @@ void main() {
       Editor editor = Editor(children: <Node>[
         Block(children: <Node>[text]),
       ]);
-      NodeEntry entry = EditorUtils.node(editor, Point(Path([0, 0]), 1));
+      NodeEntry entry = editor.node(Point(Path([0, 0]), 1));
 
       expect(entry.node, text);
       expect(entry.path.equals(Path([0, 0])), true);
@@ -1140,8 +1113,8 @@ void main() {
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[text]),
       ]);
-      NodeEntry entry = EditorUtils.node(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
+      NodeEntry entry = editor.node(
+          Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
           edge: Edge.end);
 
       expect(entry.node, text);
@@ -1158,8 +1131,8 @@ void main() {
         Block(children: <Node>[text]),
         Block(children: <Node>[Text('two')]),
       ]);
-      NodeEntry entry = EditorUtils.node(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
+      NodeEntry entry = editor.node(
+          Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
           edge: Edge.start);
 
       expect(entry.node, text);
@@ -1176,8 +1149,8 @@ void main() {
         Block(children: <Node>[text]),
         Block(children: <Node>[Text('two')]),
       ]);
-      NodeEntry entry = EditorUtils.node(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
+      NodeEntry entry =
+          editor.node(Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
 
       expect(entry.node, editor);
       expect(entry.path.equals(Path([])), true);
@@ -1192,8 +1165,7 @@ void main() {
         // </editor>
         Block block = Block(children: <Node>[Text('one')]);
         Editor editor = Editor(children: <Node>[block]);
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
           match: (node) {
             return node is Block;
@@ -1216,8 +1188,7 @@ void main() {
           Block(children: <Node>[Text('three')]),
         ]);
 
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
           match: (node) {
             return true;
@@ -1239,11 +1210,10 @@ void main() {
         Editor editor = Editor(children: <Node>[
           Block(children: <Node>[Text('one'), inline, Text('three')])
         ]);
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
           match: (node) {
-            return EditorUtils.isInline(editor, node);
+            return editor.isInline(node);
           },
         ));
 
@@ -1269,10 +1239,12 @@ void main() {
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['a'] != null;
-        }, mode: Mode.all));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['a'] != null;
+            },
+            mode: Mode.all));
 
         expect(entries[0].node, block1);
         expect(entries[0].path.equals(Path([0])), true);
@@ -1305,10 +1277,12 @@ void main() {
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['a'] != null;
-        }, mode: Mode.highest));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['a'] != null;
+            },
+            mode: Mode.highest));
 
         expect(entries[0].node, block1);
         expect(entries[0].path.equals(Path([0])), true);
@@ -1335,10 +1309,12 @@ void main() {
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['a'] != null;
-        }, mode: Mode.lowest));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['a'] != null;
+            },
+            mode: Mode.lowest));
 
         expect(entries[0].node, innerBlock1);
         expect(entries[0].path.equals(Path([0, 0])), true);
@@ -1365,10 +1341,13 @@ void main() {
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['a'] != null;
-        }, mode: Mode.lowest, universal: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['a'] != null;
+            },
+            mode: Mode.lowest,
+            universal: true));
 
         expect(entries[0].node, innerBlock1);
         expect(entries[0].path.equals(Path([0, 0])), true);
@@ -1386,10 +1365,13 @@ void main() {
         Block block2 = Block(children: <Node>[Text('two')], props: {'a': true});
 
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['a'] != null;
-        }, mode: Mode.lowest, universal: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['a'] != null;
+            },
+            mode: Mode.lowest,
+            universal: true));
 
         expect(entries[0].node, block1);
         expect(entries[0].path.equals(Path([0])), true);
@@ -1414,10 +1396,13 @@ void main() {
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'b': true});
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['a'] != null;
-        }, mode: Mode.lowest, universal: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['a'] != null;
+            },
+            mode: Mode.lowest,
+            universal: true));
 
         expect(entries[0].node, block1);
         expect(entries[0].path.equals(Path([0])), true);
@@ -1441,10 +1426,13 @@ void main() {
             Block(children: <Node>[Text('two')], props: {'a': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'a': true});
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['b'] != null;
-        }, mode: Mode.lowest, universal: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['b'] != null;
+            },
+            mode: Mode.lowest,
+            universal: true));
 
         expect(entries.isEmpty, true);
       });
@@ -1458,10 +1446,13 @@ void main() {
         Block block2 = Block(children: <Node>[Text('two')], props: {'a': true});
 
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['b'] != null;
-        }, mode: Mode.lowest, universal: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['b'] != null;
+            },
+            mode: Mode.lowest,
+            universal: true));
 
         expect(entries.isEmpty, true);
       });
@@ -1482,10 +1473,13 @@ void main() {
             Block(children: <Node>[Text('two')], props: {'b': true});
         Block block2 = Block(children: <Node>[innerBlock2], props: {'b': true});
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['a'] != null;
-        }, mode: Mode.lowest, universal: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['a'] != null;
+            },
+            mode: Mode.lowest,
+            universal: true));
 
         expect(entries.isEmpty, true);
       });
@@ -1499,10 +1493,13 @@ void main() {
         Block block2 = Block(children: <Node>[Text('two')], props: {'b': true});
 
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node.props['a'] != null;
-        }, mode: Mode.lowest, universal: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node.props['a'] != null;
+            },
+            mode: Mode.lowest,
+            universal: true));
 
         expect(entries.isEmpty, true);
       });
@@ -1519,8 +1516,7 @@ void main() {
         Text text2 = Text('two');
         Block block2 = Block(children: <Node>[text2]);
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
         ));
 
@@ -1556,8 +1552,7 @@ void main() {
         Block innerBlock2 = Block(children: <Node>[text2]);
         Block block2 = Block(children: <Node>[innerBlock2]);
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
         ));
 
@@ -1593,8 +1588,7 @@ void main() {
         Text text2 = Text('two');
         Block block2 = Block(children: <Node>[text2]);
         Editor editor = Editor(children: <Node>[block1, block2]);
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
           reverse: true,
         ));
@@ -1621,8 +1615,7 @@ void main() {
         // </editor>
         Block block = Block(children: <Node>[Text('one')], isVoid: true);
         Editor editor = Editor(children: <Node>[block]);
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
         ));
 
@@ -1640,8 +1633,7 @@ void main() {
         Text text = Text('one');
         Block block = Block(children: <Node>[text]);
         Editor editor = Editor(children: <Node>[block]);
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
         ));
 
@@ -1671,8 +1663,7 @@ void main() {
         Block block =
             Block(children: <Node>[text1, inline2, text3, inline4, text5]);
         Editor editor = Editor(children: <Node>[block]);
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
         ));
 
@@ -1724,8 +1715,7 @@ void main() {
         Block block = Block(children: <Node>[text1, inline, text5]);
         Editor editor = Editor(children: <Node>[block]);
 
-        List<NodeEntry> entries = List.from(EditorUtils.nodes(
-          editor,
+        List<NodeEntry> entries = List.from(editor.nodes(
           at: Path([]),
         ));
 
@@ -1774,7 +1764,7 @@ void main() {
             Block(children: <Node>[text1, inline2, text3, inline4, text5]);
         Editor editor = Editor(children: <Node>[block]);
         List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), reverse: true));
+            List.from(editor.nodes(at: Path([]), reverse: true));
 
         expect(entries[0].node, editor);
         expect(entries[0].path.equals(Path([])), true);
@@ -1817,8 +1807,7 @@ void main() {
         Block block = Block(children: <Node>[text1, inline, text3]);
         Editor editor = Editor(children: <Node>[block]);
 
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([])));
+        List<NodeEntry> entries = List.from(editor.nodes(at: Path([])));
 
         expect(entries[0].node, editor);
         expect(entries[0].path.equals(Path([])), true);
@@ -1849,8 +1838,7 @@ void main() {
         Block block = Block(children: <Node>[text1, inline, text3]);
         Editor editor = Editor(children: <Node>[block]);
 
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([])));
+        List<NodeEntry> entries = List.from(editor.nodes(at: Path([])));
 
         expect(entries[0].node, editor);
         expect(entries[0].path.equals(Path([])), true);
@@ -1881,10 +1869,12 @@ void main() {
         Block block = Block(children: <Node>[text1], isVoid: true);
         Editor editor = Editor(children: <Node>[block]);
 
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node is Text;
-        }, voids: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node is Text;
+            },
+            voids: true));
 
         expect(entries[0].node, text1);
         expect(entries[0].path.equals(Path([0, 0])), true);
@@ -1903,10 +1893,12 @@ void main() {
         Block block = Block(children: <Node>[text1, inline, text3]);
         Editor editor = Editor(children: <Node>[block]);
 
-        List<NodeEntry> entries =
-            List.from(EditorUtils.nodes(editor, at: Path([]), match: (node) {
-          return node is Text;
-        }, voids: true));
+        List<NodeEntry> entries = List.from(editor.nodes(
+            at: Path([]),
+            match: (node) {
+              return node is Text;
+            },
+            voids: true));
 
         expect(entries[0].node, text1);
         expect(entries[0].path.equals(Path([0, 0])), true);
@@ -1929,7 +1921,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      NodeEntry entry = EditorUtils.parent(editor, Path([0, 0]));
+      NodeEntry entry = editor.parent(Path([0, 0]));
 
       expect(entry.node, block);
       expect(entry.path.equals(Path([0])), true);
@@ -1943,7 +1935,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      NodeEntry entry = EditorUtils.parent(editor, Point(Path([0, 0]), 1));
+      NodeEntry entry = editor.parent(Point(Path([0, 0]), 1));
 
       expect(entry.node, block);
       expect(entry.path.equals(Path([0])), true);
@@ -1960,8 +1952,8 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      NodeEntry entry = EditorUtils.parent(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
+      NodeEntry entry = editor.parent(
+          Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
           edge: Edge.end);
 
       expect(entry.node, block2);
@@ -1979,8 +1971,8 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      NodeEntry entry = EditorUtils.parent(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
+      NodeEntry entry = editor.parent(
+          Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
           edge: Edge.start);
 
       expect(entry.node, block1);
@@ -1998,8 +1990,7 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      NodeEntry entry = EditorUtils.parent(
-        editor,
+      NodeEntry entry = editor.parent(
         Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)),
       );
 
@@ -2017,7 +2008,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Path path = EditorUtils.path(editor, Path([0]));
+      Path path = editor.path(Path([0]));
 
       expect(path.equals(Path([0])), true);
     });
@@ -2030,7 +2021,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Path path = EditorUtils.path(editor, Point(Path([0, 0]), 1));
+      Path path = editor.path(Point(Path([0, 0]), 1));
 
       expect(path.equals(Path([0, 0])), true);
     });
@@ -2046,8 +2037,8 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      Path path = EditorUtils.path(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
+      Path path = editor.path(
+          Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
           edge: Edge.end);
 
       expect(path.equals(Path([1, 0])), true);
@@ -2064,8 +2055,8 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      Path path = EditorUtils.path(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
+      Path path = editor.path(
+          Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
           edge: Edge.start);
 
       expect(path.equals(Path([0, 0])), true);
@@ -2082,8 +2073,8 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      Path path = EditorUtils.path(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
+      Path path =
+          editor.path(Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
 
       expect(path.equals(Path([])), true);
     });
@@ -2098,7 +2089,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Point point = EditorUtils.point(editor, Path([0]), edge: Edge.end);
+      Point point = editor.point(Path([0]), edge: Edge.end);
 
       expect(point.equals(Point(Path([0, 0]), 3)), true);
     });
@@ -2111,7 +2102,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Point point = EditorUtils.point(editor, Path([0]), edge: Edge.start);
+      Point point = editor.point(Path([0]), edge: Edge.start);
 
       expect(point.equals(Point(Path([0, 0]), 0)), true);
     });
@@ -2124,7 +2115,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Point point = EditorUtils.point(editor, Path([0]));
+      Point point = editor.point(Path([0]));
 
       expect(point.equals(Point(Path([0, 0]), 0)), true);
     });
@@ -2137,7 +2128,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Point point = EditorUtils.point(editor, Point(Path([0, 0]), 1));
+      Point point = editor.point(Point(Path([0, 0]), 1));
 
       expect(point.equals(Point(Path([0, 0]), 1)), true);
     });
@@ -2153,8 +2144,8 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      Point point = EditorUtils.point(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
+      Point point = editor.point(
+          Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
           edge: Edge.end);
 
       expect(point.equals(Point(Path([0, 1]), 2)), true);
@@ -2171,8 +2162,8 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      Point point = EditorUtils.point(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
+      Point point = editor.point(
+          Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
           edge: Edge.start);
 
       expect(point.equals(Point(Path([0, 0]), 1)), true);
@@ -2189,8 +2180,8 @@ void main() {
       Block block2 = Block(children: <Node>[text2]);
       Editor editor = Editor(children: <Node>[block1, block2]);
 
-      Point point = EditorUtils.point(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)));
+      Point point =
+          editor.point(Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)));
 
       expect(point.equals(Point(Path([0, 0]), 1)), true);
     });
@@ -2210,8 +2201,8 @@ void main() {
           Block(children: <Node>[Text('three')]),
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([]), reverse: true));
+        List<Point> points =
+            List.from(editor.positions(at: Path([]), reverse: true));
 
         expect(points[0].equals(Point(Path([2, 0]), 5)), true);
         expect(points[1].equals(Point(Path([2, 0]), 4)), true);
@@ -2241,8 +2232,7 @@ void main() {
           Block(children: <Node>[Text('three')]),
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([])));
+        List<Point> points = List.from(editor.positions(at: Path([])));
 
         expect(points[0].equals(Point(Path([0, 0]), 0)), true);
         expect(points[1].equals(Point(Path([0, 0]), 1)), true);
@@ -2278,8 +2268,7 @@ void main() {
           ]),
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([])));
+        List<Point> points = List.from(editor.positions(at: Path([])));
 
         expect(
             points[0].equals(
@@ -2331,8 +2320,8 @@ void main() {
           Block(children: <Node>[Text('one')]),
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([]), reverse: true));
+        List<Point> points =
+            List.from(editor.positions(at: Path([]), reverse: true));
 
         expect(
             points[0].equals(
@@ -2364,8 +2353,7 @@ void main() {
           Block(children: <Node>[Text('one')]),
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([])));
+        List<Point> points = List.from(editor.positions(at: Path([])));
 
         expect(
             points[0].equals(
@@ -2406,8 +2394,7 @@ void main() {
             Block(children: <Node>[text1, inline2, text3, inline4, text5]);
         Editor editor = Editor(children: <Node>[block]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([])));
+        List<Point> points = List.from(editor.positions(at: Path([])));
 
         expect(
             points[0].equals(
@@ -2553,8 +2540,7 @@ void main() {
           ]),
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([])));
+        List<Point> points = List.from(editor.positions(at: Path([])));
 
         expect(
             points[0].equals(
@@ -2689,8 +2675,8 @@ void main() {
           Block(children: <Node>[Text('one'), inline, Text('three')])
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([]), reverse: true));
+        List<Point> points =
+            List.from(editor.positions(at: Path([]), reverse: true));
 
         expect(
             points[0].equals(
@@ -2775,8 +2761,7 @@ void main() {
           Block(children: <Node>[Text('one'), inline, Text('three')])
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([])));
+        List<Point> points = List.from(editor.positions(at: Path([])));
 
         expect(
             points[0].equals(
@@ -2860,8 +2845,8 @@ void main() {
           Block(children: <Node>[Text('four five six')]),
         ]);
 
-        List<Point> points = List.from(EditorUtils.positions(editor,
-            at: Path([]), unit: Unit.block, reverse: true));
+        List<Point> points = List.from(
+            editor.positions(at: Path([]), unit: Unit.block, reverse: true));
 
         expect(
             points[0].equals(
@@ -2895,8 +2880,8 @@ void main() {
           Block(children: <Node>[Text('four five six')]),
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([]), unit: Unit.block));
+        List<Point> points =
+            List.from(editor.positions(at: Path([]), unit: Unit.block));
 
         expect(
             points[0].equals(
@@ -2946,7 +2931,7 @@ void main() {
           ]),
         ]);
 
-        List<Point> points = List.from(EditorUtils.positions(editor,
+        List<Point> points = List.from(editor.positions(
             at: Path([]), unit: Unit.character, reverse: true));
 
         expect(
@@ -3097,8 +3082,8 @@ void main() {
           ]),
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([]), unit: Unit.character));
+        List<Point> points =
+            List.from(editor.positions(at: Path([]), unit: Unit.character));
 
         expect(
             points[0].equals(
@@ -3232,8 +3217,8 @@ void main() {
           Block(children: <Node>[Text('four five six')]),
         ]);
 
-        List<Point> points = List.from(EditorUtils.positions(editor,
-            at: Path([]), unit: Unit.line, reverse: true));
+        List<Point> points = List.from(
+            editor.positions(at: Path([]), unit: Unit.line, reverse: true));
 
         expect(
             points[0].equals(
@@ -3267,8 +3252,8 @@ void main() {
           Block(children: <Node>[Text('four five six')]),
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([]), unit: Unit.line));
+        List<Point> points =
+            List.from(editor.positions(at: Path([]), unit: Unit.line));
 
         expect(
             points[0].equals(
@@ -3302,8 +3287,8 @@ void main() {
           Block(children: <Node>[Text('four five six')]),
         ]);
 
-        List<Point> points = List.from(EditorUtils.positions(editor,
-            at: Path([]), unit: Unit.word, reverse: true));
+        List<Point> points = List.from(
+            editor.positions(at: Path([]), unit: Unit.word, reverse: true));
 
         expect(
             points[0].equals(
@@ -3357,8 +3342,8 @@ void main() {
           Block(children: <Node>[Text('four five six')]),
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([]), unit: Unit.word));
+        List<Point> points =
+            List.from(editor.positions(at: Path([]), unit: Unit.word));
 
         expect(
             points[0].equals(
@@ -3418,8 +3403,7 @@ void main() {
           ]),
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([0])));
+        List<Point> points = List.from(editor.positions(at: Path([0])));
 
         expect(
             points[0].equals(
@@ -3473,8 +3457,8 @@ void main() {
           Block(children: <Node>[Text('two')]),
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([0]), reverse: true));
+        List<Point> points =
+            List.from(editor.positions(at: Path([0]), reverse: true));
 
         expect(
             points[0].equals(
@@ -3508,8 +3492,7 @@ void main() {
           Block(children: <Node>[Text('two')]),
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([1, 0])));
+        List<Point> points = List.from(editor.positions(at: Path([1, 0])));
 
         expect(
             points[0].equals(
@@ -3555,8 +3538,7 @@ void main() {
           ]),
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([0, 1])));
+        List<Point> points = List.from(editor.positions(at: Path([0, 1])));
 
         expect(
             points[0].equals(
@@ -3651,8 +3633,8 @@ void main() {
           ]),
         ]);
 
-        List<Point> points = List.from(
-            EditorUtils.positions(editor, at: Path([0, 1]), reverse: true));
+        List<Point> points =
+            List.from(editor.positions(at: Path([0, 1]), reverse: true));
 
         expect(
             points[0].equals(
@@ -3692,8 +3674,7 @@ void main() {
           ]),
         ]);
 
-        List<Point> points =
-            List.from(EditorUtils.positions(editor, at: Path([0, 1])));
+        List<Point> points = List.from(editor.positions(at: Path([0, 1])));
 
         expect(
             points[0].equals(
@@ -3731,7 +3712,7 @@ void main() {
           Block(children: <Node>[Text('three')]),
         ]);
 
-        List<Point> points = List.from(EditorUtils.positions(editor,
+        List<Point> points = List.from(editor.positions(
             at: Range(Point(Path([0, 0]), 1), Point(Path([2, 0]), 2)),
             reverse: true));
 
@@ -3799,7 +3780,7 @@ void main() {
           Block(children: <Node>[Text('three')]),
         ]);
 
-        List<Point> points = List.from(EditorUtils.positions(editor,
+        List<Point> points = List.from(editor.positions(
             at: Range(Point(Path([0, 0]), 1), Point(Path([2, 0]), 2))));
 
         expect(
@@ -3871,7 +3852,7 @@ void main() {
             Block(children: <Node>[text1, inline2, text3, inline4, text5]);
         Editor editor = Editor(children: <Node>[block]);
 
-        List<Point> points = List.from(EditorUtils.positions(editor,
+        List<Point> points = List.from(editor.positions(
             at: Range(Point(Path([0, 0]), 2), Point(Path([0, 4]), 2))));
 
         expect(
@@ -3988,10 +3969,11 @@ void main() {
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
-      NodeEntry previous =
-          EditorUtils.previous(editor, at: Path([1]), match: (node) {
-        return node is Block;
-      });
+      NodeEntry previous = editor.previous(
+          at: Path([1]),
+          match: (node) {
+            return node is Block;
+          });
 
       expect(previous.node, editor.children[0]);
       expect(previous.path.equals(Path([0])), true);
@@ -4006,7 +3988,7 @@ void main() {
         Block(children: <Node>[Text('one')]),
         Block(children: <Node>[Text('two')]),
       ]);
-      NodeEntry previous = EditorUtils.previous(editor, at: Path([1]));
+      NodeEntry previous = editor.previous(at: Path([1]));
 
       expect(previous.node, editor.children[0]);
       expect(previous.path.equals(Path([0])), true);
@@ -4022,10 +4004,11 @@ void main() {
         Block(children: <Node>[text]),
         Block(children: <Node>[Text('two')]),
       ]);
-      NodeEntry previous =
-          EditorUtils.previous(editor, at: Path([1]), match: (node) {
-        return node is Text;
-      });
+      NodeEntry previous = editor.previous(
+          at: Path([1]),
+          match: (node) {
+            return node is Text;
+          });
 
       expect(previous.node, text);
       expect(previous.path.equals(Path([0, 0])), true);
@@ -4041,7 +4024,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Range range = EditorUtils.range(editor, Path([0]), null);
+      Range range = editor.range(Path([0]), null);
 
       expect(
           range.equals(Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3))),
@@ -4056,7 +4039,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Range range = EditorUtils.range(editor, Point(Path([0, 0]), 1), null);
+      Range range = editor.range(Point(Path([0, 0]), 1), null);
 
       expect(
           range.equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
@@ -4071,8 +4054,8 @@ void main() {
       Block block1 = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block1]);
 
-      Range range = EditorUtils.range(
-          editor, Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 1)), null);
+      Range range = editor.range(
+          Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 1)), null);
 
       expect(
           range.equals(Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 1))),
@@ -4087,8 +4070,8 @@ void main() {
       Block block1 = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block1]);
 
-      Range range = EditorUtils.range(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)), null);
+      Range range = editor.range(
+          Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)), null);
 
       expect(
           range.equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
@@ -4105,7 +4088,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Point point = EditorUtils.start(editor, Path([0]));
+      Point point = editor.start(Path([0]));
 
       expect(
           point.equals(
@@ -4122,7 +4105,7 @@ void main() {
       Block block = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block]);
 
-      Point point = EditorUtils.start(editor, Point(Path([0, 0]), 1));
+      Point point = editor.start(Point(Path([0, 0]), 1));
 
       expect(
           point.equals(
@@ -4139,8 +4122,8 @@ void main() {
       Block block1 = Block(children: <Node>[text1]);
       Editor editor = Editor(children: <Node>[block1]);
 
-      Point point = EditorUtils.start(
-          editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)));
+      Point point =
+          editor.start(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)));
 
       expect(
           point.equals(
@@ -4167,7 +4150,7 @@ void main() {
         Block(children: <Node>[Text('three'), Text('four')]),
       ]);
 
-      String result = EditorUtils.string(editor, Path([]));
+      String result = editor.string(Path([]));
 
       expect(result, 'onetwothreefour');
     });
@@ -4183,7 +4166,7 @@ void main() {
         Block(children: <Node>[Text('one'), Text('two')], isVoid: true),
       ]);
 
-      String result = EditorUtils.string(editor, Path([]));
+      String result = editor.string(Path([]));
 
       expect(result, '');
     });
@@ -4204,7 +4187,7 @@ void main() {
         Block(children: <Node>[Text('three'), Text('four')]),
       ]);
 
-      String result = EditorUtils.string(editor, Path([0]));
+      String result = editor.string(Path([0]));
 
       expect(result, 'onetwo');
     });
@@ -4225,7 +4208,7 @@ void main() {
         ]),
       ]);
 
-      String result = EditorUtils.string(editor, Path([0, 1]));
+      String result = editor.string(Path([0, 1]));
 
       expect(result, 'two');
     });
@@ -4240,7 +4223,7 @@ void main() {
         Block(children: <Node>[Text('one'), Text('two')]),
       ]);
 
-      String result = EditorUtils.string(editor, Path([0, 0]));
+      String result = editor.string(Path([0, 0]));
 
       expect(result, 'one');
     });
