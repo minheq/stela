@@ -57,7 +57,7 @@ class NodeUtils {
   /// the tree, but you can pass the `reverse: true` option to go top-down.
   static Iterable<NodeEntry<Ancestor>> ancestors(Node root, Path path,
       {bool reverse = false}) sync* {
-    for (Path p in PathUtils.ancestors(path, reverse: reverse)) {
+    for (Path p in path.ancestors(reverse: reverse)) {
       Ancestor n = NodeUtils.ancestor(root, p);
 
       yield NodeEntry(n, p);
@@ -90,7 +90,7 @@ class NodeUtils {
     while (reverse ? index >= 0 : index < ancestor.children.length) {
       Descendant child = NodeUtils.child(ancestor, index);
 
-      Path childPath = PathUtils.copy(path);
+      Path childPath = path.copy();
       childPath.add(index);
 
       yield NodeEntry<Descendant>(child, childPath);
@@ -101,7 +101,7 @@ class NodeUtils {
 
   /// Get an entry for the common ancestor node of two paths.
   static NodeEntry common(Node root, Path path, Path another) {
-    Path p = PathUtils.common(path, another);
+    Path p = path.common(another);
     Node n = NodeUtils.get(root, p);
 
     return NodeEntry(n, p);
@@ -191,7 +191,7 @@ class NodeUtils {
 
   /// Get the first node entry in a root node from a path.
   static NodeEntry first(Node root, Path path) {
-    Path p = PathUtils.copy(path);
+    Path p = path.copy();
     Node n = NodeUtils.get(root, p);
 
     while (n != null) {
@@ -237,12 +237,12 @@ class NodeUtils {
         parent.children.removeAt(index);
       }
 
-      if (PathUtils.equals(path, end.path)) {
+      if (path.equals(end.path)) {
         Text leaf = NodeUtils.leaf(newRoot, path);
         leaf.text = leaf.text.substring(0, end.offset);
       }
 
-      if (PathUtils.equals(path, start.path)) {
+      if (path.equals(start.path)) {
         Text leaf = NodeUtils.leaf(newRoot, path);
         leaf.text = leaf.text.substring(start.offset);
       }
@@ -344,7 +344,7 @@ class NodeUtils {
   /// but you can pass the `reverse: true` option to go bottom-up.
   static Iterable<NodeEntry> levels(Node root, Path path,
       {bool reverse = false}) sync* {
-    for (Path p in PathUtils.levels(path, reverse: reverse)) {
+    for (Path p in path.levels(reverse: reverse)) {
       Node n = NodeUtils.get(root, p);
       yield NodeEntry(n, p);
     }
@@ -368,8 +368,7 @@ class NodeUtils {
     Node n = root;
 
     while (true) {
-      if (to != null &&
-          (reverse ? PathUtils.isBefore(p, to) : PathUtils.isAfter(p, to))) {
+      if (to != null && (reverse ? p.isBefore(to) : p.isAfter(to))) {
         break;
       }
 
@@ -385,10 +384,10 @@ class NodeUtils {
         visited.add(n);
         int nextIndex = reverse ? (n as Ancestor).children.length - 1 : 0;
 
-        if (PathUtils.isAncestor(p, from)) {
+        if (p.isAncestor(from)) {
           nextIndex = from[p.length];
         }
-        p = PathUtils.copy(p);
+        p = p.copy();
         p.add(nextIndex);
 
         n = NodeUtils.get(root, p);
@@ -402,7 +401,7 @@ class NodeUtils {
 
       // If we're going forward...
       if (!reverse) {
-        Path newPath = PathUtils.next(p);
+        Path newPath = p.next;
 
         if (NodeUtils.has(root, newPath)) {
           p = newPath;
@@ -413,14 +412,14 @@ class NodeUtils {
 
       // If we're going backward...
       if (reverse && p[p.length - 1] != 0) {
-        Path newPath = PathUtils.previous(p);
+        Path newPath = p.previous;
         p = newPath;
         n = NodeUtils.get(root, p);
         continue;
       }
 
       // Otherwise we're going upward...
-      p = PathUtils.parent(p);
+      p = p.parent;
       n = NodeUtils.get(root, p);
       visited.add(n);
     }
@@ -428,7 +427,7 @@ class NodeUtils {
 
   /// Get the parent of a node at a specific path.
   static Ancestor parent(Node root, Path path) {
-    Path parentPath = PathUtils.parent(path);
+    Path parentPath = path.parent;
     Node p = NodeUtils.get(root, parentPath);
 
     if (p is Text) {

@@ -36,8 +36,7 @@ class Range implements Location {
 
   /// Check if a range is exactly equal to another.
   bool equals(Range another) {
-    return (PointUtils.equals(anchor, another.anchor) &&
-        PointUtils.equals(focus, another.focus));
+    return (anchor.equals(another.anchor) && focus.equals(another.focus));
   }
 
   /// Check if a range includes a path, a point or part of another
@@ -54,7 +53,7 @@ class Range implements Location {
       Point ts = targetEdges.start;
       Point te = targetEdges.end;
 
-      return PointUtils.isBefore(rs, ts) && PointUtils.isAfter(re, te);
+      return rs.isBefore(ts) && re.isAfter(te);
     }
 
     Point start = edges().start;
@@ -64,11 +63,11 @@ class Range implements Location {
     bool isBeforeEnd = false;
 
     if (target is Point) {
-      isAfterStart = PointUtils.compare(target, start) >= 0;
-      isBeforeEnd = PointUtils.compare(target, end) <= 0;
-    } else {
-      isAfterStart = PathUtils.compare(target, start.path) >= 0;
-      isBeforeEnd = PathUtils.compare(target, end.path) <= 0;
+      isAfterStart = target.compare(start) >= 0;
+      isBeforeEnd = target.compare(end) <= 0;
+    } else if (target is Path) {
+      isAfterStart = target.compare(start.path) >= 0;
+      isBeforeEnd = target.compare(end.path) <= 0;
     }
 
     return isAfterStart && isBeforeEnd;
@@ -83,10 +82,10 @@ class Range implements Location {
     Point s2 = anotherEdges.start;
     Point e2 = anotherEdges.end;
 
-    Point start = PointUtils.isBefore(s1, s2) ? s2 : s1;
-    Point end = PointUtils.isBefore(e1, e2) ? e1 : e2;
+    Point start = s1.isBefore(s2) ? s2 : s1;
+    Point end = e1.isBefore(e2) ? e1 : e2;
 
-    if (PointUtils.isBefore(end, start)) {
+    if (end.isBefore(start)) {
       return null;
     } else {
       return Range(start, end);
@@ -96,13 +95,13 @@ class Range implements Location {
   /// Check if a range is backward, meaning that its anchor point appears in the
   /// document _after_ its focus point.
   bool get isBackward {
-    return PointUtils.isAfter(anchor, focus);
+    return anchor.isAfter(focus);
   }
 
   /// Check if a range is collapsed, meaning that both its anchor and focus
   /// points refer to the exact same position in the document.
   bool get isCollapsed {
-    return PointUtils.equals(anchor, focus);
+    return anchor.equals(focus);
   }
 
   /// Check if a range is expanded.
@@ -158,10 +157,8 @@ class Range implements Location {
 
     Range next = Range(anchor, focus);
 
-    Point nextAnchor =
-        PointUtils.transform(next.anchor, op, affinity: affinityAnchor);
-    Point nextFocus =
-        PointUtils.transform(next.focus, op, affinity: affinityFocus);
+    Point nextAnchor = next.anchor.transform(op, affinity: affinityAnchor);
+    Point nextFocus = next.focus.transform(op, affinity: affinityFocus);
 
     if (nextAnchor == null || nextFocus == null) {
       return null;

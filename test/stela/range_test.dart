@@ -14,8 +14,8 @@ void main() {
       Point start = edges.start;
       Point end = edges.end;
 
-      expect(PointUtils.equals(focus, start), true);
-      expect(PointUtils.equals(anchor, end), true);
+      expect(focus.equals(start), true);
+      expect(anchor.equals(end), true);
     });
 
     test('collapsed', () {
@@ -27,8 +27,8 @@ void main() {
       Point start = edges.start;
       Point end = edges.end;
 
-      expect(PointUtils.equals(anchor, start), true);
-      expect(PointUtils.equals(focus, end), true);
+      expect(anchor.equals(start), true);
+      expect(focus.equals(end), true);
     });
 
     test('forward', () {
@@ -40,8 +40,8 @@ void main() {
       Point start = edges.start;
       Point end = edges.end;
 
-      expect(PointUtils.equals(anchor, start), true);
-      expect(PointUtils.equals(focus, end), true);
+      expect(anchor.equals(start), true);
+      expect(focus.equals(end), true);
     });
   });
 

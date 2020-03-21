@@ -14,7 +14,7 @@ class Operation {
 
     if (op is MergeNodeOperation) {
       return SplitNodeOperation(
-          PathUtils.previous(op.path), op.position, op.target, op.props);
+          op.path.previous, op.position, op.target, op.props);
     }
 
     if (op is MoveNodeOperation) {
@@ -22,15 +22,15 @@ class Operation {
       Path newPath = op.newPath;
 
       // PERF: in this case the move operation is a no-op anyways.
-      if (PathUtils.equals(newPath, path)) {
+      if (newPath.equals(path)) {
         return op;
       }
 
       // We need to get the original path here, but sometimes the `newPath`
       // is a younger sibling of (or ends before) the original, and this
       // accounts for it.
-      Path inversePath = PathUtils.transform(path, op);
-      Path inverseNewPath = PathUtils.transform(PathUtils.next(path), op);
+      Path inversePath = path.transform(op);
+      Path inverseNewPath = path.next.transform(op);
 
       return MoveNodeOperation(inversePath, inverseNewPath);
     }
@@ -66,8 +66,7 @@ class Operation {
     }
 
     if (op is SplitNodeOperation) {
-      return MergeNodeOperation(
-          PathUtils.next(op.path), op.position, op.target, op.props);
+      return MergeNodeOperation(op.path.next, op.position, op.target, op.props);
     }
 
     return null;

@@ -26,7 +26,7 @@ void main() {
       });
 
       expect(entry.node, highest);
-      expect(PathUtils.equals(entry.path, Path([0])), true);
+      expect(entry.path.equals(Path([0])), true);
     });
 
     test('block lowest', () {
@@ -46,7 +46,7 @@ void main() {
       });
 
       expect(entry.node, lowest);
-      expect(PathUtils.equals(entry.path, Path([0, 0])), true);
+      expect(entry.path.equals(Path([0, 0])), true);
     });
 
     test('inline', () {
@@ -67,7 +67,7 @@ void main() {
       });
 
       expect(entry.node, inline);
-      expect(PathUtils.equals(entry.path, Path([0, 1])), true);
+      expect(entry.path.equals(Path([0, 1])), true);
     });
   });
 
@@ -99,7 +99,7 @@ void main() {
 
       Point point = EditorUtils.after(editor, Path([0, 0]));
 
-      expect(PointUtils.equals(point, Point(Path([1, 0]), 0)), true);
+      expect(point.equals(Point(Path([1, 0]), 0)), true);
     });
 
     test('point', () {
@@ -112,7 +112,7 @@ void main() {
 
       Point point = EditorUtils.after(editor, Point(Path([0, 0]), 1));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 2)), true);
+      expect(point.equals(Point(Path([0, 0]), 2)), true);
     });
 
     test('range', () {
@@ -128,7 +128,7 @@ void main() {
       Point point = EditorUtils.after(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
 
-      expect(PointUtils.equals(point, Point(Path([1, 0]), 3)), true);
+      expect(point.equals(Point(Path([1, 0]), 3)), true);
     });
   });
 
@@ -145,7 +145,7 @@ void main() {
 
       Point point = EditorUtils.before(editor, Path([1, 0]));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 3)), true);
+      expect(point.equals(Point(Path([0, 0]), 3)), true);
     });
 
     test('point', () {
@@ -158,7 +158,7 @@ void main() {
 
       Point point = EditorUtils.before(editor, Point(Path([0, 0]), 1));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 0)), true);
+      expect(point.equals(Point(Path([0, 0]), 0)), true);
     });
 
     test('range', () {
@@ -174,7 +174,7 @@ void main() {
       Point point = EditorUtils.before(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 0)), true);
+      expect(point.equals(Point(Path([0, 0]), 0)), true);
     });
 
     test('start', () {
@@ -206,8 +206,8 @@ void main() {
       Point start = edges.start;
       Point end = edges.end;
 
-      expect(PointUtils.equals(start, Point(Path([0, 0]), 0)), true);
-      expect(PointUtils.equals(end, Point(Path([0, 0]), 3)), true);
+      expect(start.equals(Point(Path([0, 0]), 0)), true);
+      expect(end.equals(Point(Path([0, 0]), 3)), true);
     });
 
     test('point', () {
@@ -222,8 +222,8 @@ void main() {
       Point start = edges.start;
       Point end = edges.end;
 
-      expect(PointUtils.equals(start, Point(Path([0, 0]), 1)), true);
-      expect(PointUtils.equals(end, Point(Path([0, 0]), 1)), true);
+      expect(start.equals(Point(Path([0, 0]), 1)), true);
+      expect(end.equals(Point(Path([0, 0]), 1)), true);
     });
 
     test('range', () {
@@ -239,8 +239,8 @@ void main() {
       Point start = edges.start;
       Point end = edges.end;
 
-      expect(PointUtils.equals(start, Point(Path([0, 0]), 1)), true);
-      expect(PointUtils.equals(end, Point(Path([0, 0]), 3)), true);
+      expect(start.equals(Point(Path([0, 0]), 1)), true);
+      expect(end.equals(Point(Path([0, 0]), 3)), true);
     });
   });
 
@@ -255,7 +255,7 @@ void main() {
 
       Point point = EditorUtils.end(editor, Path([0]));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 3)), true);
+      expect(point.equals(Point(Path([0, 0]), 3)), true);
     });
 
     test('point', () {
@@ -268,7 +268,7 @@ void main() {
 
       Point point = EditorUtils.end(editor, Point(Path([0, 0]), 1));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 1)), true);
+      expect(point.equals(Point(Path([0, 0]), 1)), true);
     });
 
     test('range', () {
@@ -282,7 +282,7 @@ void main() {
       Point point = EditorUtils.end(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 2)), true);
+      expect(point.equals(Point(Path([0, 0]), 2)), true);
     });
   });
 
@@ -948,10 +948,10 @@ void main() {
       }));
 
       expect(entries[0].node, element);
-      expect(PathUtils.equals(entries[0].path, Path([0])), true);
+      expect(entries[0].path.equals(Path([0])), true);
 
       expect(entries[1].node, text);
-      expect(PathUtils.equals(entries[1].path, Path([0, 0])), true);
+      expect(entries[1].path.equals(Path([0, 0])), true);
     });
 
     test('reverse', () {
@@ -970,13 +970,13 @@ void main() {
           EditorUtils.levels(editor, at: Path([0, 0]), reverse: true));
 
       expect(entries[0].node, text);
-      expect(PathUtils.equals(entries[0].path, Path([0, 0])), true);
+      expect(entries[0].path.equals(Path([0, 0])), true);
 
       expect(entries[1].node, element);
-      expect(PathUtils.equals(entries[1].path, Path([0])), true);
+      expect(entries[1].path.equals(Path([0])), true);
 
       expect(entries[2].node, editor);
-      expect(PathUtils.equals(entries[2].path, Path([])), true);
+      expect(entries[2].path.equals(Path([])), true);
     });
 
     test('success', () {
@@ -995,13 +995,13 @@ void main() {
           List.from(EditorUtils.levels(editor, at: Path([0, 0])));
 
       expect(entries[0].node, editor);
-      expect(PathUtils.equals(entries[0].path, Path([])), true);
+      expect(entries[0].path.equals(Path([])), true);
 
       expect(entries[1].node, element);
-      expect(PathUtils.equals(entries[1].path, Path([0])), true);
+      expect(entries[1].path.equals(Path([0])), true);
 
       expect(entries[2].node, text);
-      expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+      expect(entries[2].path.equals(Path([0, 0])), true);
     });
 
     test('voids false', () {
@@ -1019,10 +1019,10 @@ void main() {
       );
 
       expect(entries[0].node, editor);
-      expect(PathUtils.equals(entries[0].path, Path([])), true);
+      expect(entries[0].path.equals(Path([])), true);
 
       expect(entries[1].node, element);
-      expect(PathUtils.equals(entries[1].path, Path([0])), true);
+      expect(entries[1].path.equals(Path([0])), true);
     });
 
     test('voids true', () {
@@ -1040,13 +1040,13 @@ void main() {
       );
 
       expect(entries[0].node, editor);
-      expect(PathUtils.equals(entries[0].path, Path([])), true);
+      expect(entries[0].path.equals(Path([])), true);
 
       expect(entries[1].node, element);
-      expect(PathUtils.equals(entries[1].path, Path([0])), true);
+      expect(entries[1].path.equals(Path([0])), true);
 
       expect(entries[2].node, text);
-      expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+      expect(entries[2].path.equals(Path([0, 0])), true);
     });
   });
 
@@ -1065,7 +1065,7 @@ void main() {
       });
 
       expect(next.node, editor.children[1]);
-      expect(PathUtils.equals(next.path, Path([1])), true);
+      expect(next.path.equals(Path([1])), true);
     });
 
     test('default', () {
@@ -1080,7 +1080,7 @@ void main() {
       NodeEntry next = EditorUtils.next(editor, at: Path([0]));
 
       expect(next.node, editor.children[1]);
-      expect(PathUtils.equals(next.path, Path([1])), true);
+      expect(next.path.equals(Path([1])), true);
     });
 
     test('text', () {
@@ -1098,7 +1098,7 @@ void main() {
       });
 
       expect(next.node, text);
-      expect(PathUtils.equals(next.path, Path([1, 0])), true);
+      expect(next.path.equals(Path([1, 0])), true);
     });
   });
 
@@ -1113,7 +1113,7 @@ void main() {
       NodeEntry entry = EditorUtils.node(editor, Path([0]));
 
       expect(entry.node, editor.children[0]);
-      expect(PathUtils.equals(entry.path, Path([0])), true);
+      expect(entry.path.equals(Path([0])), true);
     });
 
     test('point', () {
@@ -1127,7 +1127,7 @@ void main() {
       NodeEntry entry = EditorUtils.node(editor, Point(Path([0, 0]), 1));
 
       expect(entry.node, text);
-      expect(PathUtils.equals(entry.path, Path([0, 0])), true);
+      expect(entry.path.equals(Path([0, 0])), true);
     });
 
     test('range end', () {
@@ -1145,7 +1145,7 @@ void main() {
           edge: Edge.end);
 
       expect(entry.node, text);
-      expect(PathUtils.equals(entry.path, Path([1, 0])), true);
+      expect(entry.path.equals(Path([1, 0])), true);
     });
 
     test('range start', () {
@@ -1163,7 +1163,7 @@ void main() {
           edge: Edge.start);
 
       expect(entry.node, text);
-      expect(PathUtils.equals(entry.path, Path([0, 0])), true);
+      expect(entry.path.equals(Path([0, 0])), true);
     });
 
     test('range', () {
@@ -1180,7 +1180,7 @@ void main() {
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
 
       expect(entry.node, editor);
-      expect(PathUtils.equals(entry.path, Path([])), true);
+      expect(entry.path.equals(Path([])), true);
     });
   });
 
@@ -1201,7 +1201,7 @@ void main() {
         ));
 
         expect(entries[0].node, block);
-        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+        expect(entries[0].path.equals(Path([0])), true);
       });
 
       test('editor', () {
@@ -1226,7 +1226,7 @@ void main() {
         ));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
       });
 
       test('inline', () {
@@ -1248,7 +1248,7 @@ void main() {
         ));
 
         expect(entries[0].node, inline);
-        expect(PathUtils.equals(entries[0].path, Path([0, 1])), true);
+        expect(entries[0].path.equals(Path([0, 1])), true);
       });
     });
 
@@ -1275,16 +1275,16 @@ void main() {
         }, mode: Mode.all));
 
         expect(entries[0].node, block1);
-        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+        expect(entries[0].path.equals(Path([0])), true);
 
         expect(entries[1].node, innerBlock1);
-        expect(PathUtils.equals(entries[1].path, Path([0, 0])), true);
+        expect(entries[1].path.equals(Path([0, 0])), true);
 
         expect(entries[2].node, block2);
-        expect(PathUtils.equals(entries[2].path, Path([1])), true);
+        expect(entries[2].path.equals(Path([1])), true);
 
         expect(entries[3].node, innerBlock2);
-        expect(PathUtils.equals(entries[3].path, Path([1, 0])), true);
+        expect(entries[3].path.equals(Path([1, 0])), true);
       });
     });
 
@@ -1311,10 +1311,10 @@ void main() {
         }, mode: Mode.highest));
 
         expect(entries[0].node, block1);
-        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+        expect(entries[0].path.equals(Path([0])), true);
 
         expect(entries[1].node, block2);
-        expect(PathUtils.equals(entries[1].path, Path([1])), true);
+        expect(entries[1].path.equals(Path([1])), true);
       });
     });
 
@@ -1341,10 +1341,10 @@ void main() {
         }, mode: Mode.lowest));
 
         expect(entries[0].node, innerBlock1);
-        expect(PathUtils.equals(entries[0].path, Path([0, 0])), true);
+        expect(entries[0].path.equals(Path([0, 0])), true);
 
         expect(entries[1].node, innerBlock2);
-        expect(PathUtils.equals(entries[1].path, Path([1, 0])), true);
+        expect(entries[1].path.equals(Path([1, 0])), true);
       });
     });
 
@@ -1371,10 +1371,10 @@ void main() {
         }, mode: Mode.lowest, universal: true));
 
         expect(entries[0].node, innerBlock1);
-        expect(PathUtils.equals(entries[0].path, Path([0, 0])), true);
+        expect(entries[0].path.equals(Path([0, 0])), true);
 
         expect(entries[1].node, innerBlock2);
-        expect(PathUtils.equals(entries[1].path, Path([1, 0])), true);
+        expect(entries[1].path.equals(Path([1, 0])), true);
       });
 
       test('all', () {
@@ -1392,10 +1392,10 @@ void main() {
         }, mode: Mode.lowest, universal: true));
 
         expect(entries[0].node, block1);
-        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+        expect(entries[0].path.equals(Path([0])), true);
 
         expect(entries[1].node, block2);
-        expect(PathUtils.equals(entries[1].path, Path([1])), true);
+        expect(entries[1].path.equals(Path([1])), true);
       });
 
       test('branch nested', () {
@@ -1420,10 +1420,10 @@ void main() {
         }, mode: Mode.lowest, universal: true));
 
         expect(entries[0].node, block1);
-        expect(PathUtils.equals(entries[0].path, Path([0])), true);
+        expect(entries[0].path.equals(Path([0])), true);
 
         expect(entries[1].node, innerBlock2);
-        expect(PathUtils.equals(entries[1].path, Path([1, 0])), true);
+        expect(entries[1].path.equals(Path([1, 0])), true);
       });
       test('none nested', () {
         // <editor>
@@ -1525,19 +1525,19 @@ void main() {
         ));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block1);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
 
         expect(entries[2].node, text1);
-        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+        expect(entries[2].path.equals(Path([0, 0])), true);
 
         expect(entries[3].node, block2);
-        expect(PathUtils.equals(entries[3].path, Path([1])), true);
+        expect(entries[3].path.equals(Path([1])), true);
 
         expect(entries[4].node, text2);
-        expect(PathUtils.equals(entries[4].path, Path([1, 0])), true);
+        expect(entries[4].path.equals(Path([1, 0])), true);
       });
 
       test('block multiple', () {
@@ -1562,25 +1562,25 @@ void main() {
         ));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block1);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
 
         expect(entries[2].node, innerBlock1);
-        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+        expect(entries[2].path.equals(Path([0, 0])), true);
 
         expect(entries[3].node, text1);
-        expect(PathUtils.equals(entries[3].path, Path([0, 0, 0])), true);
+        expect(entries[3].path.equals(Path([0, 0, 0])), true);
 
         expect(entries[4].node, block2);
-        expect(PathUtils.equals(entries[4].path, Path([1])), true);
+        expect(entries[4].path.equals(Path([1])), true);
 
         expect(entries[5].node, innerBlock2);
-        expect(PathUtils.equals(entries[5].path, Path([1, 0])), true);
+        expect(entries[5].path.equals(Path([1, 0])), true);
 
         expect(entries[6].node, text2);
-        expect(PathUtils.equals(entries[6].path, Path([1, 0, 0])), true);
+        expect(entries[6].path.equals(Path([1, 0, 0])), true);
       });
 
       test('block reverse', () {
@@ -1600,19 +1600,19 @@ void main() {
         ));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block2);
-        expect(PathUtils.equals(entries[1].path, Path([1])), true);
+        expect(entries[1].path.equals(Path([1])), true);
 
         expect(entries[2].node, text2);
-        expect(PathUtils.equals(entries[2].path, Path([1, 0])), true);
+        expect(entries[2].path.equals(Path([1, 0])), true);
 
         expect(entries[3].node, block1);
-        expect(PathUtils.equals(entries[3].path, Path([0])), true);
+        expect(entries[3].path.equals(Path([0])), true);
 
         expect(entries[4].node, text1);
-        expect(PathUtils.equals(entries[4].path, Path([0, 0])), true);
+        expect(entries[4].path.equals(Path([0, 0])), true);
       });
 
       test('block void', () {
@@ -1627,10 +1627,10 @@ void main() {
         ));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
       });
 
       test('block', () {
@@ -1646,13 +1646,13 @@ void main() {
         ));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
 
         expect(entries[2].node, text);
-        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+        expect(entries[2].path.equals(Path([0, 0])), true);
       });
 
       test('inline multiple', () {
@@ -1677,31 +1677,31 @@ void main() {
         ));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
 
         expect(entries[2].node, text1);
-        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+        expect(entries[2].path.equals(Path([0, 0])), true);
 
         expect(entries[3].node, inline2);
-        expect(PathUtils.equals(entries[3].path, Path([0, 1])), true);
+        expect(entries[3].path.equals(Path([0, 1])), true);
 
         expect(entries[4].node, text2);
-        expect(PathUtils.equals(entries[4].path, Path([0, 1, 0])), true);
+        expect(entries[4].path.equals(Path([0, 1, 0])), true);
 
         expect(entries[5].node, text3);
-        expect(PathUtils.equals(entries[5].path, Path([0, 2])), true);
+        expect(entries[5].path.equals(Path([0, 2])), true);
 
         expect(entries[6].node, inline4);
-        expect(PathUtils.equals(entries[6].path, Path([0, 3])), true);
+        expect(entries[6].path.equals(Path([0, 3])), true);
 
         expect(entries[7].node, text4);
-        expect(PathUtils.equals(entries[7].path, Path([0, 3, 0])), true);
+        expect(entries[7].path.equals(Path([0, 3, 0])), true);
 
         expect(entries[8].node, text5);
-        expect(PathUtils.equals(entries[8].path, Path([0, 4])), true);
+        expect(entries[8].path.equals(Path([0, 4])), true);
       });
 
       test('inline nested', () {
@@ -1730,31 +1730,31 @@ void main() {
         ));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
 
         expect(entries[2].node, text1);
-        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+        expect(entries[2].path.equals(Path([0, 0])), true);
 
         expect(entries[3].node, inline);
-        expect(PathUtils.equals(entries[3].path, Path([0, 1])), true);
+        expect(entries[3].path.equals(Path([0, 1])), true);
 
         expect(entries[4].node, text2);
-        expect(PathUtils.equals(entries[4].path, Path([0, 1, 0])), true);
+        expect(entries[4].path.equals(Path([0, 1, 0])), true);
 
         expect(entries[5].node, innerInline);
-        expect(PathUtils.equals(entries[5].path, Path([0, 1, 1])), true);
+        expect(entries[5].path.equals(Path([0, 1, 1])), true);
 
         expect(entries[6].node, text3);
-        expect(PathUtils.equals(entries[6].path, Path([0, 1, 1, 0])), true);
+        expect(entries[6].path.equals(Path([0, 1, 1, 0])), true);
 
         expect(entries[7].node, text4);
-        expect(PathUtils.equals(entries[7].path, Path([0, 1, 2])), true);
+        expect(entries[7].path.equals(Path([0, 1, 2])), true);
 
         expect(entries[8].node, text5);
-        expect(PathUtils.equals(entries[8].path, Path([0, 2])), true);
+        expect(entries[8].path.equals(Path([0, 2])), true);
       });
 
       test('inline reverse', () {
@@ -1777,31 +1777,31 @@ void main() {
             List.from(EditorUtils.nodes(editor, at: Path([]), reverse: true));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
 
         expect(entries[2].node, text5);
-        expect(PathUtils.equals(entries[2].path, Path([0, 4])), true);
+        expect(entries[2].path.equals(Path([0, 4])), true);
 
         expect(entries[3].node, inline4);
-        expect(PathUtils.equals(entries[3].path, Path([0, 3])), true);
+        expect(entries[3].path.equals(Path([0, 3])), true);
 
         expect(entries[4].node, text4);
-        expect(PathUtils.equals(entries[4].path, Path([0, 3, 0])), true);
+        expect(entries[4].path.equals(Path([0, 3, 0])), true);
 
         expect(entries[5].node, text3);
-        expect(PathUtils.equals(entries[5].path, Path([0, 2])), true);
+        expect(entries[5].path.equals(Path([0, 2])), true);
 
         expect(entries[6].node, inline2);
-        expect(PathUtils.equals(entries[6].path, Path([0, 1])), true);
+        expect(entries[6].path.equals(Path([0, 1])), true);
 
         expect(entries[7].node, text2);
-        expect(PathUtils.equals(entries[7].path, Path([0, 1, 0])), true);
+        expect(entries[7].path.equals(Path([0, 1, 0])), true);
 
         expect(entries[8].node, text1);
-        expect(PathUtils.equals(entries[8].path, Path([0, 0])), true);
+        expect(entries[8].path.equals(Path([0, 0])), true);
       });
 
       test('inline void', () {
@@ -1821,19 +1821,19 @@ void main() {
             List.from(EditorUtils.nodes(editor, at: Path([])));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
 
         expect(entries[2].node, text1);
-        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+        expect(entries[2].path.equals(Path([0, 0])), true);
 
         expect(entries[3].node, inline);
-        expect(PathUtils.equals(entries[3].path, Path([0, 1])), true);
+        expect(entries[3].path.equals(Path([0, 1])), true);
 
         expect(entries[4].node, text3);
-        expect(PathUtils.equals(entries[4].path, Path([0, 2])), true);
+        expect(entries[4].path.equals(Path([0, 2])), true);
       });
 
       test('inline', () {
@@ -1853,22 +1853,22 @@ void main() {
             List.from(EditorUtils.nodes(editor, at: Path([])));
 
         expect(entries[0].node, editor);
-        expect(PathUtils.equals(entries[0].path, Path([])), true);
+        expect(entries[0].path.equals(Path([])), true);
 
         expect(entries[1].node, block);
-        expect(PathUtils.equals(entries[1].path, Path([0])), true);
+        expect(entries[1].path.equals(Path([0])), true);
 
         expect(entries[2].node, text1);
-        expect(PathUtils.equals(entries[2].path, Path([0, 0])), true);
+        expect(entries[2].path.equals(Path([0, 0])), true);
 
         expect(entries[3].node, inline);
-        expect(PathUtils.equals(entries[3].path, Path([0, 1])), true);
+        expect(entries[3].path.equals(Path([0, 1])), true);
 
         expect(entries[4].node, text2);
-        expect(PathUtils.equals(entries[4].path, Path([0, 1, 0])), true);
+        expect(entries[4].path.equals(Path([0, 1, 0])), true);
 
         expect(entries[5].node, text3);
-        expect(PathUtils.equals(entries[5].path, Path([0, 2])), true);
+        expect(entries[5].path.equals(Path([0, 2])), true);
       });
     });
 
@@ -1887,7 +1887,7 @@ void main() {
         }, voids: true));
 
         expect(entries[0].node, text1);
-        expect(PathUtils.equals(entries[0].path, Path([0, 0])), true);
+        expect(entries[0].path.equals(Path([0, 0])), true);
       });
 
       test('inline', () {
@@ -1909,13 +1909,13 @@ void main() {
         }, voids: true));
 
         expect(entries[0].node, text1);
-        expect(PathUtils.equals(entries[0].path, Path([0, 0])), true);
+        expect(entries[0].path.equals(Path([0, 0])), true);
 
         expect(entries[1].node, text2);
-        expect(PathUtils.equals(entries[1].path, Path([0, 1, 0])), true);
+        expect(entries[1].path.equals(Path([0, 1, 0])), true);
 
         expect(entries[2].node, text3);
-        expect(PathUtils.equals(entries[2].path, Path([0, 2])), true);
+        expect(entries[2].path.equals(Path([0, 2])), true);
       });
     });
   });
@@ -1932,7 +1932,7 @@ void main() {
       NodeEntry entry = EditorUtils.parent(editor, Path([0, 0]));
 
       expect(entry.node, block);
-      expect(PathUtils.equals(entry.path, Path([0])), true);
+      expect(entry.path.equals(Path([0])), true);
     });
 
     test('point', () {
@@ -1946,7 +1946,7 @@ void main() {
       NodeEntry entry = EditorUtils.parent(editor, Point(Path([0, 0]), 1));
 
       expect(entry.node, block);
-      expect(PathUtils.equals(entry.path, Path([0])), true);
+      expect(entry.path.equals(Path([0])), true);
     });
 
     test('range end', () {
@@ -1965,7 +1965,7 @@ void main() {
           edge: Edge.end);
 
       expect(entry.node, block2);
-      expect(PathUtils.equals(entry.path, Path([1])), true);
+      expect(entry.path.equals(Path([1])), true);
     });
 
     test('range start', () {
@@ -1984,7 +1984,7 @@ void main() {
           edge: Edge.start);
 
       expect(entry.node, block1);
-      expect(PathUtils.equals(entry.path, Path([0])), true);
+      expect(entry.path.equals(Path([0])), true);
     });
 
     test('range', () {
@@ -2004,7 +2004,7 @@ void main() {
       );
 
       expect(entry.node, block1);
-      expect(PathUtils.equals(entry.path, Path([0])), true);
+      expect(entry.path.equals(Path([0])), true);
     });
   });
 
@@ -2019,7 +2019,7 @@ void main() {
 
       Path path = EditorUtils.path(editor, Path([0]));
 
-      expect(PathUtils.equals(path, Path([0])), true);
+      expect(path.equals(Path([0])), true);
     });
 
     test('point', () {
@@ -2032,7 +2032,7 @@ void main() {
 
       Path path = EditorUtils.path(editor, Point(Path([0, 0]), 1));
 
-      expect(PathUtils.equals(path, Path([0, 0])), true);
+      expect(path.equals(Path([0, 0])), true);
     });
 
     test('range end', () {
@@ -2050,7 +2050,7 @@ void main() {
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
           edge: Edge.end);
 
-      expect(PathUtils.equals(path, Path([1, 0])), true);
+      expect(path.equals(Path([1, 0])), true);
     });
 
     test('range start', () {
@@ -2068,7 +2068,7 @@ void main() {
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)),
           edge: Edge.start);
 
-      expect(PathUtils.equals(path, Path([0, 0])), true);
+      expect(path.equals(Path([0, 0])), true);
     });
 
     test('range', () {
@@ -2085,7 +2085,7 @@ void main() {
       Path path = EditorUtils.path(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([1, 0]), 2)));
 
-      expect(PathUtils.equals(path, Path([])), true);
+      expect(path.equals(Path([])), true);
     });
   });
 
@@ -2100,7 +2100,7 @@ void main() {
 
       Point point = EditorUtils.point(editor, Path([0]), edge: Edge.end);
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 3)), true);
+      expect(point.equals(Point(Path([0, 0]), 3)), true);
     });
 
     test('path start', () {
@@ -2113,7 +2113,7 @@ void main() {
 
       Point point = EditorUtils.point(editor, Path([0]), edge: Edge.start);
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 0)), true);
+      expect(point.equals(Point(Path([0, 0]), 0)), true);
     });
 
     test('path', () {
@@ -2126,7 +2126,7 @@ void main() {
 
       Point point = EditorUtils.point(editor, Path([0]));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 0)), true);
+      expect(point.equals(Point(Path([0, 0]), 0)), true);
     });
 
     test('point', () {
@@ -2139,7 +2139,7 @@ void main() {
 
       Point point = EditorUtils.point(editor, Point(Path([0, 0]), 1));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 1)), true);
+      expect(point.equals(Point(Path([0, 0]), 1)), true);
     });
 
     test('range end', () {
@@ -2157,7 +2157,7 @@ void main() {
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
           edge: Edge.end);
 
-      expect(PointUtils.equals(point, Point(Path([0, 1]), 2)), true);
+      expect(point.equals(Point(Path([0, 1]), 2)), true);
     });
 
     test('range start', () {
@@ -2175,7 +2175,7 @@ void main() {
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)),
           edge: Edge.start);
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 1)), true);
+      expect(point.equals(Point(Path([0, 0]), 1)), true);
     });
 
     test('range', () {
@@ -2192,7 +2192,7 @@ void main() {
       Point point = EditorUtils.point(
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 1]), 2)));
 
-      expect(PointUtils.equals(point, Point(Path([0, 0]), 1)), true);
+      expect(point.equals(Point(Path([0, 0]), 1)), true);
     });
   });
 
@@ -2213,20 +2213,20 @@ void main() {
         List<Point> points = List.from(
             EditorUtils.positions(editor, at: Path([]), reverse: true));
 
-        expect(PointUtils.equals(points[0], Point(Path([2, 0]), 5)), true);
-        expect(PointUtils.equals(points[1], Point(Path([2, 0]), 4)), true);
-        expect(PointUtils.equals(points[2], Point(Path([2, 0]), 3)), true);
-        expect(PointUtils.equals(points[3], Point(Path([2, 0]), 2)), true);
-        expect(PointUtils.equals(points[4], Point(Path([2, 0]), 1)), true);
-        expect(PointUtils.equals(points[5], Point(Path([2, 0]), 0)), true);
-        expect(PointUtils.equals(points[6], Point(Path([1, 0]), 3)), true);
-        expect(PointUtils.equals(points[7], Point(Path([1, 0]), 2)), true);
-        expect(PointUtils.equals(points[8], Point(Path([1, 0]), 1)), true);
-        expect(PointUtils.equals(points[9], Point(Path([1, 0]), 0)), true);
-        expect(PointUtils.equals(points[10], Point(Path([0, 0]), 3)), true);
-        expect(PointUtils.equals(points[11], Point(Path([0, 0]), 2)), true);
-        expect(PointUtils.equals(points[12], Point(Path([0, 0]), 1)), true);
-        expect(PointUtils.equals(points[13], Point(Path([0, 0]), 0)), true);
+        expect(points[0].equals(Point(Path([2, 0]), 5)), true);
+        expect(points[1].equals(Point(Path([2, 0]), 4)), true);
+        expect(points[2].equals(Point(Path([2, 0]), 3)), true);
+        expect(points[3].equals(Point(Path([2, 0]), 2)), true);
+        expect(points[4].equals(Point(Path([2, 0]), 1)), true);
+        expect(points[5].equals(Point(Path([2, 0]), 0)), true);
+        expect(points[6].equals(Point(Path([1, 0]), 3)), true);
+        expect(points[7].equals(Point(Path([1, 0]), 2)), true);
+        expect(points[8].equals(Point(Path([1, 0]), 1)), true);
+        expect(points[9].equals(Point(Path([1, 0]), 0)), true);
+        expect(points[10].equals(Point(Path([0, 0]), 3)), true);
+        expect(points[11].equals(Point(Path([0, 0]), 2)), true);
+        expect(points[12].equals(Point(Path([0, 0]), 1)), true);
+        expect(points[13].equals(Point(Path([0, 0]), 0)), true);
       });
 
       test('block multiple', () {
@@ -2244,20 +2244,20 @@ void main() {
         List<Point> points =
             List.from(EditorUtils.positions(editor, at: Path([])));
 
-        expect(PointUtils.equals(points[0], Point(Path([0, 0]), 0)), true);
-        expect(PointUtils.equals(points[1], Point(Path([0, 0]), 1)), true);
-        expect(PointUtils.equals(points[2], Point(Path([0, 0]), 2)), true);
-        expect(PointUtils.equals(points[3], Point(Path([0, 0]), 3)), true);
-        expect(PointUtils.equals(points[4], Point(Path([1, 0]), 0)), true);
-        expect(PointUtils.equals(points[5], Point(Path([1, 0]), 1)), true);
-        expect(PointUtils.equals(points[6], Point(Path([1, 0]), 2)), true);
-        expect(PointUtils.equals(points[7], Point(Path([1, 0]), 3)), true);
-        expect(PointUtils.equals(points[8], Point(Path([2, 0]), 0)), true);
-        expect(PointUtils.equals(points[9], Point(Path([2, 0]), 1)), true);
-        expect(PointUtils.equals(points[10], Point(Path([2, 0]), 2)), true);
-        expect(PointUtils.equals(points[11], Point(Path([2, 0]), 3)), true);
-        expect(PointUtils.equals(points[12], Point(Path([2, 0]), 4)), true);
-        expect(PointUtils.equals(points[13], Point(Path([2, 0]), 5)), true);
+        expect(points[0].equals(Point(Path([0, 0]), 0)), true);
+        expect(points[1].equals(Point(Path([0, 0]), 1)), true);
+        expect(points[2].equals(Point(Path([0, 0]), 2)), true);
+        expect(points[3].equals(Point(Path([0, 0]), 3)), true);
+        expect(points[4].equals(Point(Path([1, 0]), 0)), true);
+        expect(points[5].equals(Point(Path([1, 0]), 1)), true);
+        expect(points[6].equals(Point(Path([1, 0]), 2)), true);
+        expect(points[7].equals(Point(Path([1, 0]), 3)), true);
+        expect(points[8].equals(Point(Path([2, 0]), 0)), true);
+        expect(points[9].equals(Point(Path([2, 0]), 1)), true);
+        expect(points[10].equals(Point(Path([2, 0]), 2)), true);
+        expect(points[11].equals(Point(Path([2, 0]), 3)), true);
+        expect(points[12].equals(Point(Path([2, 0]), 4)), true);
+        expect(points[13].equals(Point(Path([2, 0]), 5)), true);
       });
 
       test('block nested', () {
@@ -2282,50 +2282,42 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([1, 0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([1, 0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([1, 0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([1, 0, 0]), 3),
             ),
             true);
@@ -2343,26 +2335,22 @@ void main() {
             EditorUtils.positions(editor, at: Path([]), reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
@@ -2380,26 +2368,22 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
@@ -2426,146 +2410,122 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([0, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([0, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[10],
+            points[10].equals(
               Point(Path([0, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[11],
+            points[11].equals(
               Point(Path([0, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[12],
+            points[12].equals(
               Point(Path([0, 2]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[13],
+            points[13].equals(
               Point(Path([0, 2]), 5),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[14],
+            points[14].equals(
               Point(Path([0, 3, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[15],
+            points[15].equals(
               Point(Path([0, 3, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[16],
+            points[16].equals(
               Point(Path([0, 3, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[17],
+            points[17].equals(
               Point(Path([0, 3, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[18],
+            points[18].equals(
               Point(Path([0, 3, 0]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[19],
+            points[19].equals(
               Point(Path([0, 4]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[20],
+            points[20].equals(
               Point(Path([0, 4]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[21],
+            points[21].equals(
               Point(Path([0, 4]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[22],
+            points[22].equals(
               Point(Path([0, 4]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[23],
+            points[23].equals(
               Point(Path([0, 4]), 4),
             ),
             true);
@@ -2597,146 +2557,122 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([0, 1, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([0, 1, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[10],
+            points[10].equals(
               Point(Path([0, 1, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[11],
+            points[11].equals(
               Point(Path([0, 1, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[12],
+            points[12].equals(
               Point(Path([0, 1, 1, 0]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[13],
+            points[13].equals(
               Point(Path([0, 1, 1, 0]), 5),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[14],
+            points[14].equals(
               Point(Path([0, 1, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[15],
+            points[15].equals(
               Point(Path([0, 1, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[16],
+            points[16].equals(
               Point(Path([0, 1, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[17],
+            points[17].equals(
               Point(Path([0, 1, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[18],
+            points[18].equals(
               Point(Path([0, 1, 2]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[19],
+            points[19].equals(
               Point(Path([0, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[20],
+            points[20].equals(
               Point(Path([0, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[21],
+            points[21].equals(
               Point(Path([0, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[22],
+            points[22].equals(
               Point(Path([0, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[23],
+            points[23].equals(
               Point(Path([0, 2]), 4),
             ),
             true);
@@ -2757,86 +2693,72 @@ void main() {
             EditorUtils.positions(editor, at: Path([]), reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 2]), 5),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 2]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[10],
+            points[10].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[11],
+            points[11].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[12],
+            points[12].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[13],
+            points[13].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
@@ -2857,86 +2779,72 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([0, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([0, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[10],
+            points[10].equals(
               Point(Path([0, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[11],
+            points[11].equals(
               Point(Path([0, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[12],
+            points[12].equals(
               Point(Path([0, 2]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[13],
+            points[13].equals(
               Point(Path([0, 2]), 5),
             ),
             true);
@@ -2956,26 +2864,22 @@ void main() {
             at: Path([]), unit: Unit.block, reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([1, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
@@ -2995,26 +2899,22 @@ void main() {
             EditorUtils.positions(editor, at: Path([]), unit: Unit.block));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([1, 0]), 13),
             ),
             true);
@@ -3050,146 +2950,122 @@ void main() {
             at: Path([]), unit: Unit.character, reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([1, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([1, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([1, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([1, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([1, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([1, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([1, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([1, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[10],
+            points[10].equals(
               Point(Path([1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[11],
+            points[11].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[12],
+            points[12].equals(
               Point(Path([0, 2]), 5),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[13],
+            points[13].equals(
               Point(Path([0, 2]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[14],
+            points[14].equals(
               Point(Path([0, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[15],
+            points[15].equals(
               Point(Path([0, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[16],
+            points[16].equals(
               Point(Path([0, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[17],
+            points[17].equals(
               Point(Path([0, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[18],
+            points[18].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[19],
+            points[19].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[20],
+            points[20].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[21],
+            points[21].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[22],
+            points[22].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[23],
+            points[23].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
@@ -3225,146 +3101,122 @@ void main() {
             EditorUtils.positions(editor, at: Path([]), unit: Unit.character));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([0, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([0, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[10],
+            points[10].equals(
               Point(Path([0, 2]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[11],
+            points[11].equals(
               Point(Path([0, 2]), 5),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[12],
+            points[12].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[13],
+            points[13].equals(
               Point(Path([1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[14],
+            points[14].equals(
               Point(Path([1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[15],
+            points[15].equals(
               Point(Path([1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[16],
+            points[16].equals(
               Point(Path([1, 0]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[17],
+            points[17].equals(
               Point(Path([1, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[18],
+            points[18].equals(
               Point(Path([1, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[19],
+            points[19].equals(
               Point(Path([1, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[20],
+            points[20].equals(
               Point(Path([1, 1, 0]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[21],
+            points[21].equals(
               Point(Path([1, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[22],
+            points[22].equals(
               Point(Path([1, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[23],
+            points[23].equals(
               Point(Path([1, 2]), 3),
             ),
             true);
@@ -3384,26 +3236,22 @@ void main() {
             at: Path([]), unit: Unit.line, reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([1, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
@@ -3423,26 +3271,22 @@ void main() {
             EditorUtils.positions(editor, at: Path([]), unit: Unit.line));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([1, 0]), 13),
             ),
             true);
@@ -3462,50 +3306,42 @@ void main() {
             at: Path([]), unit: Unit.word, reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([1, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([1, 0]), 10),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([1, 0]), 5),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 0]), 8),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 0]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
@@ -3525,50 +3361,42 @@ void main() {
             EditorUtils.positions(editor, at: Path([]), unit: Unit.word));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 7),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 13),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([1, 0]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([1, 0]), 9),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([1, 0]), 13),
             ),
             true);
@@ -3594,50 +3422,42 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([0])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
@@ -3657,26 +3477,22 @@ void main() {
             EditorUtils.positions(editor, at: Path([0]), reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 0]), 0),
             ),
             true);
@@ -3696,26 +3512,22 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([1, 0])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([1, 0]), 3),
             ),
             true);
@@ -3747,92 +3559,77 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([0, 1])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 1, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 1, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 1, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 1, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([0, 1, 1, 0]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([0, 1, 1, 0]), 5),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[10],
+            points[10].equals(
               Point(Path([0, 1, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[11],
+            points[11].equals(
               Point(Path([0, 1, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[12],
+            points[12].equals(
               Point(Path([0, 1, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[13],
+            points[13].equals(
               Point(Path([0, 1, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[14],
+            points[14].equals(
               Point(Path([0, 1, 2]), 4),
             ),
             true);
@@ -3858,26 +3655,22 @@ void main() {
             EditorUtils.positions(editor, at: Path([0, 1]), reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
@@ -3903,26 +3696,22 @@ void main() {
             List.from(EditorUtils.positions(editor, at: Path([0, 1])));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
@@ -3947,62 +3736,52 @@ void main() {
             reverse: true));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([2, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([2, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([2, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
@@ -4024,62 +3803,52 @@ void main() {
             at: Range(Point(Path([0, 0]), 1), Point(Path([2, 0]), 2))));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([2, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([2, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([2, 0]), 2),
             ),
             true);
@@ -4106,122 +3875,102 @@ void main() {
             at: Range(Point(Path([0, 0]), 2), Point(Path([0, 4]), 2))));
 
         expect(
-            PointUtils.equals(
-              points[0],
+            points[0].equals(
               Point(Path([0, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[1],
+            points[1].equals(
               Point(Path([0, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[2],
+            points[2].equals(
               Point(Path([0, 1, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[3],
+            points[3].equals(
               Point(Path([0, 1, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[4],
+            points[4].equals(
               Point(Path([0, 1, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[5],
+            points[5].equals(
               Point(Path([0, 1, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[6],
+            points[6].equals(
               Point(Path([0, 2]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[7],
+            points[7].equals(
               Point(Path([0, 2]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[8],
+            points[8].equals(
               Point(Path([0, 2]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[9],
+            points[9].equals(
               Point(Path([0, 2]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[10],
+            points[10].equals(
               Point(Path([0, 2]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[11],
+            points[11].equals(
               Point(Path([0, 2]), 5),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[12],
+            points[12].equals(
               Point(Path([0, 3, 0]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[13],
+            points[13].equals(
               Point(Path([0, 3, 0]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[14],
+            points[14].equals(
               Point(Path([0, 3, 0]), 2),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[15],
+            points[15].equals(
               Point(Path([0, 3, 0]), 3),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[16],
+            points[16].equals(
               Point(Path([0, 3, 0]), 4),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[17],
+            points[17].equals(
               Point(Path([0, 4]), 0),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[18],
+            points[18].equals(
               Point(Path([0, 4]), 1),
             ),
             true);
         expect(
-            PointUtils.equals(
-              points[19],
+            points[19].equals(
               Point(Path([0, 4]), 2),
             ),
             true);
@@ -4245,7 +3994,7 @@ void main() {
       });
 
       expect(previous.node, editor.children[0]);
-      expect(PathUtils.equals(previous.path, Path([0])), true);
+      expect(previous.path.equals(Path([0])), true);
     });
 
     test('default', () {
@@ -4260,7 +4009,7 @@ void main() {
       NodeEntry previous = EditorUtils.previous(editor, at: Path([1]));
 
       expect(previous.node, editor.children[0]);
-      expect(PathUtils.equals(previous.path, Path([0])), true);
+      expect(previous.path.equals(Path([0])), true);
     });
 
     test('text', () {
@@ -4279,7 +4028,7 @@ void main() {
       });
 
       expect(previous.node, text);
-      expect(PathUtils.equals(previous.path, Path([0, 0])), true);
+      expect(previous.path.equals(Path([0, 0])), true);
     });
   });
 
@@ -4359,8 +4108,7 @@ void main() {
       Point point = EditorUtils.start(editor, Path([0]));
 
       expect(
-          PointUtils.equals(
-            point,
+          point.equals(
             Point(Path([0, 0]), 0),
           ),
           true);
@@ -4377,8 +4125,7 @@ void main() {
       Point point = EditorUtils.start(editor, Point(Path([0, 0]), 1));
 
       expect(
-          PointUtils.equals(
-            point,
+          point.equals(
             Point(Path([0, 0]), 1),
           ),
           true);
@@ -4396,8 +4143,7 @@ void main() {
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 3)));
 
       expect(
-          PointUtils.equals(
-            point,
+          point.equals(
             Point(Path([0, 0]), 1),
           ),
           true);

@@ -3,9 +3,7 @@ import 'package:inday/stela/location.dart';
 import 'package:inday/stela/node.dart';
 import 'package:inday/stela/operation.dart';
 import 'package:inday/stela/path.dart';
-import 'package:inday/stela/path_ref.dart';
 import 'package:inday/stela/point.dart';
-import 'package:inday/stela/point_ref.dart';
 import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
 import 'package:inday/stela/transforms.dart';
@@ -107,7 +105,7 @@ class Editor implements Ancestor {
     // Ensure that block and inline nodes have at least one text child.
     if ((node is Element) && node.children.isEmpty) {
       Text child = Text('');
-      Path at = PathUtils.copy(path);
+      Path at = path.copy();
       at.add(0);
 
       Transforms.insertNodes(
@@ -151,7 +149,7 @@ class Editor implements Ancestor {
       // other inline nodes, or parent blocks that only contain inlines and
       // text.
       if (isInlineOrText != shouldHaveInlines) {
-        Path at = PathUtils.copy(path);
+        Path at = path.copy();
         at.add(n);
 
         transforms.add(() {
@@ -162,7 +160,7 @@ class Editor implements Ancestor {
         // Ensure that inline nodes are surrounded by text nodes.
         if (child is Inline) {
           if (prev == null || !(prev is Text)) {
-            Path at = PathUtils.copy(path);
+            Path at = path.copy();
             at.add(n);
             Text newChild = Text('');
             transforms.add(() {
@@ -170,7 +168,7 @@ class Editor implements Ancestor {
             });
             n++;
           } else if (isLast) {
-            Path at = PathUtils.copy(path);
+            Path at = path.copy();
             at.add(n + 1);
             Text newChild = Text('');
             transforms.add(() {
@@ -188,14 +186,14 @@ class Editor implements Ancestor {
         // Merge adjacent text nodes that are empty or match.
         if (prev != null && (prev is Text)) {
           if (TextUtils.propsEquals(child, prev)) {
-            Path at = PathUtils.copy(path);
+            Path at = path.copy();
             at.add(n);
             transforms.add(() {
               Transforms.mergeNodes(this, at: at, voids: true);
             });
             n--;
           } else if (prev.text == '') {
-            Path at = PathUtils.copy(path);
+            Path at = path.copy();
             at.add(n - 1);
             transforms.add(() {
               Transforms.removeNodes(
@@ -206,7 +204,7 @@ class Editor implements Ancestor {
             });
             n--;
           } else if (isLast && (child as Text).text == '') {
-            Path at = PathUtils.copy(path);
+            Path at = path.copy();
             at.add(n);
             transforms.add(() {
               Transforms.removeNodes(
@@ -303,7 +301,7 @@ class Editor implements Ancestor {
     List<Path> newDirtyPaths = getDirtyPaths(op);
 
     for (Path path in oldDirtyPaths) {
-      Path newPath = PathUtils.transform(path, op);
+      Path newPath = path.transform(op);
       add(newPath);
     }
 
@@ -447,7 +445,7 @@ class EditorUtils {
       Node n = entry.node;
       Path p = entry.path;
 
-      if (!(n is Text) && !PathUtils.equals(path, p)) {
+      if (!(n is Text) && !path.equals(p)) {
         return NodeEntry(n, p);
       }
     }
@@ -628,7 +626,7 @@ class EditorUtils {
 
   static bool isEnd(Editor editor, Point point, Location at) {
     Point end = EditorUtils.end(editor, at);
-    return PointUtils.equals(point, end);
+    return point.equals(end);
   }
 
   /// Check if a point is an edge of a location.
@@ -668,7 +666,7 @@ class EditorUtils {
 
     Point start = EditorUtils.start(editor, at);
 
-    return PointUtils.equals(point, start);
+    return point.equals(start);
   }
 
   /// Check if a value is a void `Element` object.
@@ -792,7 +790,7 @@ class EditorUtils {
         Path prevPath = prev.path;
         Path blockPath = block.path;
 
-        if (PathUtils.isAncestor(blockPath, prevPath)) {
+        if (blockPath.isAncestor(prevPath)) {
           node = prevNode;
         }
       }
@@ -910,7 +908,7 @@ class EditorUtils {
       Node node = entry.node;
       Path path = entry.path;
 
-      bool isLower = hit != null && PathUtils.compare(path, hit.path) == 0;
+      bool isLower = hit != null && path.compare(hit.path) == 0;
 
       // In highest mode any node lower than the last hit is not a match.
       if (mode == Mode.highest && isLower) {
@@ -1016,7 +1014,7 @@ class EditorUtils {
     Edge edge,
   }) {
     Path path = EditorUtils.path(editor, at, edge: edge, depth: depth);
-    Path parentPath = PathUtils.parent(path);
+    Path parentPath = path.parent;
     NodeEntry<Ancestor> entry = EditorUtils.node<Ancestor>(editor, parentPath);
     return entry;
   }
@@ -1044,8 +1042,7 @@ class EditorUtils {
       } else if (edge == Edge.end) {
         at = (at as Range).end;
       } else {
-        at = PathUtils.common(
-            (at as Range).anchor.path, (at as Range).focus.path);
+        at = (at as Range).anchor.path.common((at as Range).focus.path);
       }
     }
 
@@ -1213,10 +1210,9 @@ class EditorUtils {
         }
 
         if (EditorUtils.hasInlines(editor, node)) {
-          Point e = PathUtils.isAncestor(path, end.path)
-              ? end
-              : EditorUtils.end(editor, path);
-          Point s = PathUtils.isAncestor(path, start.path)
+          Point e =
+              path.isAncestor(end.path) ? end : EditorUtils.end(editor, path);
+          Point s = path.isAncestor(start.path)
               ? start
               : EditorUtils.start(editor, path);
 
@@ -1227,7 +1223,7 @@ class EditorUtils {
       }
 
       if (node is Text) {
-        bool isFirst = PathUtils.equals(path, first.path);
+        bool isFirst = path.equals(first.path);
         available = node.text.length;
         offset = reverse ? available : 0;
 
@@ -1385,11 +1381,11 @@ class EditorUtils {
       Path path = entry.path;
       String t = node.text;
 
-      if (PathUtils.equals(path, end.path)) {
+      if (path.equals(end.path)) {
         t = t.substring(0, end.offset);
       }
 
-      if (PathUtils.equals(path, start.path)) {
+      if (path.equals(start.path)) {
         t = t.substring(start.offset);
       }
 
@@ -1423,9 +1419,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection.anchor = PointUtils.transform(point, op);
+            selection.anchor = point.transform(op);
           } else {
-            selection.focus = PointUtils.transform(point, op);
+            selection.focus = point.transform(op);
           }
         }
       }
@@ -1445,9 +1441,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection.anchor = PointUtils.transform(point, op);
+            selection.anchor = point.transform(op);
           } else {
-            selection.focus = PointUtils.transform(point, op);
+            selection.focus = point.transform(op);
           }
         }
       }
@@ -1456,7 +1452,7 @@ class EditorUtils {
     if (op is MergeNodeOperation) {
       Path path = op.path;
       Node node = NodeUtils.get(editor, path);
-      Path prevPath = PathUtils.previous(path);
+      Path prevPath = path.previous;
       Node prev = NodeUtils.get(editor, prevPath);
       Ancestor parent = NodeUtils.parent(editor, path);
       int index = path[path.length - 1];
@@ -1477,9 +1473,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection.anchor = PointUtils.transform(point, op);
+            selection.anchor = point.transform(op);
           } else {
-            selection.focus = PointUtils.transform(point, op);
+            selection.focus = point.transform(op);
           }
         }
       }
@@ -1489,7 +1485,7 @@ class EditorUtils {
       Path path = op.path;
       Path newPath = op.newPath;
 
-      if (PathUtils.isAncestor(path, newPath)) {
+      if (path.isAncestor(newPath)) {
         throw Exception(
             'Cannot move a path [${path.toString()}] to new path [$newPath] because the destination is inside itself.');
       }
@@ -1505,8 +1501,8 @@ class EditorUtils {
       // transform `op.path` to ascertain what the `newPath` would be after
       // the operation was applied.
       parent.children.removeAt(index);
-      Path truePath = PathUtils.transform(path, op);
-      Ancestor newParent = NodeUtils.get(editor, PathUtils.parent(truePath));
+      Path truePath = path.transform(op);
+      Ancestor newParent = NodeUtils.get(editor, truePath.parent);
       int newIndex = truePath[truePath.length - 1];
 
       newParent.children.insert(newIndex, node);
@@ -1516,9 +1512,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection.anchor = PointUtils.transform(point, op);
+            selection.anchor = point.transform(op);
           } else {
-            selection.focus = PointUtils.transform(point, op);
+            selection.focus = point.transform(op);
           }
         }
       }
@@ -1536,7 +1532,7 @@ class EditorUtils {
         for (PointEntry entry in selection.points()) {
           Point point = entry.point;
           PointType type = entry.type;
-          Point result = PointUtils.transform(point, op);
+          Point result = point.transform(op);
 
           if (selection != null && result != null) {
             if (type == PointType.anchor) {
@@ -1551,7 +1547,7 @@ class EditorUtils {
             for (NodeEntry entry in NodeUtils.texts(editor)) {
               Text n = entry.node;
               Path p = entry.path;
-              if (PathUtils.compare(p, path) == -1) {
+              if (p.compare(path) == -1) {
                 prev = NodeEntry(n, p);
               } else {
                 next = NodeEntry(n, p);
@@ -1587,9 +1583,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection.anchor = PointUtils.transform(point, op);
+            selection.anchor = point.transform(op);
           } else {
-            selection.focus = PointUtils.transform(point, op);
+            selection.focus = point.transform(op);
           }
         }
       }
@@ -1681,9 +1677,9 @@ class EditorUtils {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
-            selection.anchor = PointUtils.transform(point, op);
+            selection.anchor = point.transform(op);
           } else {
-            selection.focus = PointUtils.transform(point, op);
+            selection.focus = point.transform(op);
           }
         }
       }
@@ -1733,7 +1729,7 @@ class EditorUtils {
         continue;
       }
 
-      if (node.text != '' || PathUtils.isBefore(path, blockPath)) {
+      if (node.text != '' || path.isBefore(blockPath)) {
         end = Point(path, node.text.length);
         break;
       }
@@ -1972,22 +1968,22 @@ class StringUtils {
 
 List<Path> Function(Operation) getDirtyPaths = (Operation op) {
   if (op is InsertTextOperation) {
-    return PathUtils.levels(op.path);
+    return op.path.levels();
   }
 
   if (op is RemoveTextOperation) {
-    return PathUtils.levels(op.path);
+    return op.path.levels();
   }
 
   if (op is SetNodeOperation) {
-    return PathUtils.levels(op.path);
+    return op.path.levels();
   }
 
   if (op is InsertNodeOperation) {
     Node node = op.node;
     Path path = op.path;
     List<Path> paths = [];
-    List<Path> levels = PathUtils.levels(path);
+    List<Path> levels = path.levels();
     List<Path> descendants = [];
 
     if (node is Text == false) {
@@ -2007,8 +2003,8 @@ List<Path> Function(Operation) getDirtyPaths = (Operation op) {
   if (op is MergeNodeOperation) {
     Path path = op.path;
     List<Path> paths = [];
-    List<Path> ancestors = PathUtils.ancestors(path);
-    Path previousPath = PathUtils.previous(path);
+    List<Path> ancestors = path.ancestors();
+    Path previousPath = path.previous;
 
     paths.addAll(ancestors);
     paths.add(previousPath);
@@ -2021,20 +2017,20 @@ List<Path> Function(Operation) getDirtyPaths = (Operation op) {
     Path newPath = op.newPath;
     List<Path> paths = [];
 
-    if (PathUtils.equals(path, newPath)) {
+    if (path.equals(newPath)) {
       return [];
     }
 
     List<Path> oldAncestors = [];
     List<Path> newAncestors = [];
 
-    for (Path ancestor in PathUtils.ancestors(path)) {
-      Path p = PathUtils.transform(ancestor, op);
+    for (Path ancestor in path.ancestors()) {
+      Path p = ancestor.transform(op);
       oldAncestors.add(p);
     }
 
-    for (Path ancestor in PathUtils.ancestors(newPath)) {
-      Path p = PathUtils.transform(ancestor, op);
+    for (Path ancestor in newPath.ancestors()) {
+      Path p = ancestor.transform(op);
       newAncestors.add(p);
     }
 
@@ -2047,7 +2043,7 @@ List<Path> Function(Operation) getDirtyPaths = (Operation op) {
   if (op is RemoveNodeOperation) {
     Path path = op.path;
     List<Path> paths = [];
-    List<Path> ancestors = PathUtils.ancestors(path);
+    List<Path> ancestors = path.ancestors();
 
     paths.addAll(ancestors);
     return paths;
@@ -2056,8 +2052,8 @@ List<Path> Function(Operation) getDirtyPaths = (Operation op) {
   if (op is SplitNodeOperation) {
     Path path = op.path;
     List<Path> paths = [];
-    List<Path> levels = PathUtils.levels(path);
-    Path nextPath = PathUtils.next(path);
+    List<Path> levels = path.levels();
+    Path nextPath = path.next;
 
     paths.addAll(levels);
     paths.add(nextPath);

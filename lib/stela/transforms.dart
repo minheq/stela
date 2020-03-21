@@ -4,9 +4,7 @@ import 'package:inday/stela/location.dart';
 import 'package:inday/stela/node.dart';
 import 'package:inday/stela/operation.dart';
 import 'package:inday/stela/path.dart';
-import 'package:inday/stela/path_ref.dart';
 import 'package:inday/stela/point.dart';
-import 'package:inday/stela/point_ref.dart';
 import 'package:inday/stela/range.dart';
 import 'package:inday/stela/text.dart';
 
@@ -105,10 +103,10 @@ class Transforms {
 
         Set<PathRef> editorPathRefs = EditorUtils.pathRefs(editor);
         Path path = pathRef.unref(editorPathRefs);
-        at = isAtEnd ? PathUtils.next(path) : path;
+        at = isAtEnd ? path.next : path;
       }
 
-      Path parentPath = PathUtils.parent(at);
+      Path parentPath = (at as Path).parent;
       int index = (at as Path).last;
 
       if (!voids && EditorUtils.matchVoid(editor, at: parentPath) != null) {
@@ -116,7 +114,7 @@ class Transforms {
       }
 
       for (Node node in nodes) {
-        Path path = PathUtils.copy(parentPath);
+        Path path = parentPath.copy();
         path.add(index);
 
         index++;
@@ -180,8 +178,7 @@ class Transforms {
               'Cannot lift node at a path [$path] because it has a depth of less than \`2\`.');
         }
 
-        NodeEntry parentEntry =
-            EditorUtils.node(editor, PathUtils.parent(path));
+        NodeEntry parentEntry = EditorUtils.node(editor, path.parent);
         Ancestor parent = parentEntry.node;
         Path parentPath = parentEntry.path;
 
@@ -189,17 +186,17 @@ class Transforms {
         int length = parent.children.length;
 
         if (length == 1) {
-          Path toPath = PathUtils.next(parentPath);
+          Path toPath = parentPath.next;
           Transforms.moveNodes(editor, at: path, to: toPath, voids: voids);
           Transforms.removeNodes(editor, at: parentPath, voids: voids);
         } else if (index == 0) {
           Transforms.moveNodes(editor, at: path, to: parentPath, voids: voids);
         } else if (index == length - 1) {
-          Path toPath = PathUtils.next(parentPath);
+          Path toPath = parentPath.next;
           Transforms.moveNodes(editor, at: path, to: toPath, voids: voids);
         } else {
-          Path splitPath = PathUtils.next(path);
-          Path toPath = PathUtils.next(parentPath);
+          Path splitPath = path.next;
+          Path toPath = parentPath.next;
           Transforms.splitNodes(editor, at: splitPath, voids: voids);
           Transforms.moveNodes(editor, at: path, to: toPath, voids: voids);
         }
@@ -277,9 +274,9 @@ class Transforms {
         return;
       }
 
-      Path newPath = PathUtils.next(prevPath);
-      Path commonPath = PathUtils.common(path, prevPath);
-      bool isPreviousSibling = PathUtils.isSibling(path, prevPath);
+      Path newPath = prevPath.next;
+      Path commonPath = path.common(prevPath);
+      bool isPreviousSibling = path.isSibling(prevPath);
 
       List<NodeEntry> entries = List.from(EditorUtils.levels(editor, at: path));
       List<Node> levels = [];
@@ -598,7 +595,7 @@ class Transforms {
 
           if (after == null) {
             Text text = Text('');
-            Path afterPath = PathUtils.next(voidPath);
+            Path afterPath = voidPath.next;
             Transforms.insertNodes(editor, [text], at: afterPath, voids: voids);
             after = EditorUtils.point(editor, afterPath);
           }
@@ -836,15 +833,15 @@ class Transforms {
           Path firstPath = first.path;
           Path lastPath = last.path;
 
-          Path commonPath = PathUtils.equals(firstPath, lastPath)
-              ? PathUtils.parent(firstPath)
-              : PathUtils.common(firstPath, lastPath);
+          Path commonPath = firstPath.equals(lastPath)
+              ? firstPath.parent
+              : firstPath.common(lastPath);
 
           Range range = EditorUtils.range(editor, firstPath, lastPath);
           NodeEntry common = EditorUtils.node(editor, commonPath);
           Ancestor commonNode = common.node;
           int depth = commonPath.length + 1;
-          Path wrapperPath = PathUtils.next(lastPath.slice(0, depth));
+          Path wrapperPath = lastPath.slice(0, depth).next;
 
           // TODO: Figure out how to create new node with any class inherting from either
           Element wrapper;
@@ -1026,8 +1023,8 @@ class Transforms {
     }
 
     bool hasSelectionChanges = oldProps.length > 0 ||
-        !PointUtils.equals(selection.anchor, newSelection.anchor) ||
-        !PointUtils.equals(selection.focus, newSelection.focus);
+        !selection.anchor.equals(newSelection.anchor) ||
+        !selection.focus.equals(newSelection.focus);
 
     if (hasSelectionChanges) {
       selection = Range(selection.anchor, selection.focus, props: oldProps);
@@ -1104,8 +1101,8 @@ class Transforms {
       }, at: end, voids: voids);
       bool isAcrossBlocks = startBlock != null &&
           endBlock != null &&
-          !PathUtils.equals(startBlock.path, endBlock.path);
-      bool isSingleText = PathUtils.equals(start.path, end.path);
+          !startBlock.path.equals(endBlock.path);
+      bool isSingleText = start.path.equals(end.path);
       NodeEntry<Element> startVoid = voids
           ? null
           : EditorUtils.matchVoid(editor, at: start, mode: Mode.highest);
@@ -1119,7 +1116,7 @@ class Transforms {
 
         if (before != null &&
             startBlock != null &&
-            PathUtils.isAncestor(startBlock.path, before.path)) {
+            startBlock.path.isAncestor(before.path)) {
           start = before;
         }
       }
@@ -1129,7 +1126,7 @@ class Transforms {
 
         if (after != null &&
             endBlock != null &&
-            PathUtils.isAncestor(endBlock.path, after.path)) {
+            endBlock.path.isAncestor(after.path)) {
           end = after;
         }
       }
@@ -1143,13 +1140,12 @@ class Transforms {
         Node node = entry.node;
         Path path = entry.path;
 
-        if (lastPath != null && PathUtils.compare(path, lastPath) == 0) {
+        if (lastPath != null && path.compare(lastPath) == 0) {
           continue;
         }
 
         if ((!voids && EditorUtils.isVoid(editor, node)) ||
-            (!PathUtils.isCommon(path, start.path) &&
-                !PathUtils.isCommon(path, end.path))) {
+            (!path.isCommon(start.path) && !path.isCommon(end.path))) {
           matches.add(entry);
           lastPath = path;
         }
@@ -1305,7 +1301,7 @@ class Transforms {
         Path p = entry.path;
 
         if (mergeStart &&
-            PathUtils.isAncestor(p, firstPath) &&
+            p.isAncestor(firstPath) &&
             (n is Element) &&
             !editor.isVoid(n) &&
             !(n is Inline)) {
@@ -1313,7 +1309,7 @@ class Transforms {
         }
 
         if (mergeEnd &&
-            PathUtils.isAncestor(p, lastPath) &&
+            p.isAncestor(lastPath) &&
             (n is Element) &&
             !editor.isVoid(n) &&
             !(n is Inline)) {
@@ -1361,11 +1357,11 @@ class Transforms {
       bool isInlineStart = EditorUtils.isStart(editor, at, inlinePath);
       bool isInlineEnd = EditorUtils.isEnd(editor, at, inlinePath);
 
-      PathRef middleRef = EditorUtils.pathRef(
-          editor, isBlockEnd ? PathUtils.next(blockPath) : blockPath);
+      PathRef middleRef =
+          EditorUtils.pathRef(editor, isBlockEnd ? blockPath.next : blockPath);
 
       PathRef endRef = EditorUtils.pathRef(
-          editor, isInlineEnd ? PathUtils.next(inlinePath) : inlinePath);
+          editor, isInlineEnd ? inlinePath.next : inlinePath);
 
       Transforms.splitNodes(editor, at: at, match: (n) {
         return hasBlocks ? n is Block : n is Text || n is Inline;
@@ -1374,7 +1370,7 @@ class Transforms {
       PathRef startRef = EditorUtils.pathRef(
           editor,
           !isInlineStart || (isInlineStart && isInlineEnd)
-              ? PathUtils.next(inlinePath)
+              ? inlinePath.next
               : inlinePath);
 
       Transforms.insertNodes(
@@ -1401,11 +1397,11 @@ class Transforms {
         Path path;
 
         if (ends.length > 0) {
-          path = PathUtils.previous(endRef.current);
+          path = endRef.current.previous;
         } else if (middles.length > 0) {
-          path = PathUtils.previous(middleRef.current);
+          path = middleRef.current.previous;
         } else {
-          path = PathUtils.previous(startRef.current);
+          path = startRef.current.previous;
         }
 
         Point end = EditorUtils.end(editor, path);

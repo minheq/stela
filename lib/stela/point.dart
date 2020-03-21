@@ -22,6 +22,106 @@ class Point implements Location {
   String toString() {
     return "Point(${path.toString()}, $offset)";
   }
+
+  /// Compare a point to another, returning an integer indicating whether the
+  /// point was before (-1), at (0), or after (1) the other.
+  int compare(Point another) {
+    int result = path.compare(another.path);
+
+    if (result == 0) {
+      if (offset < another.offset) return -1;
+      if (offset > another.offset) return 1;
+      return 0;
+    }
+
+    return result;
+  }
+
+  /// Check if a point is exactly equal to another.
+  bool equals(Point another) {
+    // PERF: ensure the offsets are equal first since they are cheaper to check.
+    if (another == null) {
+      return false;
+    }
+
+    return (offset == another.offset && path.equals(another.path));
+  }
+
+  /// Check if a point is after another.
+  bool isAfter(Point another) {
+    return compare(another) == 1;
+  }
+
+  /// Check if a point is before another.
+  bool isBefore(Point another) {
+    return compare(another) == -1;
+  }
+
+  /// Transform a point by an operation.
+  Point transform(Operation op, {Affinity affinity = Affinity.forward}) {
+    Point next = Point(path, offset);
+    Path nextPath = next.path;
+    int nextOffset = next.offset;
+
+    if (op is InsertNodeOperation || op is MoveNodeOperation) {
+      next.path = nextPath.transform(op, affinity: affinity);
+      return next;
+    }
+
+    if (op is InsertTextOperation) {
+      if (op.path.equals(nextPath) && op.offset <= nextOffset) {
+        next.offset += op.text.length;
+      }
+      return next;
+    }
+
+    if (op is MergeNodeOperation) {
+      if (op.path.equals(nextPath)) {
+        next.offset += op.position;
+      }
+
+      next.path = nextPath.transform(op, affinity: affinity);
+
+      return next;
+    }
+
+    if (op is RemoveTextOperation) {
+      if (op.path.equals(nextPath) && op.offset <= nextOffset) {
+        next.offset -= min(nextOffset - op.offset, op.text.length);
+      }
+
+      return next;
+    }
+
+    if (op is RemoveNodeOperation) {
+      if (op.path.equals(nextPath) || op.path.isAncestor(nextPath)) {
+        return null;
+      }
+
+      next.path = nextPath.transform(op, affinity: affinity);
+
+      return next;
+    }
+
+    if (op is SplitNodeOperation) {
+      if (op.path.equals(nextPath)) {
+        if (op.position == nextOffset && affinity == null) {
+          return null;
+        } else if (op.position < nextOffset ||
+            (op.position == nextOffset && affinity == Affinity.forward)) {
+          next.offset -= op.position;
+
+          next.path = nextPath.transform(op, affinity: Affinity.forward);
+        }
+      } else {
+        next.path = nextPath.transform(op, affinity: affinity);
+      }
+
+      return next;
+    }
+
+    return null;
+  }
 }
 
 enum PointType { anchor, focus }
@@ -35,111 +135,32 @@ class PointEntry {
   final PointType type;
 }
 
-class PointUtils {
-  /// Compare a point to another, returning an integer indicating whether the
-  /// point was before (-1), at (0), or after (1) the other.
-  static int compare(Point point, Point another) {
-    int result = PathUtils.compare(point.path, another.path);
+/// `PointRef` objects keep a specific point in a document synced over time as new
+/// operations are applied to the editor. You can access their `current` property
+/// at any time for the up-to-date point value.
+class PointRef {
+  PointRef({this.current, this.affinity});
 
-    if (result == 0) {
-      if (point.offset < another.offset) return -1;
-      if (point.offset > another.offset) return 1;
-      return 0;
-    }
+  Point current;
+  Affinity affinity;
 
-    return result;
+  Point unref(Set<PointRef> pointRefs) {
+    Point _current = current;
+    pointRefs.remove(this);
+    current = null;
+
+    return _current;
   }
 
-  /// Check if a point is exactly equal to another.
-  static bool equals(Point point, Point another) {
-    // PERF: ensure the offsets are equal first since they are cheaper to check.
-    if (point != null && another == null) {
-      return false;
+  /// Transform the point ref's current value by an operation.
+  static Point transform(Set<PointRef> pointRefs, PointRef ref, Operation op) {
+    if (ref.current == null) {
+      return null;
     }
 
-    if (point == null && another != null) {
-      return false;
-    }
+    Point point = ref.current.transform(op, affinity: ref.affinity);
+    ref.current = point;
 
-    return (point.offset == another.offset &&
-        PathUtils.equals(point.path, another.path));
-  }
-
-  /// Check if a point is after another.
-  static bool isAfter(Point point, Point another) {
-    return PointUtils.compare(point, another) == 1;
-  }
-
-  /// Check if a point is before another.
-  static bool isBefore(Point point, Point another) {
-    return PointUtils.compare(point, another) == -1;
-  }
-
-  /// Transform a point by an operation.
-  static Point transform(Point point, Operation op,
-      {Affinity affinity = Affinity.forward}) {
-    Point p = Point(point.path, point.offset);
-    Path path = p.path;
-    int offset = p.offset;
-
-    if (op is InsertNodeOperation || op is MoveNodeOperation) {
-      p.path = PathUtils.transform(path, op, affinity: affinity);
-      return p;
-    }
-
-    if (op is InsertTextOperation) {
-      if (PathUtils.equals(op.path, path) && op.offset <= offset) {
-        p.offset += op.text.length;
-      }
-      return p;
-    }
-
-    if (op is MergeNodeOperation) {
-      if (PathUtils.equals(op.path, path)) {
-        p.offset += op.position;
-      }
-
-      p.path = PathUtils.transform(path, op, affinity: affinity);
-
-      return p;
-    }
-
-    if (op is RemoveTextOperation) {
-      if (PathUtils.equals(op.path, path) && op.offset <= offset) {
-        p.offset -= min(offset - op.offset, op.text.length);
-      }
-
-      return p;
-    }
-
-    if (op is RemoveNodeOperation) {
-      if (PathUtils.equals(op.path, path) ||
-          PathUtils.isAncestor(op.path, path)) {
-        return null;
-      }
-
-      p.path = PathUtils.transform(path, op, affinity: affinity);
-
-      return p;
-    }
-
-    if (op is SplitNodeOperation) {
-      if (PathUtils.equals(op.path, path)) {
-        if (op.position == offset && affinity == null) {
-          return null;
-        } else if (op.position < offset ||
-            (op.position == offset && affinity == Affinity.forward)) {
-          p.offset -= op.position;
-
-          p.path = PathUtils.transform(path, op, affinity: Affinity.forward);
-        }
-      } else {
-        p.path = PathUtils.transform(path, op, affinity: affinity);
-      }
-
-      return p;
-    }
-
-    return null;
+    return point;
   }
 }
