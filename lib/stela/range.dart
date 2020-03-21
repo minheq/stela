@@ -20,63 +20,45 @@ class Range implements Location {
   String toString() {
     return "Range(${anchor.toString()}, ${focus.toString()})";
   }
-}
 
-class Edges {
-  Edges(this.start, this.end);
-
-  final Point start;
-  final Point end;
-}
-
-class RangeUtils {
   /// Get the start and end points of a range, in the order in which they appear
   /// in the document.
-  static Edges edges(Range range, {bool reverse = false}) {
-    Point anchor = range.anchor;
-    Point focus = range.focus;
-
-    return RangeUtils.isBackward(range) == reverse
-        ? Edges(anchor, focus)
-        : Edges(focus, anchor);
+  Edges edges({bool reverse = false}) {
+    return isBackward == reverse ? Edges(anchor, focus) : Edges(focus, anchor);
   }
 
-  /// Get the end point of a range.
-  static Point end(Range range) {
-    Edges edges = RangeUtils.edges(range);
-    Point end = edges.end;
+  /// Get the end point of a
+  Point get end {
+    Point end = edges().end;
 
     return end;
   }
 
   /// Check if a range is exactly equal to another.
-  static bool equals(Range range, Range another) {
-    return (PointUtils.equals(range.anchor, another.anchor) &&
-        PointUtils.equals(range.focus, another.focus));
+  bool equals(Range another) {
+    return (PointUtils.equals(anchor, another.anchor) &&
+        PointUtils.equals(focus, another.focus));
   }
 
-  /// Check if a range includes a path, a point or part of another range.
-  static bool includes(Range range, Location target) {
+  /// Check if a range includes a path, a point or part of another
+  bool includes(Location target) {
     if (target is Range) {
-      if (RangeUtils.includes(range, target.anchor) ||
-          RangeUtils.includes(range, target.focus)) {
+      if (includes(target.anchor) || includes(target.focus)) {
         return true;
       }
 
-      Edges edges = RangeUtils.edges(range);
-      Point rs = edges.start;
-      Point re = edges.end;
+      Point rs = edges().start;
+      Point re = edges().end;
 
-      Edges targetEdges = RangeUtils.edges(target);
+      Edges targetEdges = target.edges();
       Point ts = targetEdges.start;
       Point te = targetEdges.end;
 
       return PointUtils.isBefore(rs, ts) && PointUtils.isAfter(re, te);
     }
 
-    Edges edges = RangeUtils.edges(range);
-    Point start = edges.start;
-    Point end = edges.end;
+    Point start = edges().start;
+    Point end = edges().end;
 
     bool isAfterStart = false;
     bool isBeforeEnd = false;
@@ -93,12 +75,11 @@ class RangeUtils {
   }
 
   /// Get the intersection of a range with another.
-  static Range intersection(Range range, Range another) {
-    Edges edges = RangeUtils.edges(range);
-    Point s1 = edges.start;
-    Point e1 = edges.end;
+  Range intersection(Range another) {
+    Point s1 = edges().start;
+    Point e1 = edges().end;
 
-    Edges anotherEdges = RangeUtils.edges(another);
+    Edges anotherEdges = another.edges();
     Point s2 = anotherEdges.start;
     Point e2 = anotherEdges.end;
 
@@ -114,57 +95,48 @@ class RangeUtils {
 
   /// Check if a range is backward, meaning that its anchor point appears in the
   /// document _after_ its focus point.
-  static bool isBackward(Range range) {
-    return PointUtils.isAfter(range.anchor, range.focus);
+  bool get isBackward {
+    return PointUtils.isAfter(anchor, focus);
   }
 
   /// Check if a range is collapsed, meaning that both its anchor and focus
   /// points refer to the exact same position in the document.
-  static bool isCollapsed(Range range) {
-    return PointUtils.equals(range.anchor, range.focus);
+  bool get isCollapsed {
+    return PointUtils.equals(anchor, focus);
   }
 
   /// Check if a range is expanded.
   ///
-  /// This is the opposite of [[RangeUtils.isCollapsed]] and is provided for legibility.
-  static bool isExpanded(Range range) {
-    return !RangeUtils.isCollapsed(range);
+  /// This is the opposite of [[isCollapsed]] and is provided for legibility.
+  bool get isExpanded {
+    return !isCollapsed;
   }
 
   /// Check if a range is forward.
   ///
-  /// This is the opposite of [[RangeUtils.isBackward]] and is provided for legibility.
-  static bool isForward(Range range) {
-    return !RangeUtils.isBackward(range);
+  /// This is the opposite of [[isBackward]] and is provided for legibility.
+  bool get isForward {
+    return !isBackward;
   }
 
-  /// Check if a value implements the [[Range]] interface.
-  static bool isRange(Location location) {
-    return location is Range;
+  /// Iterate through all of the point entries in a
+  Iterable<PointEntry> points() sync* {
+    yield PointEntry(anchor, PointType.anchor);
+    yield PointEntry(focus, PointType.focus);
   }
 
-  /// Iterate through all of the point entries in a range.
-  static Iterable<PointEntry> points(Range range) sync* {
-    yield PointEntry(range.anchor, PointType.anchor);
-    yield PointEntry(range.focus, PointType.focus);
-  }
-
-  /// Get the start point of a range.
-  static Point start(Range range) {
-    Edges edges = RangeUtils.edges(range);
-    Point start = edges.start;
-
-    return start;
+  /// Get the start point of a
+  Point get start {
+    return edges().start;
   }
 
   /// Transform a range by an operation.
-  static Range transform(Range range, Operation op,
-      {Affinity affinity = Affinity.inward}) {
+  Range transform(Operation op, {Affinity affinity = Affinity.inward}) {
     Affinity affinityAnchor;
     Affinity affinityFocus;
 
     if (affinity == Affinity.inward) {
-      if (RangeUtils.isForward(range)) {
+      if (isForward) {
         affinityAnchor = Affinity.forward;
         affinityFocus = Affinity.backward;
       } else {
@@ -172,7 +144,7 @@ class RangeUtils {
         affinityFocus = Affinity.forward;
       }
     } else if (affinity == Affinity.outward) {
-      if (RangeUtils.isForward(range)) {
+      if (isForward) {
         affinityAnchor = Affinity.backward;
         affinityFocus = Affinity.forward;
       } else {
@@ -184,18 +156,57 @@ class RangeUtils {
       affinityFocus = affinity;
     }
 
-    Range r = Range(range.anchor, range.focus);
+    Range next = Range(anchor, focus);
 
-    Point anchor = PointUtils.transform(r.anchor, op, affinity: affinityAnchor);
-    Point focus = PointUtils.transform(r.focus, op, affinity: affinityFocus);
+    Point nextAnchor =
+        PointUtils.transform(next.anchor, op, affinity: affinityAnchor);
+    Point nextFocus =
+        PointUtils.transform(next.focus, op, affinity: affinityFocus);
 
-    if (anchor == null || focus == null) {
+    if (nextAnchor == null || nextFocus == null) {
       return null;
     }
 
-    r.anchor = anchor;
-    r.focus = focus;
+    next.anchor = nextAnchor;
+    next.focus = nextFocus;
 
-    return r;
+    return next;
+  }
+}
+
+class Edges {
+  Edges(this.start, this.end);
+
+  final Point start;
+  final Point end;
+}
+
+/// `RangeRef` objects keep a specific range in a document synced over time as new
+/// operations are applied to the editor. You can access their `current` property
+/// at any time for the up-to-date range value.
+class RangeRef {
+  RangeRef({this.current, this.affinity});
+
+  Range current;
+  Affinity affinity;
+
+  Range unref(Set<RangeRef> rangeRefs) {
+    Range _current = current;
+    rangeRefs.remove(this);
+    current = null;
+
+    return _current;
+  }
+
+  /// Transform the range ref's current value by an operation.
+  static Range transform(Set<RangeRef> rangeRefs, RangeRef ref, Operation op) {
+    if (ref.current == null) {
+      return null;
+    }
+
+    Range range = ref.current.transform(op, affinity: ref.affinity);
+    ref.current = range;
+
+    return range;
   }
 }

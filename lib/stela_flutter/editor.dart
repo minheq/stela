@@ -381,12 +381,10 @@ class StelaEditorState extends State<StelaEditor>
   }
 
   void _startOrStopCursorTimerIfNeeded() {
-    if (_cursorTimer == null &&
-        _hasFocus &&
-        Stela.RangeUtils.isCollapsed(_value.selection)) {
+    if (_cursorTimer == null && _hasFocus && _value.selection.isCollapsed) {
       _startCursorTimer();
     } else if (_cursorTimer != null &&
-        (!_hasFocus || !Stela.RangeUtils.isCollapsed(_value.selection))) {
+        (!_hasFocus || !_value.selection.isCollapsed)) {
       _stopCursorTimer();
     }
   }

@@ -51,7 +51,7 @@ class _StelaChildrenState extends State<StelaChildren> {
       Stela.Range subSelection;
 
       if (selection != null) {
-        subSelection = Stela.RangeUtils.intersection(range, selection);
+        subSelection = range.intersection(selection);
       }
 
       if (child is Stela.Element) {

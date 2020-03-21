@@ -219,19 +219,19 @@ class NodeUtils {
 
     Ancestor newRoot = NodeUtils.copy(root);
 
-    Edges edges = RangeUtils.edges(range);
+    Edges edges = range.edges();
     Point start = edges.start;
     Point end = edges.end;
 
     Iterable<NodeEntry<Node>> nodes =
         NodeUtils.nodes(newRoot, reverse: true, pass: (entry) {
-      return !RangeUtils.includes(range, entry.path);
+      return !range.includes(entry.path);
     });
 
     for (NodeEntry<Node> entry in nodes) {
       Path path = entry.path;
 
-      if (!RangeUtils.includes(range, path)) {
+      if (!range.includes(path)) {
         Ancestor parent = NodeUtils.parent(newRoot, path);
         int index = path[path.length - 1];
         parent.children.removeAt(index);

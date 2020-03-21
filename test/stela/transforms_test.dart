@@ -17,8 +17,7 @@ void Function(Node, Node) expectEqual = (Node node, Node expected) {
   }
 
   if (node is Editor && node.selection != null) {
-    expect(
-        RangeUtils.equals(node.selection, (expected as Editor).selection), true,
+    expect(node.selection.equals((expected as Editor).selection), true,
         reason:
             "expected: ${(expected as Editor).selection.toString()}, received: ${node.selection.toString()}");
   }

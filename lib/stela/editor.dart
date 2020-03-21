@@ -7,7 +7,6 @@ import 'package:inday/stela/path_ref.dart';
 import 'package:inday/stela/point.dart';
 import 'package:inday/stela/point_ref.dart';
 import 'package:inday/stela/range.dart';
-import 'package:inday/stela/range_ref.dart';
 import 'package:inday/stela/text.dart';
 import 'package:inday/stela/transforms.dart';
 
@@ -234,7 +233,7 @@ class Editor implements Ancestor {
     });
 
     if (selection != null) {
-      if (RangeUtils.isExpanded(selection)) {
+      if (selection.isExpanded) {
         Transforms.setNodes(this, props, match: (n) {
           return n is Text;
         }, split: true);
@@ -334,19 +333,19 @@ class Editor implements Ancestor {
   }
 
   void deleteBackward(Unit unit) {
-    if (selection != null && RangeUtils.isCollapsed(selection)) {
+    if (selection != null && selection.isCollapsed) {
       Transforms.delete(this, unit: unit, reverse: true);
     }
   }
 
   void deleteForward(Unit unit) {
-    if (selection != null && RangeUtils.isCollapsed(selection)) {
+    if (selection != null && selection.isCollapsed) {
       Transforms.delete(this, unit: unit);
     }
   }
 
   void deleteFragment() {
-    if (selection != null && RangeUtils.isExpanded(selection)) {
+    if (selection != null && selection.isExpanded) {
       Transforms.delete(this);
     }
   }
@@ -367,7 +366,7 @@ class Editor implements Ancestor {
     if (selection != null) {
       // If the cursor is at the end of an inline, move it outside of
       // the inline before inserting
-      if (RangeUtils.isCollapsed(selection)) {
+      if (selection.isCollapsed) {
         NodeEntry inline = EditorUtils.above(this, match: (n) {
           return EditorUtils.isInline(this, n);
         }, mode: Mode.highest);
@@ -395,7 +394,7 @@ class Editor implements Ancestor {
 
   void removeMark(String key) {
     if (selection != null) {
-      if (RangeUtils.isExpanded(selection)) {
+      if (selection.isExpanded) {
         Transforms.unsetNodes(
           this,
           [key],
@@ -758,7 +757,7 @@ class EditorUtils {
       return marks;
     }
 
-    if (RangeUtils.isExpanded(selection)) {
+    if (selection.isExpanded) {
       List<NodeEntry> nodes =
           List.from(EditorUtils.nodes(editor, match: (node) {
         return (node is Text);
@@ -1041,9 +1040,9 @@ class EditorUtils {
 
     if (at is Range) {
       if (edge == Edge.start) {
-        at = RangeUtils.start(at);
+        at = (at as Range).start;
       } else if (edge == Edge.end) {
-        at = RangeUtils.end(at);
+        at = (at as Range).end;
       } else {
         at = PathUtils.common(
             (at as Range).anchor.path, (at as Range).focus.path);
@@ -1108,7 +1107,7 @@ class EditorUtils {
     }
 
     if (at is Range) {
-      Edges edges = RangeUtils.edges(at);
+      Edges edges = at.edges();
       return edge == Edge.start ? edges.start : edges.end;
     }
 
@@ -1160,7 +1159,7 @@ class EditorUtils {
     }
 
     Range range = EditorUtils.range(editor, at, null);
-    Edges edges = RangeUtils.edges(range);
+    Edges edges = range.edges();
     Point start = edges.start;
     Point end = edges.end;
     Point first = reverse ? edges.end : edges.start;
@@ -1374,7 +1373,7 @@ class EditorUtils {
   /// of what their actual content is.
   static String string(Editor editor, Location at) {
     Range range = EditorUtils.range(editor, at, null);
-    Edges edges = RangeUtils.edges(range);
+    Edges edges = range.edges();
     Point start = edges.start;
     Point end = edges.end;
     String text = '';
@@ -1420,7 +1419,7 @@ class EditorUtils {
       parent.children.insert(index, node);
 
       if (selection != null) {
-        for (PointEntry entry in RangeUtils.points(selection)) {
+        for (PointEntry entry in selection.points()) {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
@@ -1442,7 +1441,7 @@ class EditorUtils {
       node.text = before + text + after;
 
       if (selection != null) {
-        for (PointEntry entry in RangeUtils.points(selection)) {
+        for (PointEntry entry in selection.points()) {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
@@ -1474,7 +1473,7 @@ class EditorUtils {
       parent.children.removeAt(index);
 
       if (selection != null) {
-        for (PointEntry entry in RangeUtils.points(selection)) {
+        for (PointEntry entry in selection.points()) {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
@@ -1513,7 +1512,7 @@ class EditorUtils {
       newParent.children.insert(newIndex, node);
 
       if (selection != null) {
-        for (PointEntry entry in RangeUtils.points(selection)) {
+        for (PointEntry entry in selection.points()) {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
@@ -1534,7 +1533,7 @@ class EditorUtils {
       // Transform all of the points in the value, but if the point was in the
       // node that was removed we need to update the range or remove it.
       if (selection != null) {
-        for (PointEntry entry in RangeUtils.points(selection)) {
+        for (PointEntry entry in selection.points()) {
           Point point = entry.point;
           PointType type = entry.type;
           Point result = PointUtils.transform(point, op);
@@ -1584,7 +1583,7 @@ class EditorUtils {
       node.text = before + after;
 
       if (selection != null) {
-        for (PointEntry entry in RangeUtils.points(selection)) {
+        for (PointEntry entry in selection.points()) {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
@@ -1678,7 +1677,7 @@ class EditorUtils {
       parent.children.insert(index + 1, newNode);
 
       if (selection != null) {
-        for (PointEntry entry in RangeUtils.points(selection)) {
+        for (PointEntry entry in selection.points()) {
           Point point = entry.point;
           PointType type = entry.type;
           if (type == PointType.anchor) {
@@ -1695,12 +1694,12 @@ class EditorUtils {
   ///
   /// A hanging range is when it is not collapsed and its focus is at the start of a node
   static Range unhangRange(Editor editor, Range range, {bool voids = false}) {
-    Edges edges = RangeUtils.edges(range);
+    Edges edges = range.edges();
     Point start = edges.start;
     Point end = edges.end;
 
     // PERF: exit early if we can guarantee that the range isn't hanging.
-    if (start.offset != 0 || end.offset != 0 || RangeUtils.isCollapsed(range)) {
+    if (start.offset != 0 || end.offset != 0 || range.isCollapsed) {
       return range;
     }
 

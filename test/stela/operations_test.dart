@@ -52,8 +52,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
           true);
     });
 
@@ -79,8 +79,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
           true);
     });
 
@@ -107,8 +107,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
           true);
     });
 
@@ -133,8 +133,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
           true);
     });
 
@@ -159,8 +159,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
           true);
     });
 
@@ -186,8 +186,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
           true);
     });
 
@@ -213,8 +213,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 1))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 1))),
           true);
     });
 
@@ -239,8 +239,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 1))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 1))),
           true);
     });
 
@@ -267,8 +267,8 @@ void main() {
       // </editor>
       expect((element.children[0] as Text).text, 'wd');
       expect(
-          RangeUtils.equals(editor.selection,
-              Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 1))),
+          editor.selection
+              .equals(Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 1))),
           true);
     });
   });

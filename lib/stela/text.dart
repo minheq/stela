@@ -59,7 +59,7 @@ class TextUtils {
     List<Text> leaves = [text];
 
     for (Range dec in decorations) {
-      Edges edges = RangeUtils.edges(dec);
+      Edges edges = dec.edges();
       Point start = edges.start;
       Point end = edges.end;
 

@@ -4295,8 +4295,7 @@ void main() {
       Range range = EditorUtils.range(editor, Path([0]), null);
 
       expect(
-          RangeUtils.equals(
-              range, Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3))),
+          range.equals(Range(Point(Path([0, 0]), 0), Point(Path([0, 0]), 3))),
           true);
     });
 
@@ -4311,8 +4310,7 @@ void main() {
       Range range = EditorUtils.range(editor, Point(Path([0, 0]), 1), null);
 
       expect(
-          RangeUtils.equals(
-              range, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
+          range.equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 1))),
           true);
     });
 
@@ -4328,8 +4326,7 @@ void main() {
           editor, Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 1)), null);
 
       expect(
-          RangeUtils.equals(
-              range, Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 1))),
+          range.equals(Range(Point(Path([0, 0]), 2), Point(Path([0, 0]), 1))),
           true);
     });
 
@@ -4345,8 +4342,7 @@ void main() {
           editor, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2)), null);
 
       expect(
-          RangeUtils.equals(
-              range, Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
+          range.equals(Range(Point(Path([0, 0]), 1), Point(Path([0, 0]), 2))),
           true);
     });
   });

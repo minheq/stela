@@ -8,7 +8,6 @@ import 'package:inday/stela/path_ref.dart';
 import 'package:inday/stela/point.dart';
 import 'package:inday/stela/point_ref.dart';
 import 'package:inday/stela/range.dart';
-import 'package:inday/stela/range_ref.dart';
 import 'package:inday/stela/text.dart';
 
 class Transforms {
@@ -57,10 +56,10 @@ class Transforms {
           at = EditorUtils.unhangRange(editor, at);
         }
 
-        if (RangeUtils.isCollapsed(at)) {
+        if ((at as Range).isCollapsed) {
           at = (at as Range).anchor;
         } else {
-          Edges edges = RangeUtils.edges(at);
+          Edges edges = (at as Range).edges();
           Point end = edges.end;
 
           PointRef pointRef = EditorUtils.pointRef(editor, end);
@@ -243,10 +242,10 @@ class Transforms {
       }
 
       if (at is Range) {
-        if (RangeUtils.isCollapsed(at)) {
+        if ((at as Range).isCollapsed) {
           at = (at as Range).anchor;
         } else {
-          Edges edge = RangeUtils.edges(at);
+          Edges edge = (at as Range).edges();
           Point end = edge.end;
           PointRef pointRef = EditorUtils.pointRef(editor, end);
           Transforms.delete(editor, at: at);
@@ -477,7 +476,7 @@ class Transforms {
       if (split && at is Range) {
         RangeRef rangeRef =
             EditorUtils.rangeRef(editor, at, affinity: Affinity.inward);
-        Edges edges = RangeUtils.edges(at);
+        Edges edges = (at as Range).edges();
         Point start = edges.start;
         Point end = edges.end;
         Mode splitMode = mode == Mode.lowest ? Mode.lowest : Mode.highest;
@@ -736,7 +735,7 @@ class Transforms {
         Range range = EditorUtils.range(editor, path, null);
 
         if (split && rangeRef != null) {
-          range = RangeUtils.intersection(rangeRef.current, range);
+          range = rangeRef.current.intersection(range);
         }
 
         Transforms.liftNodes(
@@ -788,7 +787,7 @@ class Transforms {
       }
 
       if (split && at is Range) {
-        Edges edges = RangeUtils.edges(at);
+        Edges edges = (at as Range).edges();
         Point start = edges.start;
         Point end = edges.end;
 
@@ -820,8 +819,8 @@ class Transforms {
 
       for (NodeEntry root in roots) {
         Location a = at is Range
-            ? RangeUtils.intersection(
-                at, EditorUtils.range(editor, root.path, null))
+            ? (at as Range)
+                .intersection(EditorUtils.range(editor, root.path, null))
             : at;
 
         if (a == null) {
@@ -890,11 +889,11 @@ class Transforms {
     } else if (edge == Edge.focus) {
       Transforms.select(editor, selection.focus);
     } else if (edge == Edge.start) {
-      Edges edges = RangeUtils.edges(selection);
+      Edges edges = selection.edges();
       Point start = edges.start;
       Transforms.select(editor, start);
     } else if (edge == Edge.end) {
-      Edges edges = RangeUtils.edges(selection);
+      Edges edges = selection.edges();
       Point end = edges.end;
       Transforms.select(editor, end);
     }
@@ -924,11 +923,11 @@ class Transforms {
     }
 
     if (edge == Edge.start) {
-      edge = RangeUtils.isBackward(selection) ? Edge.focus : Edge.anchor;
+      edge = selection.isBackward ? Edge.focus : Edge.anchor;
     }
 
     if (edge == Edge.end) {
-      edge = RangeUtils.isBackward(selection) ? Edge.anchor : Edge.focus;
+      edge = selection.isBackward ? Edge.anchor : Edge.focus;
     }
 
     Point anchor = selection.anchor;
@@ -968,7 +967,7 @@ class Transforms {
       return;
     }
 
-    if (!RangeUtils.isRange(target)) {
+    if (target is Range == false) {
       throw Exception(
           'When setting the selection and the current selection is \`null\` you must provide at least an \`anchor\` and \`focus\`, but you passed: ${target.toString()}');
     }
@@ -989,11 +988,11 @@ class Transforms {
     }
 
     if (edge == Edge.start) {
-      edge = RangeUtils.isBackward(selection) ? Edge.focus : Edge.anchor;
+      edge = selection.isBackward ? Edge.focus : Edge.anchor;
     }
 
     if (edge == Edge.end) {
-      edge = RangeUtils.isBackward(selection) ? Edge.anchor : Edge.focus;
+      edge = selection.isBackward ? Edge.anchor : Edge.focus;
     }
 
     Point anchor = selection.anchor;
@@ -1057,7 +1056,7 @@ class Transforms {
         return;
       }
 
-      if (at is Range && RangeUtils.isCollapsed(at)) {
+      if (at is Range && (at as Range).isCollapsed) {
         at = (at as Range).anchor;
       }
 
@@ -1085,7 +1084,7 @@ class Transforms {
         return;
       }
 
-      if (RangeUtils.isCollapsed(at)) {
+      if ((at as Range).isCollapsed) {
         return;
       }
 
@@ -1093,7 +1092,7 @@ class Transforms {
         at = EditorUtils.unhangRange(editor, at, voids: voids);
       }
 
-      Edges edges = RangeUtils.edges(at);
+      Edges edges = (at as Range).edges();
       Point start = edges.start;
       Point end = edges.end;
 
@@ -1237,10 +1236,10 @@ class Transforms {
           at = EditorUtils.unhangRange(editor, at);
         }
 
-        if (RangeUtils.isCollapsed(at)) {
+        if ((at as Range).isCollapsed) {
           at = (at as Range).anchor;
         } else {
-          Edges edges = RangeUtils.edges(at);
+          Edges edges = (at as Range).edges();
           Point end = edges.end;
 
           if (!voids && EditorUtils.matchVoid(editor, at: end) != null) {
@@ -1436,10 +1435,10 @@ class Transforms {
       }
 
       if (at is Range) {
-        if (RangeUtils.isCollapsed(at)) {
+        if ((at as Range).isCollapsed) {
           at = (at as Range).anchor;
         } else {
-          Point end = RangeUtils.end(at);
+          Point end = (at as Range).end;
 
           if (!voids && EditorUtils.matchVoid(editor, at: end) != null) {
             return;
@@ -1467,10 +1466,10 @@ class Transforms {
 /// Convert a range into a point by deleting it's content.
 Point Function(Editor editor, Range range) deleteRange =
     (Editor editor, Range range) {
-  if (RangeUtils.isCollapsed(range)) {
+  if (range.isCollapsed) {
     return range.anchor;
   } else {
-    Edges edges = RangeUtils.edges(range);
+    Edges edges = range.edges();
     Point end = edges.end;
 
     PointRef pointRef = EditorUtils.pointRef(editor, end);
