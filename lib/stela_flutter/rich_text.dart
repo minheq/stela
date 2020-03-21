@@ -25,6 +25,10 @@ const double _kFloatingCaretRadius = 1.0;
 /// Used by [RenderEditable.onCaretChanged].
 typedef CaretChangedHandler = void Function(Rect caretRect);
 
+/// Used by [RenderEditable.onSelectionChanged].
+typedef SelectionChangedHandler = void Function(TextSelection selection,
+    RenderStelaRichText renderObject, SelectionChangedCause cause);
+
 class StelaRichText extends StatefulWidget {
   StelaRichText({
     Key key,
@@ -94,6 +98,10 @@ class StelaRichText extends StatefulWidget {
 }
 
 class _StelaRichTextState extends State<StelaRichText> {
+  final GlobalKey _editableKey = GlobalKey();
+  RenderStelaRichText get renderRichText =>
+      _editableKey.currentContext.findRenderObject() as RenderStelaRichText;
+
   /// Whether to show the selection toolbar.
   ///
   /// It is based on the signal source when a [onTapDown] is called. This getter
@@ -112,7 +120,7 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///  * [TextSelectionGestureDetector.onTapDown], which triggers this callback.
   @protected
   void onTapDown(TapDownDetails details) {
-    // renderEditable.handleTapDown(details);
+    renderRichText.handleTapDown(details);
     // The selection overlay should only be shown when the user is interacting
     // through a touch screen (via either a finger or a stylus). A mouse shouldn't
     // trigger the selection overlay.
@@ -136,10 +144,10 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    callback.
   @protected
   void onForcePressStart(ForcePressDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
-    assert(scope.forcePressEnabled);
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+    assert(editorScope.forcePressEnabled);
     _shouldShowSelectionToolbar = true;
-    if (scope.selectionEnabled) {
+    if (editorScope.selectionEnabled) {
       // renderEditable.selectWordsInRange(
       //   from: details.globalPosition,
       //   cause: SelectionChangedCause.forcePress,
@@ -160,8 +168,8 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    callback.
   @protected
   void onForcePressEnd(ForcePressDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
-    assert(scope.forcePressEnabled);
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+    assert(editorScope.forcePressEnabled);
     // renderEditable.selectWordsInRange(
     //   from: details.globalPosition,
     //   cause: SelectionChangedCause.forcePress,
@@ -181,9 +189,9 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    this callback.
   @protected
   void onSingleTapUp(TapUpDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
-    if (scope.selectionEnabled) {
-      // renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+    if (editorScope.selectionEnabled) {
+      renderRichText.selectWordEdge(cause: SelectionChangedCause.tap);
     }
   }
 
@@ -211,8 +219,8 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    this callback.
   @protected
   void onSingleLongTapStart(LongPressStartDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
-    if (scope.selectionEnabled) {
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+    if (editorScope.selectionEnabled) {
       // renderEditable.selectPositionAt(
       //   from: details.globalPosition,
       //   cause: SelectionChangedCause.longPress,
@@ -231,8 +239,8 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    triggers this callback.
   @protected
   void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
-    if (scope.selectionEnabled) {
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+    if (editorScope.selectionEnabled) {
       // renderEditable.selectPositionAt(
       //   from: details.globalPosition,
       //   cause: SelectionChangedCause.longPress,
@@ -266,7 +274,7 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    callback.
   @protected
   void onDoubleTapDown(TapDownDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
     // if (scope.selectionEnabled) {
     //   renderEditable.selectWord(cause: SelectionChangedCause.tap);
     //   if (shouldShowSelectionToolbar)
@@ -315,13 +323,15 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @override
   Widget build(BuildContext context) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
 
     return TextSelectionGestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapDown: onTapDown,
-      onForcePressStart: scope.forcePressEnabled ? onForcePressStart : null,
-      onForcePressEnd: scope.forcePressEnabled ? onForcePressEnd : null,
+      onForcePressStart:
+          editorScope.forcePressEnabled ? onForcePressStart : null,
+      onForcePressEnd: editorScope.forcePressEnabled ? onForcePressEnd : null,
       onSingleTapUp: onSingleTapUp,
       onSingleTapCancel: onSingleTapCancel,
       onSingleLongTapStart: onSingleLongTapStart,
@@ -332,6 +342,7 @@ class _StelaRichTextState extends State<StelaRichText> {
       onDragSelectionUpdate: onDragSelectionUpdate,
       onDragSelectionEnd: onDragSelectionEnd,
       child: _StelaRichText(
+        key: _editableKey,
         cursorColor: widget.cursorColor,
         backgroundCursorColor: widget.backgroundCursorColor,
         showCursor: widget.showCursor,
@@ -340,6 +351,8 @@ class _StelaRichTextState extends State<StelaRichText> {
         selection: widget.selection,
         onCaretChanged: widget.onCaretChanged,
         cursorWidth: widget.cursorWidth,
+        ignorePointer: editableScope.ignorePointer,
+        onSelectionChanged: editableScope.onSelectionChanged,
         cursorRadius: widget.cursorRadius,
         cursorOffset: widget.cursorOffset,
         paintCursorAboveText: widget.paintCursorAboveText,
@@ -378,6 +391,8 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
     this.textWidthBasis = TextWidthBasis.parent,
     this.textHeightBehavior,
     this.cursorColor,
+    this.ignorePointer,
+    this.onSelectionChanged,
     this.selection,
     this.onCaretChanged,
     this.selectionColor,
@@ -415,6 +430,8 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
   final TextSelection selection;
   final CaretChangedHandler onCaretChanged;
   final double cursorWidth;
+  final bool ignorePointer;
+  final SelectionChangedHandler onSelectionChanged;
   final Radius cursorRadius;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
@@ -449,6 +466,8 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
       textWidthBasis: textWidthBasis,
       textHeightBehavior: textHeightBehavior,
       cursorColor: cursorColor,
+      ignorePointer: ignorePointer,
+      onSelectionChanged: onSelectionChanged,
       backgroundCursorColor: backgroundCursorColor,
       showCursor: showCursor,
       hasFocus: hasFocus,
@@ -486,6 +505,8 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
       ..showCursor = showCursor
       ..hasFocus = hasFocus
       ..selection = selection
+      ..ignorePointer = ignorePointer
+      ..onSelectionChanged = onSelectionChanged
       ..selectionColor = selectionColor
       ..onCaretChanged = onCaretChanged
       ..cursorWidth = cursorWidth
@@ -586,7 +607,9 @@ class RenderStelaRichText extends RenderBox
     TextSelection selection,
     Color selectionColor,
     bool hasFocus,
+    this.ignorePointer = false,
     this.onCaretChanged,
+    this.onSelectionChanged,
     Color cursorColor,
     Color backgroundCursorColor,
     ValueNotifier<bool> showCursor,
@@ -610,6 +633,7 @@ class RenderStelaRichText extends RenderBox
         assert(paintCursorAboveText != null),
         assert(selectionHeightStyle != null),
         assert(selectionWidthStyle != null),
+        assert(ignorePointer != null),
         _softWrap = softWrap,
         _overflow = overflow,
         _textPainter = TextPainter(
@@ -651,11 +675,11 @@ class RenderStelaRichText extends RenderBox
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
-    // TODO
-    // _tap = TapGestureRecognizer(debugOwner: this)
-    //   ..onTapDown = _handleTapDown
-    //   ..onTap = _handleTap;
-    // _longPress = LongPressGestureRecognizer(debugOwner: this)..onLongPress = _handleLongPress;
+    _tap = TapGestureRecognizer(debugOwner: this)
+      ..onTapDown = _handleTapDown
+      ..onTap = _handleTap;
+    _longPress = LongPressGestureRecognizer(debugOwner: this)
+      ..onLongPress = _handleLongPress;
     // _offset.addListener(markNeedsPaint);
     _showCursor.addListener(markNeedsPaint);
   }
@@ -663,9 +687,8 @@ class RenderStelaRichText extends RenderBox
   @override
   void detach() {
     _showCursor.removeListener(markNeedsPaint);
-    // TODO
-    // _tap.dispose();
-    // _longPress.dispose();
+    _tap.dispose();
+    _longPress.dispose();
     // _offset.removeListener(markNeedsPaint);
     // if (_listenerAttached)
     //   RawKeyboard.instance.removeListener(_handleKeyEvent);
@@ -1023,22 +1046,261 @@ class RenderStelaRichText extends RenderBox
     return false;
   }
 
-  @override
-  void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
-    assert(debugHandleEvent(event, entry));
-    if (event is! PointerDownEvent) return;
-    _layoutTextWithConstraints(constraints);
-    final Offset offset = entry.localPosition;
-    final TextPosition position = _textPainter.getPositionForOffset(offset);
-    final InlineSpan span = _textPainter.text.getSpanForPosition(position);
-    if (span == null) {
+  // #region Gestures
+  bool ignorePointer;
+  SelectionChangedHandler onSelectionChanged;
+
+  // Call through to onSelectionChanged.
+  void _handleSelectionChange(
+    TextSelection nextSelection,
+    SelectionChangedCause cause,
+  ) {
+    // Changes made by the keyboard can sometimes be "out of band" for listening
+    // components, so always send those events, even if we didn't think it
+    // changed. Also, focusing an empty field is sent as a selection change even
+    // if the selection offset didn't change.
+    final bool focusingEmpty = nextSelection.baseOffset == 0 &&
+        nextSelection.extentOffset == 0 &&
+        !hasFocus;
+    if (nextSelection == selection &&
+        cause != SelectionChangedCause.keyboard &&
+        !focusingEmpty) {
       return;
     }
-    if (span is TextSpan) {
-      final TextSpan textSpan = span;
-      textSpan.recognizer?.addPointer(event as PointerDownEvent);
+    if (onSelectionChanged != null) {
+      onSelectionChanged(nextSelection, this, cause);
     }
   }
+
+  TapGestureRecognizer _tap;
+  LongPressGestureRecognizer _longPress;
+
+  @override
+  void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
+    if (ignorePointer) return;
+    assert(debugHandleEvent(event, entry));
+    if (event is! PointerDownEvent) {
+      return;
+    }
+    if (onSelectionChanged == null) {
+      return;
+    }
+
+    _tap.addPointer(event);
+    _longPress.addPointer(event);
+
+    // _layoutTextWithConstraints(constraints);
+    // final Offset offset = entry.localPosition;
+    // final TextPosition position = _textPainter.getPositionForOffset(offset);
+    // final InlineSpan span = _textPainter.text.getSpanForPosition(position);
+    // if (span == null) {
+    //   return;
+    // }
+    // if (span is TextSpan) {
+    //   final TextSpan textSpan = span;
+    //   textSpan.recognizer?.addPointer(event as PointerDownEvent);
+    // }
+  }
+
+  Offset _lastTapDownPosition;
+
+  /// If [ignorePointer] is false (the default) then this method is called by
+  /// the internal gesture recognizer's [TapGestureRecognizer.onTapDown]
+  /// callback.
+  ///
+  /// When [ignorePointer] is true, an ancestor widget must respond to tap
+  /// down events by calling this method.
+  void handleTapDown(TapDownDetails details) {
+    _lastTapDownPosition = details.globalPosition;
+  }
+
+  void _handleTapDown(TapDownDetails details) {
+    assert(!ignorePointer);
+    handleTapDown(details);
+  }
+
+  /// If [ignorePointer] is false (the default) then this method is called by
+  /// the internal gesture recognizer's [TapGestureRecognizer.onTap]
+  /// callback.
+  ///
+  /// When [ignorePointer] is true, an ancestor widget must respond to tap
+  /// events by calling this method.
+  void handleTap() {
+    selectPosition(cause: SelectionChangedCause.tap);
+  }
+
+  void _handleTap() {
+    assert(!ignorePointer);
+    handleTap();
+  }
+
+  /// If [ignorePointer] is false (the default) then this method is called by
+  /// the internal gesture recognizer's [DoubleTapGestureRecognizer.onDoubleTap]
+  /// callback.
+  ///
+  /// When [ignorePointer] is true, an ancestor widget must respond to double
+  /// tap events by calling this method.
+  void handleDoubleTap() {
+    selectWord(cause: SelectionChangedCause.doubleTap);
+  }
+
+  /// If [ignorePointer] is false (the default) then this method is called by
+  /// the internal gesture recognizer's [LongPressGestureRecognizer.onLongPress]
+  /// callback.
+  ///
+  /// When [ignorePointer] is true, an ancestor widget must respond to long
+  /// press events by calling this method.
+  void handleLongPress() {
+    selectWord(cause: SelectionChangedCause.longPress);
+  }
+
+  void _handleLongPress() {
+    assert(!ignorePointer);
+    handleLongPress();
+  }
+
+  /// Move selection to the location of the last tap down.
+  ///
+  /// {@template flutter.rendering.editable.select}
+  /// This method is mainly used to translate user inputs in global positions
+  /// into a [TextSelection]. When used in conjunction with a [EditableText],
+  /// the selection change is fed back into [TextEditingController.selection].
+  ///
+  /// If you have a [TextEditingController], it's generally easier to
+  /// programmatically manipulate its `value` or `selection` directly.
+  /// {@endtemplate}
+  void selectPosition({@required SelectionChangedCause cause}) {
+    selectPositionAt(from: _lastTapDownPosition, cause: cause);
+  }
+
+  /// Select text between the global positions [from] and [to].
+  void selectPositionAt(
+      {@required Offset from,
+      Offset to,
+      @required SelectionChangedCause cause}) {
+    assert(cause != null);
+    assert(from != null);
+    _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
+    if (onSelectionChanged == null) {
+      return;
+    }
+    final TextPosition fromPosition =
+        _textPainter.getPositionForOffset(globalToLocal(from));
+    final TextPosition toPosition = to == null
+        ? null
+        : _textPainter.getPositionForOffset(globalToLocal(to));
+
+    int baseOffset = fromPosition.offset;
+    int extentOffset = fromPosition.offset;
+    if (toPosition != null) {
+      baseOffset = math.min(fromPosition.offset, toPosition.offset);
+      extentOffset = math.max(fromPosition.offset, toPosition.offset);
+    }
+
+    final TextSelection newSelection = TextSelection(
+      baseOffset: baseOffset,
+      extentOffset: extentOffset,
+      affinity: fromPosition.affinity,
+    );
+    // Call [onSelectionChanged] only when the selection actually changed.
+    _handleSelectionChange(newSelection, cause);
+  }
+
+  /// Select a word around the location of the last tap down.
+  ///
+  /// {@macro flutter.rendering.editable.select}
+  void selectWord({@required SelectionChangedCause cause}) {
+    selectWordsInRange(from: _lastTapDownPosition, cause: cause);
+  }
+
+  /// Selects the set words of a paragraph in a given range of global positions.
+  ///
+  /// The first and last endpoints of the selection will always be at the
+  /// beginning and end of a word respectively.
+  ///
+  /// {@macro flutter.rendering.editable.select}
+  void selectWordsInRange(
+      {@required Offset from,
+      Offset to,
+      @required SelectionChangedCause cause}) {
+    assert(cause != null);
+    assert(from != null);
+    _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
+    if (onSelectionChanged == null) {
+      return;
+    }
+    final TextPosition firstPosition =
+        _textPainter.getPositionForOffset(globalToLocal(from));
+    final TextSelection firstWord = _selectWordAtOffset(firstPosition);
+    final TextSelection lastWord = to == null
+        ? firstWord
+        : _selectWordAtOffset(
+            _textPainter.getPositionForOffset(globalToLocal(to)));
+
+    _handleSelectionChange(
+      TextSelection(
+        baseOffset: firstWord.base.offset,
+        extentOffset: lastWord.extent.offset,
+        affinity: firstWord.affinity,
+      ),
+      cause,
+    );
+  }
+
+  /// Move the selection to the beginning or end of a word.
+  ///
+  /// {@macro flutter.rendering.editable.select}
+  void selectWordEdge({@required SelectionChangedCause cause}) {
+    assert(cause != null);
+    _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
+    assert(_lastTapDownPosition != null);
+    if (onSelectionChanged == null) {
+      return;
+    }
+    final TextPosition position =
+        _textPainter.getPositionForOffset(globalToLocal(_lastTapDownPosition));
+    final TextRange word = _textPainter.getWordBoundary(position);
+    if (position.offset - word.start <= 1) {
+      _handleSelectionChange(
+        TextSelection.collapsed(
+            offset: word.start, affinity: TextAffinity.downstream),
+        cause,
+      );
+    } else {
+      _handleSelectionChange(
+        TextSelection.collapsed(
+            offset: word.end, affinity: TextAffinity.upstream),
+        cause,
+      );
+    }
+  }
+
+  TextSelection _selectWordAtOffset(TextPosition position) {
+    assert(
+        _textLayoutLastMaxWidth == constraints.maxWidth &&
+            _textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    final TextRange word = _textPainter.getWordBoundary(position);
+    // When long-pressing past the end of the text, we want a collapsed cursor.
+    if (position.offset >= word.end)
+      return TextSelection.fromPosition(position);
+
+    return TextSelection(baseOffset: word.start, extentOffset: word.end);
+  }
+
+  TextSelection _selectLineAtOffset(TextPosition position) {
+    assert(
+        _textLayoutLastMaxWidth == constraints.maxWidth &&
+            _textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    final TextRange line = _textPainter.getLineBoundary(position);
+    if (position.offset >= line.end)
+      return TextSelection.fromPosition(position);
+
+    return TextSelection(baseOffset: line.start, extentOffset: line.end);
+  }
+
+  // #endregion
 
   bool _needsClipping = false;
   ui.Shader _overflowShader;

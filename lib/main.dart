@@ -32,10 +32,10 @@ class MyApp extends StatelessWidget {
               focusNode: FocusNode(),
               children: [StelaEditable()],
             ),
-            // TextFormField(
-            //   initialValue:
-            //       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
-            // )
+            TextFormField(
+              initialValue:
+                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
+            )
           ],
         )),
       ),

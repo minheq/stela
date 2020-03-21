@@ -6,6 +6,7 @@ import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/children.dart';
 import 'package:inday/stela_flutter/editor.dart';
 import 'package:inday/stela_flutter/element.dart';
+import 'package:inday/stela_flutter/rich_text.dart' as KRichText;
 
 class StelaEditable extends StatefulWidget {
   StelaEditable({
@@ -22,12 +23,61 @@ class StelaEditable extends StatefulWidget {
 }
 
 class _StelaEditableState extends State<StelaEditable> {
+  // void _requestKeyboard() {
+  //   _editableText?.requestKeyboard();
+  // }
+
+  // bool _shouldShowSelectionHandles(SelectionChangedCause cause) {
+  //   // When the text field is activated by something that doesn't trigger the
+  //   // selection overlay, we shouldn't show the handles either.
+  //   if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
+  //     return false;
+
+  //   if (cause == SelectionChangedCause.keyboard)
+  //     return false;
+
+  //   if (widget.readOnly && _effectiveController.selection.isCollapsed)
+  //     return false;
+
+  //   if (cause == SelectionChangedCause.longPress)
+  //     return true;
+
+  //   if (_effectiveController.text.isNotEmpty)
+  //     return true;
+
+  //   return false;
+  // }
+
+  _handleSelectionChanged(TextSelection selection,
+      KRichText.RenderStelaRichText renderObject, SelectionChangedCause cause) {
+    // final bool willShowSelectionHandles = _shouldShowSelectionHandles(cause);
+    // if (willShowSelectionHandles != _showSelectionHandles) {
+    //   setState(() {
+    //     _showSelectionHandles = willShowSelectionHandles;
+    //   });
+    // }
+
+    // switch (Theme.of(context).platform) {
+    //   case TargetPlatform.iOS:
+    //   case TargetPlatform.macOS:
+    //     if (cause == SelectionChangedCause.longPress) {
+    //       _editableText?.bringIntoView(selection.base);
+    //     }
+    //     return;
+    //   case TargetPlatform.android:
+    //   case TargetPlatform.fuchsia:
+    //   case TargetPlatform.linux:
+    //   case TargetPlatform.windows:
+    //     // Do nothing.
+    // }
+  }
+
   @override
   Widget build(BuildContext context) {
     StelaEditorScope scope = StelaEditorScope.of(context);
 
     return StelaEditableProvider(
-      scope: StelaEditableScope(),
+      scope: StelaEditableScope(onSelectionChanged: _handleSelectionChanged),
       child: StelaChildren(
         node: scope.controller.value,
         elementBuilder: widget.elementBuilder,
@@ -52,12 +102,12 @@ Widget defaultElementBuilder(Stela.Element element, StelaChildren children) {
 
 class StelaEditableScope {
   StelaEditableScope({
-    this.addBox,
-    this.removeBox,
+    this.onSelectionChanged,
+    this.ignorePointer = false,
   });
 
-  void Function(RenderBox box) addBox;
-  void Function(RenderBox box) removeBox;
+  KRichText.SelectionChangedHandler onSelectionChanged;
+  bool ignorePointer;
 
   static StelaEditableScope of(BuildContext context) {
     return context
