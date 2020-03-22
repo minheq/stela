@@ -14,12 +14,14 @@ class StelaElement extends StatefulWidget {
       @required this.node,
       this.elementBuilder,
       this.textBuilder,
+      this.path,
       this.selection})
       : assert(node != null),
         assert(elementBuilder != null),
         assert(textBuilder != null),
         super(key: key);
 
+  final Stela.Path path;
   final Stela.Ancestor node;
   final Widget Function(Stela.Element element, StelaChildren children)
       elementBuilder;
@@ -30,11 +32,16 @@ class StelaElement extends StatefulWidget {
   _StelaElementState createState() => _StelaElementState();
 }
 
+class TextNodeEntry {
+  TextPosition position;
+  int length;
+  Stela.Path path;
+  Stela.Text node;
+}
+
 class _StelaElementState extends State<StelaElement> {
   @override
   Widget build(BuildContext context) {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
-
     bool isRichText =
         widget.node is Stela.Block && widget.node.children.first is Stela.Text;
 
@@ -49,11 +56,33 @@ class _StelaElementState extends State<StelaElement> {
           ));
     }
 
+    return _buildRichText();
+  }
+
+  Widget _buildRichText() {
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    List<TextNodeEntry> textEntries = [];
     List<InlineSpan> children = [];
 
-    for (Stela.Node child in widget.node.children) {
+    TextPosition position = TextPosition(offset: 0);
+
+    for (int i = 0; i < widget.node.children.length; i++) {
+      Stela.Node child = widget.node.children[i];
+
       if (child is Stela.Text) {
-        children.add(widget.textBuilder(child));
+        TextNodeEntry entry = TextNodeEntry();
+        entry.length = child.text.length;
+        entry.position = position;
+        entry.path = widget.path.copyAndAdd(i);
+        entry.node = child;
+        TextSpan textSpan = widget.textBuilder(child);
+        if (textSpan.children != null && textSpan.children.isNotEmpty) {
+          throw Exception('Only single text is allowed. Use Text(text: '
+              ') instead of children.');
+        }
+        children.add(textSpan);
+        textEntries.add(entry);
+        position = TextPosition(offset: position.offset + child.text.length);
       } else {
         throw Exception('Inline not supported');
       }
@@ -72,6 +101,7 @@ class _StelaElementState extends State<StelaElement> {
       text: TextSpan(children: children),
       selection: textSelection,
       showCursor: editableScope.showCursor,
+      textEntries: textEntries,
       editableScope: editableScope,
       cursorColor: editableScope.cursorColor,
       hasFocus: editableScope.hasFocus,

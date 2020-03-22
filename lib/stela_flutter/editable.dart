@@ -303,13 +303,12 @@ class _StelaEditableState extends State<StelaEditable>
   }
 
   void _startOrStopCursorTimerIfNeeded() {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
-    Stela.Editor value = editorScope.controller.value;
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    Stela.Range selection = scope.controller.selection;
 
-    if (_cursorTimer == null && _hasFocus && value.selection.isCollapsed) {
+    if (_cursorTimer == null && _hasFocus && selection.isCollapsed) {
       _startCursorTimer();
-    } else if (_cursorTimer != null &&
-        (!_hasFocus || !value.selection.isCollapsed)) {
+    } else if (_cursorTimer != null && (!_hasFocus || !selection.isCollapsed)) {
       _stopCursorTimer();
     }
   }
@@ -380,16 +379,18 @@ class _StelaEditableState extends State<StelaEditable>
     }
   }
 
-  _handleSelectionChange(
-      Stela.Node node, TextSelection selection, SelectionChangedCause cause) {
+  _handleSelectionChange(Stela.NodeEntry entry, TextSelection selection,
+      SelectionChangedCause cause) {
+    StelaEditorScope scope = StelaEditorScope.of(context);
+
     // We return early if the selection is not valid. This can happen when the
     // text of [EditableText] is updated at the same time as the selection is
     // changed by a gesture event.
     // if (!widget.controller.isSelectionWithinTextBounds(selection)) {
     //   return;
     // }
-
-    // widget.controller.selection = selection;
+    Stela.Point p = Stela.Point(entry.path, selection.baseOffset);
+    scope.controller.selection = Stela.Range(p, p);
 
     // // This will show the keyboard for all selection changes on the
     // // EditableWidget, not just changes triggered by user gestures.
@@ -494,7 +495,7 @@ class _StelaEditableState extends State<StelaEditable>
           hasFocus: _hasFocus,
           cursorRadius: widget.cursorRadius),
       child: StelaChildren(
-        node: scope.controller.value,
+        node: scope.controller.editor,
         elementBuilder: widget.elementBuilder,
         textBuilder: widget.textBuilder,
         selection: scope.controller.value.selection,
@@ -585,9 +586,8 @@ class StelaEditableScope {
   void Function() onDragSelectionStart;
   void Function() onDragSelectionUpdate;
   void Function() onDragSelectionEnd;
-  void Function(
-          Stela.Node node, TextSelection selection, SelectionChangedCause cause)
-      onSelectionChange;
+  void Function(Stela.NodeEntry entry, TextSelection selection,
+      SelectionChangedCause cause) onSelectionChange;
   bool ignorePointer;
 
   FocusNode focusNode;

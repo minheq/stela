@@ -33,7 +33,7 @@ class _StelaChildrenState extends State<StelaChildren> {
   Widget build(BuildContext context) {
     StelaEditorScope scope = StelaEditorScope.of(context);
     Stela.Ancestor node = widget.node;
-    Stela.Editor editor = scope.controller.value;
+    Stela.Editor editor = scope.controller.editor;
     Stela.Range selection = scope.controller.selection;
     Stela.Path path = scope.findPath(node);
     bool isLeafBlock = node is Stela.Element &&
@@ -60,6 +60,7 @@ class _StelaChildrenState extends State<StelaChildren> {
           elementBuilder: widget.elementBuilder,
           textBuilder: widget.textBuilder,
           selection: subSelection,
+          path: p,
         ));
       } else {
         // Text nodes are handled within [StelaElement] instead of here.

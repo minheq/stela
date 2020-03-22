@@ -8,21 +8,58 @@ import 'package:inday/stela/stela.dart' as Stela;
 Map<Stela.Node, int> nodeToIndex = Map();
 Map<Stela.Node, Stela.Ancestor> nodeToParent = Map();
 
-class EditorEditingValue extends Stela.Editor {
+class EditorEditingValue {
   EditorEditingValue(
       {List<Stela.Node> children,
       Stela.Range selection,
       List<Stela.Operation> operations,
       Map<String, dynamic> marks,
       Map<String, dynamic> props})
-      : super(
+      : _editor = Stela.Editor(
             children: children,
             selection: selection,
             operations: operations,
             marks: marks,
             props: props);
 
+  Stela.Editor _editor;
+
+  Stela.Editor get editor => _editor;
+  List<Stela.Node> get children => _editor.children;
+  Stela.Range get selection => _editor.selection;
+  List<Stela.Operation> get operations => _editor.operations;
+  Map<String, dynamic> get marks => _editor.marks;
+  Map<String, dynamic> get props => _editor.props;
+
   static EditorEditingValue empty = EditorEditingValue(children: []);
+
+  factory EditorEditingValue.fromJSON(Map<String, dynamic> encoded) {
+    return EditorEditingValue(
+      children: encoded['children'] as List<Stela.Node>,
+    );
+  }
+
+  /// Returns a representation of this object as a JSON object.
+  Map<String, dynamic> toJSON() {
+    return <String, dynamic>{
+      'children': _editor.children,
+    };
+  }
+
+  EditorEditingValue copyWith(
+      {List<Stela.Node> children,
+      Stela.Range selection,
+      List<Stela.Operation> operations,
+      Map<String, dynamic> marks,
+      Map<String, dynamic> props}) {
+    return EditorEditingValue(
+      props: props ?? _editor.props,
+      children: children ?? _editor.children,
+      selection: selection ?? _editor.selection,
+      operations: operations ?? _editor.operations,
+      marks: marks ?? _editor.marks,
+    );
+  }
 }
 
 class EditorEditingController extends ValueNotifier<EditorEditingValue> {
@@ -43,6 +80,7 @@ class EditorEditingController extends ValueNotifier<EditorEditingValue> {
                 props: value.props));
 
   Stela.Range get selection => value.selection;
+  Stela.Editor get editor => value.editor;
 
   set selection(Stela.Range newSelection) {
     if (!isSelectionWithinTextBounds(newSelection)) {
@@ -82,6 +120,31 @@ class StelaEditor extends StatefulWidget {
 }
 
 class StelaEditorState extends State<StelaEditor> {
+  @override
+  void initState() {
+    super.initState();
+    widget.controller.addListener(_didChangeTextEditingValue);
+  }
+
+  @override
+  void didUpdateWidget(StelaEditor oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller.removeListener(_didChangeTextEditingValue);
+      widget.controller.addListener(_didChangeTextEditingValue);
+    }
+  }
+
+  @override
+  void dispose() {
+    widget.controller.removeListener(_didChangeTextEditingValue);
+    super.dispose();
+  }
+
+  void _didChangeTextEditingValue() {
+    setState(() {/* We use widget.controller.value in build(). */});
+  }
+
   // #region Stela functions
   Stela.Path findPath(Stela.Node node) {
     Stela.Path path = Stela.Path([]);

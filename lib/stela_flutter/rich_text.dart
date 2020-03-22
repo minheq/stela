@@ -9,6 +9,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/editable.dart';
+import 'package:inday/stela_flutter/element.dart';
 
 const double _kCaretGap = 1.0; // pixels
 const double _kCaretHeightOffset = 2.0; // pixels
@@ -50,6 +51,7 @@ class StelaRichText extends StatefulWidget {
     this.showCursor,
     this.cursorWidth = 2.0,
     this.cursorRadius,
+    this.textEntries,
     this.selectionHeightStyle = ui.BoxHeightStyle.tight,
     this.selectionWidthStyle = ui.BoxWidthStyle.tight,
     this.paintCursorAboveText = false,
@@ -73,6 +75,7 @@ class StelaRichText extends StatefulWidget {
   final CaretChangedHandler onCaretChanged;
   final double cursorWidth;
   final Radius cursorRadius;
+  final List<TextNodeEntry> textEntries;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
   final StelaEditableScope editableScope;
@@ -193,7 +196,17 @@ class _StelaRichTextState extends State<StelaRichText> {
       editableScope.onSingleTapUp(widget.node, details);
 
       TextSelection selection = renderRichText.selectWordEdge(cause: cause);
-      editableScope.onSelectionChange(widget.node, selection, cause);
+      TextNodeEntry selected;
+
+      for (TextNodeEntry textEntry in widget.textEntries) {
+        if (selection.baseOffset >= textEntry.position.offset) {
+          selected = textEntry;
+          break;
+        }
+      }
+
+      editableScope.onSelectionChange(
+          Stela.NodeEntry(selected.node, selected.path), selection, cause);
     }
   }
 
@@ -609,7 +622,6 @@ class RenderStelaRichText extends RenderBox
     bool hasFocus,
     this.ignorePointer = false,
     this.onCaretChanged,
-    this.onSelectionChanged,
     Color cursorColor,
     Color backgroundCursorColor,
     ValueNotifier<bool> showCursor,
@@ -1048,7 +1060,6 @@ class RenderStelaRichText extends RenderBox
 
   // #region Gestures
   bool ignorePointer;
-  SelectionChangedHandler onSelectionChanged;
 
   TapGestureRecognizer _tap;
   LongPressGestureRecognizer _longPress;
@@ -1058,9 +1069,6 @@ class RenderStelaRichText extends RenderBox
     if (ignorePointer) return;
     assert(debugHandleEvent(event, entry));
     if (event is! PointerDownEvent) {
-      return;
-    }
-    if (onSelectionChanged == null) {
       return;
     }
 
@@ -1200,9 +1208,7 @@ class RenderStelaRichText extends RenderBox
     assert(cause != null);
     assert(from != null);
     _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
-    if (onSelectionChanged == null) {
-      return null;
-    }
+
     final TextPosition firstPosition =
         _textPainter.getPositionForOffset(globalToLocal(from));
     final TextSelection firstWord = _selectWordAtOffset(firstPosition);
