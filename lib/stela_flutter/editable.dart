@@ -87,11 +87,17 @@ class _StelaEditableState extends State<StelaEditable>
         AnimationController(vsync: this, duration: _fadeDuration);
     _cursorBlinkOpacityController.addListener(_onCursorColorTick);
     _cursorVisibilityNotifier.value = widget.showCursor;
-    // #endregion Cursor
+    // #endregion
 
-    // widget.controller.addListener(_didChangeTextEditingValue);
-    // _focusAttachment = widget.focusNode.attach(context);
+    // #region Value
+    // scope.controller.addListener(_didChangeTextEditingValue);
+    // #endregion
+
+    // #region Focus
+    _focusAttachment = widget.focusNode.attach(context);
     widget.focusNode.addListener(_handleFocusChanged);
+    // #endregion
+
     // _scrollController = widget.scrollController ?? ScrollController();
     // _scrollController.addListener(() { _selectionOverlay?.updateForScroll(); });
     // _floatingCursorResetController = AnimationController(vsync: this);
@@ -114,9 +120,9 @@ class _StelaEditableState extends State<StelaEditable>
   @override
   void didUpdateWidget(StelaEditable oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // if (widget.controller != oldWidget.controller) {
+    // if (scope.controller != oldWidget.controller) {
     //   oldWidget.controller.removeListener(_didChangeTextEditingValue);
-    //   widget.controller.addListener(_didChangeTextEditingValue);
+    //   scope.controller.addListener(_didChangeTextEditingValue);
     //   _updateRemoteEditingValueIfNeeded();
     // }
     // if (widget.controller.selection != oldWidget.controller.selection) {
@@ -166,7 +172,7 @@ class _StelaEditableState extends State<StelaEditable>
     assert(_cursorTimer == null);
     // _selectionOverlay?.dispose();
     // _selectionOverlay = null;
-    // _focusAttachment.detach();
+    _focusAttachment.detach();
     widget.focusNode.removeListener(_handleFocusChanged);
     super.dispose();
   }
@@ -198,9 +204,40 @@ class _StelaEditableState extends State<StelaEditable>
   // #endregion
 
   // #region Focus
+  FocusAttachment _focusAttachment;
   bool _didAutoFocus = false;
 
   bool get _hasFocus => widget.focusNode.hasFocus;
+
+  void _handleSingleTapUp(Stela.Node node, TapUpDetails details) {
+    requestKeyboard();
+    // editableText.hideToolbar();
+    // if (delegate.selectionEnabled) {
+    //   switch (Theme.of(_state.context).platform) {
+    //     case TargetPlatform.iOS:
+    //     case TargetPlatform.macOS:
+    //       renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
+    //       break;
+    //     case TargetPlatform.android:
+    //     case TargetPlatform.fuchsia:
+    //     case TargetPlatform.linux:
+    //     case TargetPlatform.windows:
+    //       renderEditable.selectPosition(cause: SelectionChangedCause.tap);
+    //       break;
+    //   }
+    // }
+    // _state._requestKeyboard();
+    // if (_state.widget.onTap != null)
+    //   _state.widget.onTap();
+  }
+
+  void requestKeyboard() {
+    if (widget.focusNode.hasFocus) {
+      // _openInputConnection();
+    } else {
+      widget.focusNode.requestFocus();
+    }
+  }
 
   void _handleFocusChanged() {
     // _openOrCloseInputConnectionIfNeeded();
@@ -349,36 +386,6 @@ class _StelaEditableState extends State<StelaEditable>
   //   return false;
   // }
 
-  _handleSingleTapUp(Stela.Node node, TapUpDetails details) {
-    requestKeyboard();
-    // editableText.hideToolbar();
-    // if (delegate.selectionEnabled) {
-    //   switch (Theme.of(_state.context).platform) {
-    //     case TargetPlatform.iOS:
-    //     case TargetPlatform.macOS:
-    //       renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
-    //       break;
-    //     case TargetPlatform.android:
-    //     case TargetPlatform.fuchsia:
-    //     case TargetPlatform.linux:
-    //     case TargetPlatform.windows:
-    //       renderEditable.selectPosition(cause: SelectionChangedCause.tap);
-    //       break;
-    //   }
-    // }
-    // _state._requestKeyboard();
-    // if (_state.widget.onTap != null)
-    //   _state.widget.onTap();
-  }
-
-  void requestKeyboard() {
-    if (widget.focusNode.hasFocus) {
-      // _openInputConnection();
-    } else {
-      widget.focusNode.requestFocus();
-    }
-  }
-
   _handleSelectionChange(Stela.NodeEntry entry, TextSelection selection,
       SelectionChangedCause cause) {
     StelaEditorScope scope = StelaEditorScope.of(context);
@@ -443,6 +450,7 @@ class _StelaEditableState extends State<StelaEditable>
 
   @override
   Widget build(BuildContext context) {
+    _focusAttachment.reparent();
     super.build(context); // See AutomaticKeepAliveClientMixin.
     StelaEditorScope scope = StelaEditorScope.of(context);
     ThemeData themeData = Theme.of(context);
