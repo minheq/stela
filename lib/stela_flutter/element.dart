@@ -33,7 +33,6 @@ class StelaElement extends StatefulWidget {
 class _StelaElementState extends State<StelaElement> {
   @override
   Widget build(BuildContext context) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
     StelaEditableScope editableScope = StelaEditableScope.of(context);
 
     bool isRichText =
@@ -72,11 +71,11 @@ class _StelaElementState extends State<StelaElement> {
       node: widget.node,
       text: TextSpan(children: children),
       selection: textSelection,
-      showCursor: scope.showCursor,
+      showCursor: editableScope.showCursor,
       editableScope: editableScope,
-      cursorColor: scope.cursorColor,
-      hasFocus: scope.hasFocus,
-      cursorRadius: scope.cursorRadius,
+      cursorColor: editableScope.cursorColor,
+      hasFocus: editableScope.hasFocus,
+      cursorRadius: editableScope.cursorRadius,
     );
   }
 }

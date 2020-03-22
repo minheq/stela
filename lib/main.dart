@@ -25,12 +25,15 @@ class MyApp extends StatelessWidget {
           children: <Widget>[
             StelaEditor(
               controller: EditorEditingController.fromEditor(editor),
-              cursorColor: themeData.cursorColor,
-              showCursor: true,
-              backgroundCursorColor: CupertinoColors.inactiveGray,
-              // cursorOpacityAnimates: true,
-              focusNode: FocusNode(),
-              children: [StelaEditable()],
+              children: [
+                StelaEditable(
+                  cursorColor: themeData.cursorColor,
+                  showCursor: true,
+                  backgroundCursorColor: CupertinoColors.inactiveGray,
+                  // cursorOpacityAnimates: true,
+                  focusNode: FocusNode(),
+                )
+              ],
             ),
             TextFormField(
               initialValue:

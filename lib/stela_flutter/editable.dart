@@ -1,3 +1,7 @@
+import 'dart:async';
+import 'dart:ui' as ui;
+
+import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -6,13 +10,61 @@ import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/children.dart';
 import 'package:inday/stela_flutter/editor.dart';
 import 'package:inday/stela_flutter/element.dart';
+import 'package:inday/stela_flutter/children.dart';
+import 'package:flutter/gestures.dart';
+import 'package:flutter/scheduler.dart';
+import 'package:inday/stela_flutter/element.dart';
+import 'package:inday/stela_flutter/selection.dart';
 import 'package:inday/stela_flutter/rich_text.dart' as KRichText;
+
+// The time it takes for the cursor to fade from fully opaque to fully
+// transparent and vice versa. A full cursor blink, from transparent to opaque
+// to transparent, is twice this duration.
+const Duration _kCursorBlinkHalfPeriod = Duration(milliseconds: 500);
+
+// The time the cursor is static in opacity before animating to become
+// transparent.
+const Duration _kCursorBlinkWaitForStart = Duration(milliseconds: 150);
 
 class StelaEditable extends StatefulWidget {
   StelaEditable({
+    Key key,
+    @required this.focusNode,
+    this.readOnly = false,
+    this.autofocus = false,
     this.elementBuilder = defaultElementBuilder,
     this.textBuilder = defaultTextBuilder,
-  });
+    this.enableInteractiveSelection = true,
+    this.cursorOpacityAnimates = false,
+    bool showCursor,
+    this.cursorOffset,
+    @required this.cursorColor,
+    @required this.backgroundCursorColor,
+    this.cursorWidth = 2.0,
+    this.cursorRadius,
+    this.paintCursorAboveText = false,
+  })  : assert(focusNode != null),
+        assert(autofocus != null),
+        assert(cursorColor != null),
+        assert(cursorOpacityAnimates != null),
+        assert(paintCursorAboveText != null),
+        assert(backgroundCursorColor != null),
+        showCursor = showCursor ?? !readOnly,
+        super(key: key);
+
+  final bool showCursor;
+  final Color cursorColor;
+  final Color backgroundCursorColor;
+  final double cursorWidth;
+  final Radius cursorRadius;
+  final bool autofocus;
+  final bool cursorOpacityAnimates;
+  final bool enableInteractiveSelection;
+  static bool debugDeterministicCursor = true;
+  final Offset cursorOffset;
+  final bool paintCursorAboveText;
+  final FocusNode focusNode;
+  final bool readOnly;
 
   final Widget Function(Stela.Element element, StelaChildren children)
       elementBuilder;
@@ -22,7 +74,257 @@ class StelaEditable extends StatefulWidget {
   _StelaEditableState createState() => _StelaEditableState();
 }
 
-class _StelaEditableState extends State<StelaEditable> {
+class _StelaEditableState extends State<StelaEditable>
+    with
+        AutomaticKeepAliveClientMixin<StelaEditable>,
+        TickerProviderStateMixin<StelaEditable> {
+  // #region State lifecycle
+  @override
+  void initState() {
+    super.initState();
+    // #region Cursor
+    _cursorBlinkOpacityController =
+        AnimationController(vsync: this, duration: _fadeDuration);
+    _cursorBlinkOpacityController.addListener(_onCursorColorTick);
+    _cursorVisibilityNotifier.value = widget.showCursor;
+    // #endregion Cursor
+
+    // widget.controller.addListener(_didChangeTextEditingValue);
+    // _focusAttachment = widget.focusNode.attach(context);
+    widget.focusNode.addListener(_handleFocusChanged);
+    // _scrollController = widget.scrollController ?? ScrollController();
+    // _scrollController.addListener(() { _selectionOverlay?.updateForScroll(); });
+    // _floatingCursorResetController = AnimationController(vsync: this);
+    // _floatingCursorResetController.addListener(_onFloatingCursorResetTick);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    if (!_didAutoFocus && widget.autofocus) {
+      _didAutoFocus = true;
+      SchedulerBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          FocusScope.of(context).autofocus(widget.focusNode);
+        }
+      });
+    }
+  }
+
+  @override
+  void didUpdateWidget(StelaEditable oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    // if (widget.controller != oldWidget.controller) {
+    //   oldWidget.controller.removeListener(_didChangeTextEditingValue);
+    //   widget.controller.addListener(_didChangeTextEditingValue);
+    //   _updateRemoteEditingValueIfNeeded();
+    // }
+    // if (widget.controller.selection != oldWidget.controller.selection) {
+    //   _selectionOverlay?.update(_value);
+    // }
+    // _selectionOverlay?.handlesVisible = widget.showSelectionHandles;
+    if (widget.focusNode != oldWidget.focusNode) {
+      oldWidget.focusNode.removeListener(_handleFocusChanged);
+      // _focusAttachment?.detach();
+      // _focusAttachment = widget.focusNode.attach(context);
+      widget.focusNode.addListener(_handleFocusChanged);
+      updateKeepAlive();
+    }
+    // if (widget.readOnly) {
+    //   _closeInputConnectionIfNeeded();
+    // } else {
+    //   if (oldWidget.readOnly && _hasFocus)
+    //     _openInputConnection();
+    // }
+    // if (widget.style != oldWidget.style) {
+    //   final TextStyle style = widget.style;
+    //   // The _textInputConnection will pick up the new style when it attaches in
+    //   // _openInputConnection.
+    //   if (_textInputConnection != null && _textInputConnection.attached) {
+    //     _textInputConnection.setStyle(
+    //       fontFamily: style.fontFamily,
+    //       fontSize: style.fontSize,
+    //       fontWeight: style.fontWeight,
+    //       textDirection: _textDirection,
+    //       textAlign: widget.textAlign,
+    //     );
+    //   }
+    // }
+  }
+
+  @override
+  void dispose() {
+    // #region Cursor
+    _cursorBlinkOpacityController.removeListener(_onCursorColorTick);
+    // #endregion
+
+    // widget.controller.removeListener(_didChangeTextEditingValue);
+    // _floatingCursorResetController.removeListener(_onFloatingCursorResetTick);
+    // _closeInputConnectionIfNeeded();
+    // assert(!_hasInputConnection);
+    // _stopCursorTimer();
+    assert(_cursorTimer == null);
+    // _selectionOverlay?.dispose();
+    // _selectionOverlay = null;
+    // _focusAttachment.detach();
+    widget.focusNode.removeListener(_handleFocusChanged);
+    super.dispose();
+  }
+
+  // #endregion
+
+  // #region AutomaticKeepAliveClientMixin
+  @override
+  bool get wantKeepAlive => _hasFocus;
+  // #endregion
+
+  @override
+  void hideToolbar() {
+    // TODO
+  }
+
+  @override
+  bool get cutEnabled => true;
+
+  @override
+  bool get copyEnabled => true;
+
+  @override
+  bool get pasteEnabled => true;
+
+  @override
+  bool get selectAllEnabled => true;
+
+  // #endregion
+
+  // #region Focus
+  bool _didAutoFocus = false;
+
+  bool get _hasFocus => widget.focusNode.hasFocus;
+
+  void _handleFocusChanged() {
+    // _openOrCloseInputConnectionIfNeeded();
+    _startOrStopCursorTimerIfNeeded();
+    // _updateOrDisposeSelectionOverlayIfNeeded();
+    if (_hasFocus) {
+      // Listen for changing viewInsets, which indicates keyboard showing up.
+      // WidgetsBinding.instance.addObserver(this);
+      // _lastBottomViewInset = WidgetsBinding.instance.window.viewInsets.bottom;
+      // _showCaretOnScreen();
+      // if (!_value.selection.isValid) {
+      //   // Place cursor at the end if the selection is invalid when we receive focus.
+      //   _handleSelectionChanged(TextSelection.collapsed(offset: _value.text.length), renderEditable, null);
+      // }
+    } else {
+      // WidgetsBinding.instance.removeObserver(this);
+      // Clear the selection and composition state if this widget lost focus.
+      // _value = TextEditingValue(text: _value.text);
+    }
+    updateKeepAlive();
+  }
+  // #endregion
+
+  // #region Cursor
+  Timer _cursorTimer;
+  bool _targetCursorVisibility = false;
+  AnimationController _cursorBlinkOpacityController;
+  final ValueNotifier<bool> _cursorVisibilityNotifier =
+      ValueNotifier<bool>(true);
+
+  // This value is an eyeball estimation of the time it takes for the iOS cursor
+  // to ease in and out.
+  static const Duration _fadeDuration = Duration(milliseconds: 250);
+
+  Color get _cursorColor =>
+      widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
+
+  /// Whether the blinking cursor is actually visible at this precise moment
+  /// (it's hidden half the time, since it blinks).
+  @visibleForTesting
+  bool get cursorCurrentlyVisible => _cursorBlinkOpacityController.value > 0;
+
+  /// The cursor blink interval (the amount of time the cursor is in the "on"
+  /// state or the "off" state). A complete cursor blink period is twice this
+  /// value (half on, half off).
+  @visibleForTesting
+  Duration get cursorBlinkInterval => _kCursorBlinkHalfPeriod;
+
+  void _onCursorColorTick() {
+    // renderEditable.cursorColor = widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
+    _cursorVisibilityNotifier.value =
+        widget.showCursor && _cursorBlinkOpacityController.value > 0;
+  }
+
+  void _cursorTick(Timer timer) {
+    _targetCursorVisibility = !_targetCursorVisibility;
+    final double targetOpacity = _targetCursorVisibility ? 1.0 : 0.0;
+
+    if (widget.cursorOpacityAnimates) {
+      _cursorBlinkOpacityController.animateTo(targetOpacity,
+          curve: Curves.easeOut);
+    } else {
+      _cursorBlinkOpacityController.value = targetOpacity;
+    }
+  }
+
+  void _cursorWaitForStart(Timer timer) {
+    assert(_kCursorBlinkHalfPeriod > _fadeDuration);
+    _cursorTimer?.cancel();
+    _cursorTimer = Timer.periodic(_kCursorBlinkHalfPeriod, _cursorTick);
+  }
+
+  void _startCursorTimer() {
+    _targetCursorVisibility = true;
+    _cursorBlinkOpacityController.value = 1.0;
+    if (EditableText.debugDeterministicCursor) {
+      return;
+    }
+
+    if (widget.cursorOpacityAnimates) {
+      _cursorTimer =
+          Timer.periodic(_kCursorBlinkWaitForStart, _cursorWaitForStart);
+    } else {
+      _cursorTimer = Timer.periodic(_kCursorBlinkHalfPeriod, _cursorTick);
+    }
+  }
+
+  void _stopCursorTimer({bool resetCharTicks = true}) {
+    _cursorTimer?.cancel();
+    _cursorTimer = null;
+    _targetCursorVisibility = false;
+    _cursorBlinkOpacityController.value = 0.0;
+    if (EditableText.debugDeterministicCursor) {
+      return;
+    }
+    if (widget.cursorOpacityAnimates) {
+      _cursorBlinkOpacityController.stop();
+      _cursorBlinkOpacityController.value = 0.0;
+    }
+  }
+
+  void _startOrStopCursorTimerIfNeeded() {
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+    Stela.Editor value = editorScope.controller.value;
+
+    if (_cursorTimer == null && _hasFocus && value.selection.isCollapsed) {
+      _startCursorTimer();
+    } else if (_cursorTimer != null &&
+        (!_hasFocus || !value.selection.isCollapsed)) {
+      _stopCursorTimer();
+    }
+  }
+  // #endregion
+
+  // #region Selection
+  /// {@macro flutter.rendering.editable.selectionEnabled}
+  bool get selectionEnabled => widget.enableInteractiveSelection;
+  // #endregion
+
+  // #region Gestures
+  /// {@macro flutter.rendering.editable.selectionEnabled}
+  bool forcePressEnabled;
+  // #endregion
+
   // void _requestKeyboard() {
   //   _editableText?.requestKeyboard();
   // }
@@ -49,8 +351,6 @@ class _StelaEditableState extends State<StelaEditable> {
   // }
 
   _handleSingleTapUp(Stela.Node node, TapUpDetails details) {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
-
     requestKeyboard();
     // editableText.hideToolbar();
     // if (delegate.selectionEnabled) {
@@ -73,11 +373,10 @@ class _StelaEditableState extends State<StelaEditable> {
   }
 
   void requestKeyboard() {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
-    if (editorScope.hasFocus) {
+    if (widget.focusNode.hasFocus) {
       // _openInputConnection();
     } else {
-      editorScope.focusNode.requestFocus();
+      widget.focusNode.requestFocus();
     }
   }
 
@@ -143,12 +442,57 @@ class _StelaEditableState extends State<StelaEditable> {
 
   @override
   Widget build(BuildContext context) {
+    super.build(context); // See AutomaticKeepAliveClientMixin.
     StelaEditorScope scope = StelaEditorScope.of(context);
+    ThemeData themeData = Theme.of(context);
+
+    TextSelectionControls textSelectionControls;
+    bool paintCursorAboveText;
+    bool cursorOpacityAnimates;
+    Offset cursorOffset;
+    Color cursorColor = widget.cursorColor;
+    Radius cursorRadius = widget.cursorRadius;
+
+    switch (themeData.platform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        forcePressEnabled = true;
+        textSelectionControls = cupertinoTextSelectionControls;
+        paintCursorAboveText = true;
+        cursorOpacityAnimates = true;
+        cursorColor ??= CupertinoTheme.of(context).primaryColor;
+        cursorRadius ??= const Radius.circular(2.0);
+        cursorOffset = Offset(
+            iOSHorizontalOffset / MediaQuery.of(context).devicePixelRatio, 0);
+        break;
+
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        forcePressEnabled = false;
+        textSelectionControls = materialTextSelectionControls;
+        paintCursorAboveText = false;
+        cursorOpacityAnimates = false;
+        cursorColor ??= themeData.cursorColor;
+        break;
+    }
 
     return StelaEditableProvider(
       scope: StelaEditableScope(
           onSelectionChange: _handleSelectionChange,
-          onSingleTapUp: _handleSingleTapUp),
+          onSingleTapUp: _handleSingleTapUp,
+          focusNode: widget.focusNode,
+          showCursor: StelaEditable.debugDeterministicCursor
+              ? ValueNotifier<bool>(widget.showCursor)
+              : _cursorVisibilityNotifier,
+          cursorColor: _cursorColor,
+          backgroundCursorColor: widget.backgroundCursorColor,
+          forcePressEnabled: forcePressEnabled,
+          selectionEnabled: selectionEnabled,
+          cursorWidth: widget.cursorWidth,
+          hasFocus: _hasFocus,
+          cursorRadius: widget.cursorRadius),
       child: StelaChildren(
         node: scope.controller.value,
         elementBuilder: widget.elementBuilder,
@@ -218,6 +562,15 @@ class StelaEditableScope {
     this.onDragSelectionEnd,
     this.onSelectionChange,
     this.ignorePointer = false,
+    @required this.focusNode,
+    this.showCursor,
+    this.cursorColor,
+    this.hasFocus,
+    this.backgroundCursorColor,
+    this.forcePressEnabled,
+    this.selectionEnabled,
+    this.cursorWidth,
+    this.cursorRadius,
   });
 
   void Function() onTapDown;
@@ -236,6 +589,16 @@ class StelaEditableScope {
           Stela.Node node, TextSelection selection, SelectionChangedCause cause)
       onSelectionChange;
   bool ignorePointer;
+
+  FocusNode focusNode;
+  ValueNotifier<bool> showCursor;
+  Color cursorColor;
+  bool hasFocus;
+  bool forcePressEnabled;
+  bool selectionEnabled;
+  Color backgroundCursorColor;
+  double cursorWidth;
+  Radius cursorRadius;
 
   static StelaEditableScope of(BuildContext context) {
     return context

@@ -9,7 +9,6 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/editable.dart';
-import 'package:inday/stela_flutter/editor.dart';
 
 const double _kCaretGap = 1.0; // pixels
 const double _kCaretHeightOffset = 2.0; // pixels
@@ -143,10 +142,10 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    callback.
   @protected
   void onForcePressStart(ForcePressDetails details) {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
-    assert(editorScope.forcePressEnabled);
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    assert(editableScope.forcePressEnabled);
     _shouldShowSelectionToolbar = true;
-    if (editorScope.selectionEnabled) {
+    if (editableScope.selectionEnabled) {
       // renderEditable.selectWordsInRange(
       //   from: details.globalPosition,
       //   cause: SelectionChangedCause.forcePress,
@@ -167,8 +166,8 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    callback.
   @protected
   void onForcePressEnd(ForcePressDetails details) {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
-    assert(editorScope.forcePressEnabled);
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    assert(editableScope.forcePressEnabled);
     // renderEditable.selectWordsInRange(
     //   from: details.globalPosition,
     //   cause: SelectionChangedCause.forcePress,
@@ -188,10 +187,9 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    this callback.
   @protected
   void onSingleTapUp(TapUpDetails details) {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
     StelaEditableScope editableScope = StelaEditableScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.tap;
-    if (editorScope.selectionEnabled) {
+    if (editableScope.selectionEnabled) {
       editableScope.onSingleTapUp(widget.node, details);
 
       TextSelection selection = renderRichText.selectWordEdge(cause: cause);
@@ -223,8 +221,8 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    this callback.
   @protected
   void onSingleLongTapStart(LongPressStartDetails details) {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
-    if (editorScope.selectionEnabled) {
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    if (editableScope.selectionEnabled) {
       // renderEditable.selectPositionAt(
       //   from: details.globalPosition,
       //   cause: SelectionChangedCause.longPress,
@@ -243,8 +241,8 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    triggers this callback.
   @protected
   void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
-    if (editorScope.selectionEnabled) {
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    if (editableScope.selectionEnabled) {
       // renderEditable.selectPositionAt(
       //   from: details.globalPosition,
       //   cause: SelectionChangedCause.longPress,
@@ -278,7 +276,6 @@ class _StelaRichTextState extends State<StelaRichText> {
   ///    callback.
   @protected
   void onDoubleTapDown(TapDownDetails details) {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
     // if (scope.selectionEnabled) {
     //   renderEditable.selectWord(cause: SelectionChangedCause.tap);
     //   if (shouldShowSelectionToolbar)
@@ -332,15 +329,14 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @override
   Widget build(BuildContext context) {
-    StelaEditorScope editorScope = StelaEditorScope.of(context);
     StelaEditableScope editableScope = StelaEditableScope.of(context);
 
     return TextSelectionGestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapDown: onTapDown,
       onForcePressStart:
-          editorScope.forcePressEnabled ? onForcePressStart : null,
-      onForcePressEnd: editorScope.forcePressEnabled ? onForcePressEnd : null,
+          editableScope.forcePressEnabled ? onForcePressStart : null,
+      onForcePressEnd: editableScope.forcePressEnabled ? onForcePressEnd : null,
       onSingleTapUp: onSingleTapUp,
       onSingleTapCancel: onSingleTapCancel,
       onSingleLongTapStart: onSingleLongTapStart,
