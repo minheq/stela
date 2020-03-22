@@ -12,6 +12,18 @@ abstract class Node {
 
   /// Custom properties that can extend the `Node` behavior
   Map<String, dynamic> props;
+
+  /// Get the node at a specific path, asserting that it's an ancestor node.
+  static Ancestor ancestor(Node root, Path path) {
+    Ancestor node = NodeUtils.get(root, path);
+
+    if (node is Text) {
+      throw Exception(
+          "Cannot get the ancestor node at path [${path.toString()}] because it refers to a text node instead: $node");
+    }
+
+    return node;
+  }
 }
 
 /// The `Descendant` represents nodes that are descendants in the

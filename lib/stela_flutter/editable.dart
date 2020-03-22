@@ -48,8 +48,77 @@ class _StelaEditableState extends State<StelaEditable> {
   //   return false;
   // }
 
-  _handleSelectionChanged(TextSelection selection,
-      KRichText.RenderStelaRichText renderObject, SelectionChangedCause cause) {
+  _handleSingleTapUp(Stela.Node node, TapUpDetails details) {
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+
+    requestKeyboard();
+    // editableText.hideToolbar();
+    // if (delegate.selectionEnabled) {
+    //   switch (Theme.of(_state.context).platform) {
+    //     case TargetPlatform.iOS:
+    //     case TargetPlatform.macOS:
+    //       renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
+    //       break;
+    //     case TargetPlatform.android:
+    //     case TargetPlatform.fuchsia:
+    //     case TargetPlatform.linux:
+    //     case TargetPlatform.windows:
+    //       renderEditable.selectPosition(cause: SelectionChangedCause.tap);
+    //       break;
+    //   }
+    // }
+    // _state._requestKeyboard();
+    // if (_state.widget.onTap != null)
+    //   _state.widget.onTap();
+  }
+
+  void requestKeyboard() {
+    StelaEditorScope editorScope = StelaEditorScope.of(context);
+    if (editorScope.hasFocus) {
+      // _openInputConnection();
+    } else {
+      editorScope.focusNode.requestFocus();
+    }
+  }
+
+  _handleSelectionChange(
+      Stela.Node node, TextSelection selection, SelectionChangedCause cause) {
+    // We return early if the selection is not valid. This can happen when the
+    // text of [EditableText] is updated at the same time as the selection is
+    // changed by a gesture event.
+    // if (!widget.controller.isSelectionWithinTextBounds(selection)) {
+    //   return;
+    // }
+
+    // widget.controller.selection = selection;
+
+    // // This will show the keyboard for all selection changes on the
+    // // EditableWidget, not just changes triggered by user gestures.
+    // requestKeyboard();
+
+    // _selectionOverlay?.hide();
+    // _selectionOverlay = null;
+
+    // if (widget.selectionControls != null) {
+    //   _selectionOverlay = TextSelectionOverlay(
+    //     context: context,
+    //     value: _value,
+    //     debugRequiredFor: widget,
+    //     toolbarLayerLink: _toolbarLayerLink,
+    //     startHandleLayerLink: _startHandleLayerLink,
+    //     endHandleLayerLink: _endHandleLayerLink,
+    //     renderObject: renderObject,
+    //     selectionControls: widget.selectionControls,
+    //     selectionDelegate: this,
+    //     dragStartBehavior: widget.dragStartBehavior,
+    //     onSelectionHandleTapped: widget.onSelectionHandleTapped,
+    //   );
+    //   _selectionOverlay.handlesVisible = widget.showSelectionHandles;
+    //   _selectionOverlay.showHandles();
+    //   if (widget.onSelectionChanged != null)
+    //     widget.onSelectionChanged(selection, cause);
+    // }
+
     // final bool willShowSelectionHandles = _shouldShowSelectionHandles(cause);
     // if (willShowSelectionHandles != _showSelectionHandles) {
     //   setState(() {
@@ -77,7 +146,9 @@ class _StelaEditableState extends State<StelaEditable> {
     StelaEditorScope scope = StelaEditorScope.of(context);
 
     return StelaEditableProvider(
-      scope: StelaEditableScope(onSelectionChanged: _handleSelectionChanged),
+      scope: StelaEditableScope(
+          onSelectionChange: _handleSelectionChange,
+          onSingleTapUp: _handleSingleTapUp),
       child: StelaChildren(
         node: scope.controller.value,
         elementBuilder: widget.elementBuilder,
@@ -101,12 +172,69 @@ Widget defaultElementBuilder(Stela.Element element, StelaChildren children) {
 }
 
 class StelaEditableScope {
+  // StelaEditableScope({
+  //   this.onBlur,
+  //   this.onCompositionEnd,
+  //   this.onCompositionStart,
+  //   this.onCopy,
+  //   this.onCut,
+  //   this.onDragOver,
+  //   this.onDragStart,
+  //   this.onDrop,
+  //   this.onFocus,
+  //   this.onKeyDown,
+  //   this.onPaste,
+  //   this.onSelectionChange,
+  //   this.onTap,
+  //   this.ignorePointer = false,
+  // });
+
+  // void Function() onBlur;
+  // void Function() onCompositionEnd;
+  // void Function() onCompositionStart;
+  // void Function() onCopy;
+  // void Function() onCut;
+  // void Function() onDragOver;
+  // void Function() onDragStart;
+  // void Function() onDrop;
+  // void Function() onFocus;
+  // void Function() onKeyDown;
+  // void Function() onPaste;
+  // void Function() onSelectionChange;
+  // void Function() onTap;
+
   StelaEditableScope({
-    this.onSelectionChanged,
+    this.onTapDown,
+    this.onForcePressStart,
+    this.onForcePressEnd,
+    this.onSingleTapUp,
+    this.onSingleTapCancel,
+    this.onSingleLongTapStart,
+    this.onSingleLongTapMoveUpdate,
+    this.onSingleLongTapEnd,
+    this.onDoubleTapDown,
+    this.onDragSelectionStart,
+    this.onDragSelectionUpdate,
+    this.onDragSelectionEnd,
+    this.onSelectionChange,
     this.ignorePointer = false,
   });
 
-  KRichText.SelectionChangedHandler onSelectionChanged;
+  void Function() onTapDown;
+  void Function() onForcePressStart;
+  void Function() onForcePressEnd;
+  void Function(Stela.Node node, TapUpDetails details) onSingleTapUp;
+  void Function() onSingleTapCancel;
+  void Function() onSingleLongTapStart;
+  void Function() onSingleLongTapMoveUpdate;
+  void Function() onSingleLongTapEnd;
+  void Function() onDoubleTapDown;
+  void Function() onDragSelectionStart;
+  void Function() onDragSelectionUpdate;
+  void Function() onDragSelectionEnd;
+  void Function(
+          Stela.Node node, TextSelection selection, SelectionChangedCause cause)
+      onSelectionChange;
   bool ignorePointer;
 
   static StelaEditableScope of(BuildContext context) {

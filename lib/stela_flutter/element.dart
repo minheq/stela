@@ -69,6 +69,7 @@ class _StelaElementState extends State<StelaElement> {
     }
 
     return StelaRichText(
+      node: widget.node,
       text: TextSpan(children: children),
       selection: textSelection,
       showCursor: scope.showCursor,

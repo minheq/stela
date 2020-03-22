@@ -7,6 +7,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:inday/stela/stela.dart' as Stela;
 import 'package:inday/stela_flutter/editable.dart';
 import 'package:inday/stela_flutter/editor.dart';
 
@@ -25,16 +26,13 @@ const double _kFloatingCaretRadius = 1.0;
 /// Used by [RenderEditable.onCaretChanged].
 typedef CaretChangedHandler = void Function(Rect caretRect);
 
-/// Used by [RenderEditable.onSelectionChanged].
-typedef SelectionChangedHandler = void Function(TextSelection selection,
-    RenderStelaRichText renderObject, SelectionChangedCause cause);
-
 class StelaRichText extends StatefulWidget {
   StelaRichText({
     Key key,
     @required this.text,
     this.textAlign = TextAlign.start,
     this.textDirection,
+    this.node,
     this.softWrap = true,
     this.overflow = TextOverflow.clip,
     this.textScaleFactor = 1.0,
@@ -66,6 +64,7 @@ class StelaRichText extends StatefulWidget {
         assert(maxLines == null || maxLines > 0),
         assert(textWidthBasis != null);
 
+  final Stela.Node node;
   final Color cursorColor;
   final Color backgroundCursorColor;
   final ValueNotifier<bool> showCursor;
@@ -190,8 +189,13 @@ class _StelaRichTextState extends State<StelaRichText> {
   @protected
   void onSingleTapUp(TapUpDetails details) {
     StelaEditorScope editorScope = StelaEditorScope.of(context);
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    SelectionChangedCause cause = SelectionChangedCause.tap;
     if (editorScope.selectionEnabled) {
-      renderRichText.selectWordEdge(cause: SelectionChangedCause.tap);
+      editableScope.onSingleTapUp(widget.node, details);
+
+      TextSelection selection = renderRichText.selectWordEdge(cause: cause);
+      editableScope.onSelectionChange(widget.node, selection, cause);
     }
   }
 
@@ -321,6 +325,11 @@ class _StelaRichTextState extends State<StelaRichText> {
     /* Subclass should override this method if needed. */
   }
 
+  @protected
+  void onSelectionChange(TextSelection selection) {
+    /* Subclass should override this method if needed. */
+  }
+
   @override
   Widget build(BuildContext context) {
     StelaEditorScope editorScope = StelaEditorScope.of(context);
@@ -352,7 +361,6 @@ class _StelaRichTextState extends State<StelaRichText> {
         onCaretChanged: widget.onCaretChanged,
         cursorWidth: widget.cursorWidth,
         ignorePointer: editableScope.ignorePointer,
-        onSelectionChanged: editableScope.onSelectionChanged,
         cursorRadius: widget.cursorRadius,
         cursorOffset: widget.cursorOffset,
         paintCursorAboveText: widget.paintCursorAboveText,
@@ -392,7 +400,6 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
     this.textHeightBehavior,
     this.cursorColor,
     this.ignorePointer,
-    this.onSelectionChanged,
     this.selection,
     this.onCaretChanged,
     this.selectionColor,
@@ -431,7 +438,6 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
   final CaretChangedHandler onCaretChanged;
   final double cursorWidth;
   final bool ignorePointer;
-  final SelectionChangedHandler onSelectionChanged;
   final Radius cursorRadius;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
@@ -467,7 +473,6 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
       textHeightBehavior: textHeightBehavior,
       cursorColor: cursorColor,
       ignorePointer: ignorePointer,
-      onSelectionChanged: onSelectionChanged,
       backgroundCursorColor: backgroundCursorColor,
       showCursor: showCursor,
       hasFocus: hasFocus,
@@ -506,7 +511,6 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
       ..hasFocus = hasFocus
       ..selection = selection
       ..ignorePointer = ignorePointer
-      ..onSelectionChanged = onSelectionChanged
       ..selectionColor = selectionColor
       ..onCaretChanged = onCaretChanged
       ..cursorWidth = cursorWidth
@@ -1050,28 +1054,6 @@ class RenderStelaRichText extends RenderBox
   bool ignorePointer;
   SelectionChangedHandler onSelectionChanged;
 
-  // Call through to onSelectionChanged.
-  void _handleSelectionChange(
-    TextSelection nextSelection,
-    SelectionChangedCause cause,
-  ) {
-    // Changes made by the keyboard can sometimes be "out of band" for listening
-    // components, so always send those events, even if we didn't think it
-    // changed. Also, focusing an empty field is sent as a selection change even
-    // if the selection offset didn't change.
-    final bool focusingEmpty = nextSelection.baseOffset == 0 &&
-        nextSelection.extentOffset == 0 &&
-        !hasFocus;
-    if (nextSelection == selection &&
-        cause != SelectionChangedCause.keyboard &&
-        !focusingEmpty) {
-      return;
-    }
-    if (onSelectionChanged != null) {
-      onSelectionChanged(nextSelection, this, cause);
-    }
-  }
-
   TapGestureRecognizer _tap;
   LongPressGestureRecognizer _longPress;
 
@@ -1174,16 +1156,13 @@ class RenderStelaRichText extends RenderBox
   }
 
   /// Select text between the global positions [from] and [to].
-  void selectPositionAt(
+  TextSelection selectPositionAt(
       {@required Offset from,
       Offset to,
       @required SelectionChangedCause cause}) {
     assert(cause != null);
     assert(from != null);
     _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
-    if (onSelectionChanged == null) {
-      return;
-    }
     final TextPosition fromPosition =
         _textPainter.getPositionForOffset(globalToLocal(from));
     final TextPosition toPosition = to == null
@@ -1202,8 +1181,7 @@ class RenderStelaRichText extends RenderBox
       extentOffset: extentOffset,
       affinity: fromPosition.affinity,
     );
-    // Call [onSelectionChanged] only when the selection actually changed.
-    _handleSelectionChange(newSelection, cause);
+    return newSelection;
   }
 
   /// Select a word around the location of the last tap down.
@@ -1219,7 +1197,7 @@ class RenderStelaRichText extends RenderBox
   /// beginning and end of a word respectively.
   ///
   /// {@macro flutter.rendering.editable.select}
-  void selectWordsInRange(
+  TextSelection selectWordsInRange(
       {@required Offset from,
       Offset to,
       @required SelectionChangedCause cause}) {
@@ -1227,7 +1205,7 @@ class RenderStelaRichText extends RenderBox
     assert(from != null);
     _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     if (onSelectionChanged == null) {
-      return;
+      return null;
     }
     final TextPosition firstPosition =
         _textPainter.getPositionForOffset(globalToLocal(from));
@@ -1237,41 +1215,30 @@ class RenderStelaRichText extends RenderBox
         : _selectWordAtOffset(
             _textPainter.getPositionForOffset(globalToLocal(to)));
 
-    _handleSelectionChange(
-      TextSelection(
-        baseOffset: firstWord.base.offset,
-        extentOffset: lastWord.extent.offset,
-        affinity: firstWord.affinity,
-      ),
-      cause,
+    return TextSelection(
+      baseOffset: firstWord.base.offset,
+      extentOffset: lastWord.extent.offset,
+      affinity: firstWord.affinity,
     );
   }
 
   /// Move the selection to the beginning or end of a word.
   ///
   /// {@macro flutter.rendering.editable.select}
-  void selectWordEdge({@required SelectionChangedCause cause}) {
+  TextSelection selectWordEdge({@required SelectionChangedCause cause}) {
     assert(cause != null);
     _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
     assert(_lastTapDownPosition != null);
-    if (onSelectionChanged == null) {
-      return;
-    }
+
     final TextPosition position =
         _textPainter.getPositionForOffset(globalToLocal(_lastTapDownPosition));
     final TextRange word = _textPainter.getWordBoundary(position);
     if (position.offset - word.start <= 1) {
-      _handleSelectionChange(
-        TextSelection.collapsed(
-            offset: word.start, affinity: TextAffinity.downstream),
-        cause,
-      );
+      return TextSelection.collapsed(
+          offset: word.start, affinity: TextAffinity.downstream);
     } else {
-      _handleSelectionChange(
-        TextSelection.collapsed(
-            offset: word.end, affinity: TextAffinity.upstream),
-        cause,
-      );
+      return TextSelection.collapsed(
+          offset: word.end, affinity: TextAffinity.upstream);
     }
   }
 

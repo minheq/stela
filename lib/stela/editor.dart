@@ -1036,9 +1036,8 @@ class Editor implements Ancestor {
     }
 
     Range r = range(at, null);
-    Edges edges = r.edges();
-    Point es = edges.start;
-    Point ee = edges.end;
+    Point es = r.edges().start;
+    Point ee = r.edges().end;
     Point first = reverse ? ee : es;
     String s = '';
     int available = 0;
@@ -1596,10 +1595,10 @@ class Editor implements Ancestor {
 
   /// Call a function, deferring normalization until after it completes.
   void withoutNormalizing(void Function() fn) {
-    bool isNormalizing = _isNormalizing;
+    bool prevIsNormalizing = _isNormalizing;
     _isNormalizing = false;
     fn();
-    _isNormalizing = isNormalizing;
+    _isNormalizing = prevIsNormalizing;
     normalize();
   }
 }
