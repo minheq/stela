@@ -39,6 +39,7 @@ class StelaEditable extends StatefulWidget {
     bool showCursor,
     this.cursorOffset,
     @required this.cursorColor,
+    @required this.selectionColor,
     @required this.backgroundCursorColor,
     this.cursorWidth = 2.0,
     this.cursorRadius,
@@ -46,6 +47,7 @@ class StelaEditable extends StatefulWidget {
   })  : assert(focusNode != null),
         assert(autofocus != null),
         assert(cursorColor != null),
+        assert(selectionColor != null),
         assert(cursorOpacityAnimates != null),
         assert(paintCursorAboveText != null),
         assert(backgroundCursorColor != null),
@@ -54,6 +56,7 @@ class StelaEditable extends StatefulWidget {
 
   final bool showCursor;
   final Color cursorColor;
+  final Color selectionColor;
   final Color backgroundCursorColor;
   final double cursorWidth;
   final Radius cursorRadius;
@@ -499,6 +502,7 @@ class _StelaEditableState extends State<StelaEditable>
               ? ValueNotifier<bool>(widget.showCursor)
               : _cursorVisibilityNotifier,
           cursorColor: _cursorColor ?? widget.cursorColor,
+          selectionColor: widget.selectionColor,
           backgroundCursorColor: widget.backgroundCursorColor,
           forcePressEnabled: forcePressEnabled,
           selectionEnabled: selectionEnabled,
@@ -577,6 +581,7 @@ class StelaEditableScope {
     @required this.focusNode,
     this.showCursor,
     this.cursorColor,
+    this.selectionColor,
     this.hasFocus,
     this.backgroundCursorColor,
     this.forcePressEnabled,
@@ -604,6 +609,7 @@ class StelaEditableScope {
   FocusNode focusNode;
   ValueNotifier<bool> showCursor;
   Color cursorColor;
+  Color selectionColor;
   bool hasFocus;
   bool forcePressEnabled;
   bool selectionEnabled;

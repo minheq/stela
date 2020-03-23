@@ -104,6 +104,7 @@ class _StelaElementState extends State<StelaElement> {
       textEntries: textEntries,
       editableScope: editableScope,
       cursorColor: editableScope.cursorColor,
+      selectionColor: editableScope.selectionColor,
       hasFocus: editableScope.hasFocus,
       cursorRadius: editableScope.cursorRadius,
     );

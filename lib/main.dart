@@ -28,6 +28,7 @@ class MyApp extends StatelessWidget {
               children: [
                 StelaEditable(
                   cursorColor: themeData.cursorColor,
+                  selectionColor: themeData.textSelectionColor,
                   showCursor: true,
                   backgroundCursorColor: CupertinoColors.inactiveGray,
                   // cursorOpacityAnimates: true,

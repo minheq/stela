@@ -112,7 +112,7 @@ class _StelaRichTextState extends State<StelaRichText> {
   bool _shouldShowSelectionToolbar = true;
 
   @protected
-  void onTapDown(TapDownDetails details) {
+  void handleTapDown(TapDownDetails details) {
     renderRichText.handleTapDown(details);
     // The selection overlay should only be shown when the user is interacting
     // through a touch screen (via either a finger or a stylus). A mouse shouldn't
@@ -163,7 +163,7 @@ class _StelaRichTextState extends State<StelaRichText> {
   }
 
   @protected
-  void onTapUp(TapUpDetails details) {
+  void onSingleTapUp(TapUpDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.tap;
     if (editableScope.selectionEnabled) {
@@ -183,7 +183,7 @@ class _StelaRichTextState extends State<StelaRichText> {
   }
 
   @protected
-  void handleLongPressStart(LongPressStartDetails details) {
+  void handleSingleLongTapStart(LongPressStartDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.longPress;
 
@@ -236,7 +236,7 @@ class _StelaRichTextState extends State<StelaRichText> {
   }
 
   @protected
-  void onDoubleTapDown(TapDownDetails details) {
+  void handleDoubleTapDown(TapDownDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.tap;
 
@@ -278,22 +278,21 @@ class _StelaRichTextState extends State<StelaRichText> {
   Widget build(BuildContext context) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
 
-    return GestureDetector(
+    return TextSelectionGestureDetector(
       behavior: HitTestBehavior.translucent,
-      onTapDown: onTapDown,
+      onTapDown: handleTapDown,
       // onForcePressStart:
       //     editableScope.forcePressEnabled ? onForcePressStart : null,
       // onForcePressEnd: editableScope.forcePressEnabled ? onForcePressEnd : null,
       // onSingleTapCancel: onSingleTapCancel,
-      // onSingleLongTapStart: onSingleLongTapStart,
+      onSingleLongTapStart: handleSingleLongTapStart,
       // onSingleLongTapMoveUpdate: onSingleLongTapMoveUpdate,
       // onSingleLongTapEnd: onSingleLongTapEnd,
-      // onDoubleTapDown: onDoubleTapDown,
+      onDoubleTapDown: handleDoubleTapDown,
       // onDragSelectionStart: onDragSelectionStart,
       // onDragSelectionUpdate: onDragSelectionUpdate,
       // onDragSelectionEnd: onDragSelectionEnd,
-      onTapUp: onTapUp,
-      onLongPressStart: handleLongPressStart,
+      onSingleTapUp: onSingleTapUp,
       child: _StelaRichText(
         key: _editableKey,
         cursorColor: widget.cursorColor,
@@ -574,6 +573,7 @@ class RenderStelaRichText extends RenderBox
         assert(textDirection != null),
         assert(softWrap != null),
         assert(overflow != null),
+        assert(selectionColor != null),
         assert(textScaleFactor != null),
         assert(maxLines == null || maxLines > 0),
         assert(textWidthBasis != null),
@@ -1056,7 +1056,7 @@ class RenderStelaRichText extends RenderBox
   }
 
   /// If [ignorePointer] is false (the default) then this method is called by
-  /// the internal gesture recognizer's [DoubleTapGestureRecognizer.onDoubleTap]
+  /// the internal gesture recognizer's [DoubleTapGestureRecognizer.onDoubleTapDown]
   /// callback.
   ///
   /// When [ignorePointer] is true, an ancestor widget must respond to double
@@ -1457,17 +1457,21 @@ class RenderStelaRichText extends RenderBox
     bool showCaret = false;
 
     if (_selection != null && !_floatingCursorOn) {
-      if (_selection.isCollapsed && _showCursor.value && cursorColor != null)
+      if (_selection.isCollapsed && _showCursor.value && cursorColor != null) {
         showCaret = true;
-      else if (!_selection.isCollapsed && _selectionColor != null)
+      } else if (!_selection.isCollapsed && _selectionColor != null) {
         showSelection = true;
+      }
+
       _updateSelectionExtentsVisibility(effectiveOffset);
     }
 
-    // if (showSelection) {
-    //   _selectionRects ??= _textPainter.getBoxesForSelection(_selection, boxHeightStyle: _selectionHeightStyle, boxWidthStyle: _selectionWidthStyle);
-    //   _paintSelection(context.canvas, effectiveOffset);
-    // }
+    if (showSelection) {
+      _selectionRects ??= _textPainter.getBoxesForSelection(_selection,
+          boxHeightStyle: _selectionHeightStyle,
+          boxWidthStyle: _selectionWidthStyle);
+      _paintSelection(context.canvas, effectiveOffset);
+    }
 
     assert(() {
       if (debugRepaintTextRainbowEnabled) {
@@ -1491,14 +1495,17 @@ class RenderStelaRichText extends RenderBox
 
     // On iOS, the cursor is painted over the text, on Android, it's painted
     // under it.
-    if (paintCursorAboveText)
+    if (paintCursorAboveText) {
       _textPainter.paint(context.canvas, effectiveOffset);
+    }
 
-    if (showCaret)
+    if (showCaret) {
       _paintCaret(context.canvas, effectiveOffset, _selection.extent);
+    }
 
-    if (!paintCursorAboveText)
+    if (!paintCursorAboveText) {
       _textPainter.paint(context.canvas, effectiveOffset);
+    }
 
     // if (_floatingCursorOn) {
     //   if (_resetFloatingCursorAnimationValue == null)
@@ -2013,6 +2020,17 @@ class RenderStelaRichText extends RenderBox
             preferredLineHeight - 2.0 * _kCaretHeightOffset);
     }
     return null;
+  }
+
+  void _paintSelection(Canvas canvas, Offset effectiveOffset) {
+    assert(
+        _textLayoutLastMaxWidth == constraints.maxWidth &&
+            _textLayoutLastMinWidth == constraints.minWidth,
+        'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    assert(_selectionRects != null);
+    final Paint paint = Paint()..color = _selectionColor;
+    for (final ui.TextBox box in _selectionRects)
+      canvas.drawRect(box.toRect().shift(effectiveOffset), paint);
   }
 
   void _paintCaret(
