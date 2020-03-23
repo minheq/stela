@@ -60,15 +60,15 @@ class StelaEditable extends StatefulWidget {
   final bool autofocus;
   final bool cursorOpacityAnimates;
   final bool enableInteractiveSelection;
-  static bool debugDeterministicCursor = true;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
   final FocusNode focusNode;
   final bool readOnly;
-
   final Widget Function(Stela.Element element, StelaChildren children)
       elementBuilder;
   final TextSpan Function(Stela.Text text) textBuilder;
+
+  static bool debugDeterministicCursor = false;
 
   @override
   _StelaEditableState createState() => _StelaEditableState();
@@ -87,10 +87,6 @@ class _StelaEditableState extends State<StelaEditable>
         AnimationController(vsync: this, duration: _fadeDuration);
     _cursorBlinkOpacityController.addListener(_onCursorColorTick);
     _cursorVisibilityNotifier.value = widget.showCursor;
-    // #endregion
-
-    // #region Value
-    // scope.controller.addListener(_didChangeTextEditingValue);
     // #endregion
 
     // #region Focus
@@ -131,8 +127,8 @@ class _StelaEditableState extends State<StelaEditable>
     // _selectionOverlay?.handlesVisible = widget.showSelectionHandles;
     if (widget.focusNode != oldWidget.focusNode) {
       oldWidget.focusNode.removeListener(_handleFocusChanged);
-      // _focusAttachment?.detach();
-      // _focusAttachment = widget.focusNode.attach(context);
+      _focusAttachment?.detach();
+      _focusAttachment = widget.focusNode.attach(context);
       widget.focusNode.addListener(_handleFocusChanged);
       updateKeepAlive();
     }
@@ -226,9 +222,6 @@ class _StelaEditableState extends State<StelaEditable>
     //       break;
     //   }
     // }
-    // _state._requestKeyboard();
-    // if (_state.widget.onTap != null)
-    //   _state.widget.onTap();
   }
 
   void requestKeyboard() {
@@ -272,8 +265,7 @@ class _StelaEditableState extends State<StelaEditable>
   // to ease in and out.
   static const Duration _fadeDuration = Duration(milliseconds: 250);
 
-  Color get _cursorColor =>
-      widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
+  Color _cursorColor;
 
   /// Whether the blinking cursor is actually visible at this precise moment
   /// (it's hidden half the time, since it blinks).
@@ -287,9 +279,12 @@ class _StelaEditableState extends State<StelaEditable>
   Duration get cursorBlinkInterval => _kCursorBlinkHalfPeriod;
 
   void _onCursorColorTick() {
-    // renderEditable.cursorColor = widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
-    _cursorVisibilityNotifier.value =
-        widget.showCursor && _cursorBlinkOpacityController.value > 0;
+    setState(() {
+      _cursorColor =
+          widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
+      _cursorVisibilityNotifier.value =
+          widget.showCursor && _cursorBlinkOpacityController.value > 0;
+    });
   }
 
   void _cursorTick(Timer timer) {
@@ -399,9 +394,9 @@ class _StelaEditableState extends State<StelaEditable>
     Stela.Point p = Stela.Point(entry.path, selection.baseOffset);
     scope.controller.selection = Stela.Range(p, p);
 
-    // // This will show the keyboard for all selection changes on the
-    // // EditableWidget, not just changes triggered by user gestures.
-    // requestKeyboard();
+    // This will show the keyboard for all selection changes on the
+    // EditableWidget, not just changes triggered by user gestures.
+    requestKeyboard();
 
     // _selectionOverlay?.hide();
     // _selectionOverlay = null;
@@ -495,7 +490,7 @@ class _StelaEditableState extends State<StelaEditable>
           showCursor: StelaEditable.debugDeterministicCursor
               ? ValueNotifier<bool>(widget.showCursor)
               : _cursorVisibilityNotifier,
-          cursorColor: _cursorColor,
+          cursorColor: _cursorColor ?? widget.cursorColor,
           backgroundCursorColor: widget.backgroundCursorColor,
           forcePressEnabled: forcePressEnabled,
           selectionEnabled: selectionEnabled,
