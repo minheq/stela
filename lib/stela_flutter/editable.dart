@@ -205,7 +205,7 @@ class _StelaEditableState extends State<StelaEditable>
 
   bool get _hasFocus => widget.focusNode.hasFocus;
 
-  void _handleSingleTapUp(Stela.Node node, TapUpDetails details) {
+  void _handleTapUp(Stela.Node node, TapUpDetails details) {
     requestKeyboard();
     // editableText.hideToolbar();
     // if (delegate.selectionEnabled) {
@@ -493,7 +493,7 @@ class _StelaEditableState extends State<StelaEditable>
     return StelaEditableProvider(
       scope: StelaEditableScope(
           onSelectionChange: _handleSelectionChange,
-          onSingleTapUp: _handleSingleTapUp,
+          onTapUp: _handleTapUp,
           focusNode: widget.focusNode,
           showCursor: StelaEditable.debugDeterministicCursor
               ? ValueNotifier<bool>(widget.showCursor)
@@ -563,7 +563,7 @@ class StelaEditableScope {
     this.onTapDown,
     this.onForcePressStart,
     this.onForcePressEnd,
-    this.onSingleTapUp,
+    this.onTapUp,
     this.onSingleTapCancel,
     this.onSingleLongTapStart,
     this.onSingleLongTapMoveUpdate,
@@ -588,7 +588,7 @@ class StelaEditableScope {
   void Function() onTapDown;
   void Function() onForcePressStart;
   void Function() onForcePressEnd;
-  void Function(Stela.Node node, TapUpDetails details) onSingleTapUp;
+  void Function(Stela.Node node, TapUpDetails details) onTapUp;
   void Function() onSingleTapCancel;
   void Function() onSingleLongTapStart;
   void Function() onSingleLongTapMoveUpdate;
