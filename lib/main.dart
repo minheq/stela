@@ -1,7 +1,6 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:inday/stela/stela.dart' as Stela;
-import 'package:inday/stela_flutter/editable.dart';
 import 'package:inday/stela_flutter/editor.dart';
 
 void main() => runApp(MyApp());
@@ -16,6 +15,10 @@ class MyApp extends StatelessWidget {
         Stela.Text(
             'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.'),
       ]),
+      Stela.Block(children: [
+        Stela.Text(
+            'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.'),
+      ]),
     ]);
 
     return MaterialApp(
@@ -25,16 +28,12 @@ class MyApp extends StatelessWidget {
           children: <Widget>[
             StelaEditor(
               controller: EditorEditingController.fromEditor(editor),
-              children: [
-                StelaEditable(
-                  cursorColor: themeData.cursorColor,
-                  selectionColor: themeData.textSelectionColor,
-                  showCursor: true,
-                  backgroundCursorColor: CupertinoColors.inactiveGray,
-                  cursorOpacityAnimates: true,
-                  focusNode: FocusNode(),
-                )
-              ],
+              cursorColor: themeData.cursorColor,
+              selectionColor: themeData.textSelectionColor,
+              showCursor: true,
+              backgroundCursorColor: CupertinoColors.inactiveGray,
+              cursorOpacityAnimates: true,
+              focusNode: FocusNode(),
             ),
             TextFormField(
               initialValue:

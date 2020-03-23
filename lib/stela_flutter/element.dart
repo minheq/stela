@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
-import 'package:inday/stela_flutter/editable.dart';
 import 'package:inday/stela_flutter/rich_text.dart';
 import 'package:inday/stela_flutter/children.dart';
 import 'package:inday/stela_flutter/editor.dart';
@@ -60,7 +59,7 @@ class _StelaElementState extends State<StelaElement> {
   }
 
   Widget _buildRichText() {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    StelaEditorScope scope = StelaEditorScope.of(context);
     List<TextNodeEntry> textEntries = [];
     List<InlineSpan> children = [];
 
@@ -100,13 +99,13 @@ class _StelaElementState extends State<StelaElement> {
       node: widget.node,
       text: TextSpan(children: children),
       selection: textSelection,
-      showCursor: editableScope.showCursor,
+      showCursor: scope.showCursor,
       textEntries: textEntries,
-      editableScope: editableScope,
-      cursorColor: editableScope.cursorColor,
-      selectionColor: editableScope.selectionColor,
-      hasFocus: editableScope.hasFocus,
-      cursorRadius: editableScope.cursorRadius,
+      scope: scope,
+      cursorColor: scope.cursorColor,
+      selectionColor: scope.selectionColor,
+      hasFocus: scope.hasFocus,
+      cursorRadius: scope.cursorRadius,
     );
   }
 }

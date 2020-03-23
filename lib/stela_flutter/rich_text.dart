@@ -8,7 +8,7 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
-import 'package:inday/stela_flutter/editable.dart';
+import 'package:inday/stela_flutter/editor.dart';
 import 'package:inday/stela_flutter/element.dart';
 
 const double _kCaretGap = 1.0; // pixels
@@ -45,7 +45,7 @@ class StelaRichText extends StatefulWidget {
     this.selection,
     this.onCaretChanged,
     this.selectionColor,
-    this.editableScope,
+    this.scope,
     this.hasFocus,
     this.backgroundCursorColor,
     this.showCursor,
@@ -78,7 +78,7 @@ class StelaRichText extends StatefulWidget {
   final List<TextNodeEntry> textEntries;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
-  final StelaEditableScope editableScope;
+  final StelaEditorScope scope;
   final ui.BoxHeightStyle selectionHeightStyle;
   final ui.BoxWidthStyle selectionWidthStyle;
   final double devicePixelRatio;
@@ -126,10 +126,10 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void onForcePressStart(ForcePressDetails details) {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
-    assert(editableScope.forcePressEnabled);
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    assert(scope.forcePressEnabled);
     _shouldShowSelectionToolbar = true;
-    if (editableScope.selectionEnabled) {
+    if (scope.selectionEnabled) {
       // renderEditable.selectWordsInRange(
       //   from: details.globalPosition,
       //   cause: SelectionChangedCause.forcePress,
@@ -139,8 +139,8 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void onForcePressEnd(ForcePressDetails details) {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
-    assert(editableScope.forcePressEnabled);
+    StelaEditorScope scope = StelaEditorScope.of(context);
+    assert(scope.forcePressEnabled);
     // renderEditable.selectWordsInRange(
     //   from: details.globalPosition,
     //   cause: SelectionChangedCause.forcePress,
@@ -164,15 +164,15 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void onSingleTapUp(TapUpDetails details) {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    StelaEditorScope scope = StelaEditorScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.tap;
-    if (editableScope.selectionEnabled) {
-      editableScope.onTapUp(widget.node, details);
+    if (scope.selectionEnabled) {
+      scope.onTapUp(widget.node, details);
 
       TextSelection selection = renderRichText.selectWordEdge(cause: cause);
       TextNodeEntry selected = _textNodeEntry(selection);
 
-      editableScope.onSelectionChange(
+      scope.onSelectionChange(
           Stela.NodeEntry(selected.node, selected.path), selection, cause);
     }
   }
@@ -184,10 +184,10 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void handleSingleLongTapStart(LongPressStartDetails details) {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    StelaEditorScope scope = StelaEditorScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.longPress;
 
-    if (editableScope.selectionEnabled) {
+    if (scope.selectionEnabled) {
       switch (Theme.of(context).platform) {
         case TargetPlatform.iOS:
         case TargetPlatform.macOS:
@@ -197,7 +197,7 @@ class _StelaRichTextState extends State<StelaRichText> {
           );
           TextNodeEntry selected = _textNodeEntry(selection);
 
-          editableScope.onSelectionChange(
+          scope.onSelectionChange(
               Stela.NodeEntry(selected.node, selected.path), selection, cause);
           break;
         case TargetPlatform.android:
@@ -208,7 +208,7 @@ class _StelaRichTextState extends State<StelaRichText> {
               renderRichText.selectWord(cause: SelectionChangedCause.longPress);
           TextNodeEntry selected = _textNodeEntry(selection);
 
-          editableScope.onSelectionChange(
+          scope.onSelectionChange(
               Stela.NodeEntry(selected.node, selected.path), selection, cause);
 
           Feedback.forLongPress(context);
@@ -217,19 +217,20 @@ class _StelaRichTextState extends State<StelaRichText> {
     }
   }
 
+  // TODO: handle cross rich text moveupdate
   @protected
   void handleSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    StelaEditorScope scope = StelaEditorScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.longPress;
 
-    if (editableScope.selectionEnabled) {
+    if (scope.selectionEnabled) {
       TextSelection selection = renderRichText.selectPositionAt(
         from: details.globalPosition,
         cause: SelectionChangedCause.longPress,
       );
       TextNodeEntry selected = _textNodeEntry(selection);
 
-      editableScope.onSelectionChange(
+      scope.onSelectionChange(
           Stela.NodeEntry(selected.node, selected.path), selection, cause);
     }
   }
@@ -243,14 +244,14 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void handleDoubleTapDown(TapDownDetails details) {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    StelaEditorScope scope = StelaEditorScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.tap;
 
-    if (editableScope.selectionEnabled) {
+    if (scope.selectionEnabled) {
       TextSelection selection = renderRichText.selectWord(cause: cause);
       TextNodeEntry selected = _textNodeEntry(selection);
 
-      editableScope.onSelectionChange(
+      scope.onSelectionChange(
           Stela.NodeEntry(selected.node, selected.path), selection, cause);
       //   if (shouldShowSelectionToolbar)
       //     editableText.showToolbar();
@@ -282,14 +283,14 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @override
   Widget build(BuildContext context) {
-    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    StelaEditorScope scope = StelaEditorScope.of(context);
 
     return TextSelectionGestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapDown: handleTapDown,
       // onForcePressStart:
-      //     editableScope.forcePressEnabled ? onForcePressStart : null,
-      // onForcePressEnd: editableScope.forcePressEnabled ? onForcePressEnd : null,
+      //     scope.forcePressEnabled ? onForcePressStart : null,
+      // onForcePressEnd: scope.forcePressEnabled ? onForcePressEnd : null,
       // onSingleTapCancel: onSingleTapCancel,
       onSingleLongTapStart: handleSingleLongTapStart,
       onSingleLongTapMoveUpdate: handleSingleLongTapMoveUpdate,
@@ -309,11 +310,11 @@ class _StelaRichTextState extends State<StelaRichText> {
         selection: widget.selection,
         onCaretChanged: widget.onCaretChanged,
         cursorWidth: widget.cursorWidth,
-        ignorePointer: editableScope.ignorePointer,
+        ignorePointer: scope.ignorePointer,
         cursorRadius: widget.cursorRadius,
         cursorOffset: widget.cursorOffset,
         paintCursorAboveText: widget.paintCursorAboveText,
-        editableScope: widget.editableScope,
+        scope: widget.scope,
         selectionHeightStyle: widget.selectionHeightStyle,
         selectionWidthStyle: widget.selectionWidthStyle,
         devicePixelRatio: widget.devicePixelRatio,
@@ -352,7 +353,7 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
     this.selection,
     this.onCaretChanged,
     this.selectionColor,
-    this.editableScope,
+    this.scope,
     this.hasFocus,
     this.backgroundCursorColor,
     this.showCursor,
@@ -390,7 +391,7 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
   final Radius cursorRadius;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
-  final StelaEditableScope editableScope;
+  final StelaEditorScope scope;
   final ui.BoxHeightStyle selectionHeightStyle;
   final ui.BoxWidthStyle selectionWidthStyle;
   final double devicePixelRatio;
