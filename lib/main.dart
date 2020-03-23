@@ -38,7 +38,17 @@ class MyApp extends StatelessWidget {
             TextFormField(
               initialValue:
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
-            )
+            ),
+            // GestureDetector(
+            //   behavior: HitTestBehavior.translucent,
+            //   onTapUp: (TapUpDetails details) {
+            //     print('go');
+            //   },
+            //   onLongPressStart: (LongPressStartDetails details) {
+            //     print('long');
+            //   },
+            //   child: Text('hello'),
+            // )
           ],
         )),
       ),

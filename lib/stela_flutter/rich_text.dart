@@ -124,17 +124,6 @@ class _StelaRichTextState extends State<StelaRichText> {
         kind == PointerDeviceKind.stylus;
   }
 
-  /// Handler for [TextSelectionGestureDetector.onForcePressStart].
-  ///
-  /// By default, it selects the word at the position of the force press,
-  /// if selection is enabled.
-  ///
-  /// This callback is only applicable when force press is enabled.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onForcePressStart], which triggers this
-  ///    callback.
   @protected
   void onForcePressStart(ForcePressDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
@@ -148,17 +137,6 @@ class _StelaRichTextState extends State<StelaRichText> {
     }
   }
 
-  /// Handler for [TextSelectionGestureDetector.onForcePressEnd].
-  ///
-  /// By default, it selects words in the range specified in [details] and shows
-  /// toolbar if it is necessary.
-  ///
-  /// This callback is only applicable when force press is enabled.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onForcePressEnd], which triggers this
-  ///    callback.
   @protected
   void onForcePressEnd(ForcePressDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
@@ -184,20 +162,12 @@ class _StelaRichTextState extends State<StelaRichText> {
     return selected;
   }
 
-  /// Handler for [TextSelectionGestureDetector.onSingleTapUp].
-  ///
-  /// By default, it selects word edge if selection is enabled.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onSingleTapUp], which triggers
-  ///    this callback.
   @protected
-  void onSingleTapUp(TapUpDetails details) {
+  void onTapUp(TapUpDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.tap;
     if (editableScope.selectionEnabled) {
-      editableScope.onSingleTapUp(widget.node, details);
+      editableScope.onTapUp(widget.node, details);
 
       TextSelection selection = renderRichText.selectWordEdge(cause: cause);
       TextNodeEntry selected = _textNodeEntry(selection);
@@ -207,21 +177,13 @@ class _StelaRichTextState extends State<StelaRichText> {
     }
   }
 
-  /// Handler for [TextSelectionGestureDetector.onSingleTapCancel].
-  ///
-  /// By default, it services as place holder to enable subclass override.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onSingleTapCancel], which triggers
-  ///    this callback.
   @protected
   void onSingleTapCancel() {
     /* Subclass should override this method if needed. */
   }
 
   @protected
-  void onSingleLongTapStart(LongPressStartDetails details) {
+  void handleLongPressStart(LongPressStartDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.longPress;
 
@@ -289,14 +251,6 @@ class _StelaRichTextState extends State<StelaRichText> {
     }
   }
 
-  /// Handler for [TextSelectionGestureDetector.onDragSelectionStart].
-  ///
-  /// By default, it selects a text position specified in [details].
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onDragSelectionStart], which triggers
-  ///    this callback.
   @protected
   void onDragSelectionStart(DragStartDetails details) {
     // renderEditable.selectPositionAt(
@@ -305,14 +259,6 @@ class _StelaRichTextState extends State<StelaRichText> {
     // );
   }
 
-  /// Handler for [TextSelectionGestureDetector.onDragSelectionUpdate].
-  ///
-  /// By default, it updates the selection location specified in [details].
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onDragSelectionUpdate], which triggers
-  ///    this callback./lib/src/material/text_field.dart
   @protected
   void onDragSelectionUpdate(
       DragStartDetails startDetails, DragUpdateDetails updateDetails) {
@@ -332,21 +278,22 @@ class _StelaRichTextState extends State<StelaRichText> {
   Widget build(BuildContext context) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
 
-    return TextSelectionGestureDetector(
+    return GestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapDown: onTapDown,
-      onForcePressStart:
-          editableScope.forcePressEnabled ? onForcePressStart : null,
-      onForcePressEnd: editableScope.forcePressEnabled ? onForcePressEnd : null,
-      onSingleTapUp: onSingleTapUp,
-      onSingleTapCancel: onSingleTapCancel,
-      onSingleLongTapStart: onSingleLongTapStart,
-      onSingleLongTapMoveUpdate: onSingleLongTapMoveUpdate,
-      onSingleLongTapEnd: onSingleLongTapEnd,
-      onDoubleTapDown: onDoubleTapDown,
-      onDragSelectionStart: onDragSelectionStart,
-      onDragSelectionUpdate: onDragSelectionUpdate,
-      onDragSelectionEnd: onDragSelectionEnd,
+      // onForcePressStart:
+      //     editableScope.forcePressEnabled ? onForcePressStart : null,
+      // onForcePressEnd: editableScope.forcePressEnabled ? onForcePressEnd : null,
+      // onSingleTapCancel: onSingleTapCancel,
+      // onSingleLongTapStart: onSingleLongTapStart,
+      // onSingleLongTapMoveUpdate: onSingleLongTapMoveUpdate,
+      // onSingleLongTapEnd: onSingleLongTapEnd,
+      // onDoubleTapDown: onDoubleTapDown,
+      // onDragSelectionStart: onDragSelectionStart,
+      // onDragSelectionUpdate: onDragSelectionUpdate,
+      // onDragSelectionEnd: onDragSelectionEnd,
+      onTapUp: onTapUp,
+      onLongPressStart: handleLongPressStart,
       child: _StelaRichText(
         key: _editableKey,
         cursorColor: widget.cursorColor,
@@ -1009,42 +956,42 @@ class RenderStelaRichText extends RenderBox
   @override
   bool hitTestSelf(Offset position) => true;
 
-  @override
-  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
-    RenderBox child = firstChild;
-    while (child != null) {
-      final TextParentData textParentData = child.parentData as TextParentData;
-      final Matrix4 transform = Matrix4.translationValues(
-        textParentData.offset.dx,
-        textParentData.offset.dy,
-        0.0,
-      )..scale(
-          textParentData.scale,
-          textParentData.scale,
-          textParentData.scale,
-        );
-      final bool isHit = result.addWithPaintTransform(
-        transform: transform,
-        position: position,
-        hitTest: (BoxHitTestResult result, Offset transformed) {
-          assert(() {
-            final Offset manualPosition =
-                (position - textParentData.offset) / textParentData.scale;
-            return (transformed.dx - manualPosition.dx).abs() <
-                    precisionErrorTolerance &&
-                (transformed.dy - manualPosition.dy).abs() <
-                    precisionErrorTolerance;
-          }());
-          return child.hitTest(result, position: transformed);
-        },
-      );
-      if (isHit) {
-        return true;
-      }
-      child = childAfter(child);
-    }
-    return false;
-  }
+  // @override
+  // bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
+  //   RenderBox child = firstChild;
+  //   while (child != null) {
+  //     final TextParentData textParentData = child.parentData as TextParentData;
+  //     final Matrix4 transform = Matrix4.translationValues(
+  //       textParentData.offset.dx,
+  //       textParentData.offset.dy,
+  //       0.0,
+  //     )..scale(
+  //         textParentData.scale,
+  //         textParentData.scale,
+  //         textParentData.scale,
+  //       );
+  //     final bool isHit = result.addWithPaintTransform(
+  //       transform: transform,
+  //       position: position,
+  //       hitTest: (BoxHitTestResult result, Offset transformed) {
+  //         assert(() {
+  //           final Offset manualPosition =
+  //               (position - textParentData.offset) / textParentData.scale;
+  //           return (transformed.dx - manualPosition.dx).abs() <
+  //                   precisionErrorTolerance &&
+  //               (transformed.dy - manualPosition.dy).abs() <
+  //                   precisionErrorTolerance;
+  //         }());
+  //         return child.hitTest(result, position: transformed);
+  //       },
+  //     );
+  //     if (isHit) {
+  //       return true;
+  //     }
+  //     child = childAfter(child);
+  //   }
+  //   return false;
+  // }
 
   // #region Gestures
   bool ignorePointer;
@@ -1052,29 +999,29 @@ class RenderStelaRichText extends RenderBox
   TapGestureRecognizer _tap;
   LongPressGestureRecognizer _longPress;
 
-  @override
-  void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
-    if (ignorePointer) return;
-    assert(debugHandleEvent(event, entry));
-    if (event is! PointerDownEvent) {
-      return;
-    }
+  // @override
+  // void handleEvent(PointerEvent event, BoxHitTestEntry entry) {
+  //   if (ignorePointer) return;
+  //   assert(debugHandleEvent(event, entry));
+  //   if (event is! PointerDownEvent) {
+  //     return;
+  //   }
 
-    _tap.addPointer(event);
-    _longPress.addPointer(event);
+  //   _tap.addPointer(event);
+  //   _longPress.addPointer(event);
 
-    // _layoutTextWithConstraints(constraints);
-    // final Offset offset = entry.localPosition;
-    // final TextPosition position = _textPainter.getPositionForOffset(offset);
-    // final InlineSpan span = _textPainter.text.getSpanForPosition(position);
-    // if (span == null) {
-    //   return;
-    // }
-    // if (span is TextSpan) {
-    //   final TextSpan textSpan = span;
-    //   textSpan.recognizer?.addPointer(event as PointerDownEvent);
-    // }
-  }
+  //   // _layoutTextWithConstraints(constraints);
+  //   // final Offset offset = entry.localPosition;
+  //   // final TextPosition position = _textPainter.getPositionForOffset(offset);
+  //   // final InlineSpan span = _textPainter.text.getSpanForPosition(position);
+  //   // if (span == null) {
+  //   //   return;
+  //   // }
+  //   // if (span is TextSpan) {
+  //   //   final TextSpan textSpan = span;
+  //   //   textSpan.recognizer?.addPointer(event as PointerDownEvent);
+  //   // }
+  // }
 
   Offset _lastTapDownPosition;
 
