@@ -31,7 +31,7 @@ class MyApp extends StatelessWidget {
                   selectionColor: themeData.textSelectionColor,
                   showCursor: true,
                   backgroundCursorColor: CupertinoColors.inactiveGray,
-                  // cursorOpacityAnimates: true,
+                  cursorOpacityAnimates: true,
                   focusNode: FocusNode(),
                 )
               ],

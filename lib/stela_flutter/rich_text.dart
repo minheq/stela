@@ -218,13 +218,19 @@ class _StelaRichTextState extends State<StelaRichText> {
   }
 
   @protected
-  void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
+  void handleSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
+    SelectionChangedCause cause = SelectionChangedCause.longPress;
+
     if (editableScope.selectionEnabled) {
-      // renderEditable.selectPositionAt(
-      //   from: details.globalPosition,
-      //   cause: SelectionChangedCause.longPress,
-      // );
+      TextSelection selection = renderRichText.selectPositionAt(
+        from: details.globalPosition,
+        cause: SelectionChangedCause.longPress,
+      );
+      TextNodeEntry selected = _textNodeEntry(selection);
+
+      editableScope.onSelectionChange(
+          Stela.NodeEntry(selected.node, selected.path), selection, cause);
     }
   }
 
@@ -286,7 +292,7 @@ class _StelaRichTextState extends State<StelaRichText> {
       // onForcePressEnd: editableScope.forcePressEnabled ? onForcePressEnd : null,
       // onSingleTapCancel: onSingleTapCancel,
       onSingleLongTapStart: handleSingleLongTapStart,
-      // onSingleLongTapMoveUpdate: onSingleLongTapMoveUpdate,
+      onSingleLongTapMoveUpdate: handleSingleLongTapMoveUpdate,
       // onSingleLongTapEnd: onSingleLongTapEnd,
       onDoubleTapDown: handleDoubleTapDown,
       // onDragSelectionStart: onDragSelectionStart,
