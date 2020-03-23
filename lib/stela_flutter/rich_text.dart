@@ -111,14 +111,6 @@ class _StelaRichTextState extends State<StelaRichText> {
   bool get shouldShowSelectionToolbar => _shouldShowSelectionToolbar;
   bool _shouldShowSelectionToolbar = true;
 
-  /// Handler for [TextSelectionGestureDetector.onTapDown].
-  ///
-  /// By default, it forwards the tap to [RenderEditable.handleTapDown] and sets
-  /// [shouldShowSelectionToolbar] to true if the tap was initiated by a finger or stylus.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onTapDown], which triggers this callback.
   @protected
   void onTapDown(TapDownDetails details) {
     renderRichText.handleTapDown(details);
@@ -180,6 +172,18 @@ class _StelaRichTextState extends State<StelaRichText> {
     }
   }
 
+  TextNodeEntry _textNodeEntry(TextSelection selection) {
+    TextNodeEntry selected;
+
+    for (TextNodeEntry textEntry in widget.textEntries) {
+      if (selection.baseOffset >= textEntry.position.offset) {
+        selected = textEntry;
+        break;
+      }
+    }
+    return selected;
+  }
+
   /// Handler for [TextSelectionGestureDetector.onSingleTapUp].
   ///
   /// By default, it selects word edge if selection is enabled.
@@ -196,14 +200,7 @@ class _StelaRichTextState extends State<StelaRichText> {
       editableScope.onSingleTapUp(widget.node, details);
 
       TextSelection selection = renderRichText.selectWordEdge(cause: cause);
-      TextNodeEntry selected;
-
-      for (TextNodeEntry textEntry in widget.textEntries) {
-        if (selection.baseOffset >= textEntry.position.offset) {
-          selected = textEntry;
-          break;
-        }
-      }
+      TextNodeEntry selected = _textNodeEntry(selection);
 
       editableScope.onSelectionChange(
           Stela.NodeEntry(selected.node, selected.path), selection, cause);
@@ -223,35 +220,41 @@ class _StelaRichTextState extends State<StelaRichText> {
     /* Subclass should override this method if needed. */
   }
 
-  /// Handler for [TextSelectionGestureDetector.onSingleLongTapStart].
-  ///
-  /// By default, it selects text position specified in [details] if selection
-  /// is enabled.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onSingleLongTapStart], which triggers
-  ///    this callback.
   @protected
   void onSingleLongTapStart(LongPressStartDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
+    SelectionChangedCause cause = SelectionChangedCause.longPress;
+
     if (editableScope.selectionEnabled) {
-      // renderEditable.selectPositionAt(
-      //   from: details.globalPosition,
-      //   cause: SelectionChangedCause.longPress,
-      // );
+      switch (Theme.of(context).platform) {
+        case TargetPlatform.iOS:
+        case TargetPlatform.macOS:
+          TextSelection selection = renderRichText.selectPositionAt(
+            from: details.globalPosition,
+            cause: SelectionChangedCause.longPress,
+          );
+          TextNodeEntry selected = _textNodeEntry(selection);
+
+          editableScope.onSelectionChange(
+              Stela.NodeEntry(selected.node, selected.path), selection, cause);
+          break;
+        case TargetPlatform.android:
+        case TargetPlatform.fuchsia:
+        case TargetPlatform.linux:
+        case TargetPlatform.windows:
+          TextSelection selection =
+              renderRichText.selectWord(cause: SelectionChangedCause.longPress);
+          TextNodeEntry selected = _textNodeEntry(selection);
+
+          editableScope.onSelectionChange(
+              Stela.NodeEntry(selected.node, selected.path), selection, cause);
+
+          Feedback.forLongPress(context);
+          break;
+      }
     }
   }
 
-  /// Handler for [TextSelectionGestureDetector.onSingleLongTapMoveUpdate].
-  ///
-  /// By default, it updates the selection location specified in [details] if
-  /// selection is enabled.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onSingleLongTapMoveUpdate], which
-  ///    triggers this callback.
   @protected
   void onSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
     StelaEditableScope editableScope = StelaEditableScope.of(context);
@@ -263,14 +266,6 @@ class _StelaRichTextState extends State<StelaRichText> {
     }
   }
 
-  /// Handler for [TextSelectionGestureDetector.onSingleLongTapEnd].
-  ///
-  /// By default, it shows toolbar if necessary.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onSingleLongTapEnd], which triggers this
-  ///    callback.
   @protected
   void onSingleLongTapEnd(LongPressEndDetails details) {
     // if (shouldShowSelectionToolbar) {
@@ -278,22 +273,20 @@ class _StelaRichTextState extends State<StelaRichText> {
     // }
   }
 
-  /// Handler for [TextSelectionGestureDetector.onDoubleTapDown].
-  ///
-  /// By default, it selects a word through [renderEditable.selectWord] if
-  /// selectionEnabled and shows toolbar if necessary.
-  ///
-  /// See also:
-  ///
-  ///  * [TextSelectionGestureDetector.onDoubleTapDown], which triggers this
-  ///    callback.
   @protected
   void onDoubleTapDown(TapDownDetails details) {
-    // if (scope.selectionEnabled) {
-    //   renderEditable.selectWord(cause: SelectionChangedCause.tap);
-    //   if (shouldShowSelectionToolbar)
-    //     editableText.showToolbar();
-    // }
+    StelaEditableScope editableScope = StelaEditableScope.of(context);
+    SelectionChangedCause cause = SelectionChangedCause.tap;
+
+    if (editableScope.selectionEnabled) {
+      TextSelection selection = renderRichText.selectWord(cause: cause);
+      TextNodeEntry selected = _textNodeEntry(selection);
+
+      editableScope.onSelectionChange(
+          Stela.NodeEntry(selected.node, selected.path), selection, cause);
+      //   if (shouldShowSelectionToolbar)
+      //     editableText.showToolbar();
+    }
   }
 
   /// Handler for [TextSelectionGestureDetector.onDragSelectionStart].
@@ -332,11 +325,6 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void onDragSelectionEnd(DragEndDetails details) {
-    /* Subclass should override this method if needed. */
-  }
-
-  @protected
-  void onSelectionChange(TextSelection selection) {
     /* Subclass should override this method if needed. */
   }
 
@@ -1188,11 +1176,8 @@ class RenderStelaRichText extends RenderBox
     return newSelection;
   }
 
-  /// Select a word around the location of the last tap down.
-  ///
-  /// {@macro flutter.rendering.editable.select}
-  void selectWord({@required SelectionChangedCause cause}) {
-    selectWordsInRange(from: _lastTapDownPosition, cause: cause);
+  TextSelection selectWord({@required SelectionChangedCause cause}) {
+    return selectWordsInRange(from: _lastTapDownPosition, cause: cause);
   }
 
   /// Selects the set words of a paragraph in a given range of global positions.

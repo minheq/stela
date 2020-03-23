@@ -279,6 +279,8 @@ class _StelaEditableState extends State<StelaEditable>
   Duration get cursorBlinkInterval => _kCursorBlinkHalfPeriod;
 
   void _onCursorColorTick() {
+    // TODO: Perf. change the cursor color directly in the render object
+    // renderEditable.cursorColor = widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
     setState(() {
       _cursorColor =
           widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
@@ -391,8 +393,14 @@ class _StelaEditableState extends State<StelaEditable>
     // if (!widget.controller.isSelectionWithinTextBounds(selection)) {
     //   return;
     // }
-    Stela.Point p = Stela.Point(entry.path, selection.baseOffset);
-    scope.controller.selection = Stela.Range(p, p);
+    if (selection.isCollapsed) {
+      Stela.Point p = Stela.Point(entry.path, selection.baseOffset);
+      scope.controller.selection = Stela.Range(p, p);
+    } else {
+      Stela.Point a = Stela.Point(entry.path, selection.baseOffset);
+      Stela.Point f = Stela.Point(entry.path, selection.extentOffset);
+      scope.controller.selection = Stela.Range(a, f);
+    }
 
     // This will show the keyboard for all selection changes on the
     // EditableWidget, not just changes triggered by user gestures.
