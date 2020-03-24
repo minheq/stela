@@ -38,6 +38,7 @@ class MyApp extends StatelessWidget {
             TextFormField(
               initialValue:
                   'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
+              maxLines: null,
             ),
             // GestureDetector(
             //   behavior: HitTestBehavior.translucent,

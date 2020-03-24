@@ -1,34 +1,31 @@
-// // // Copyright 2014 The Flutter Authors. All rights reserved.
-// // // Use of this source code is governed by a BSD-style license that can be
-// // // found in the LICENSE file.
+// import 'dart:async';
+// import 'dart:math' as math;
 
-// // import 'dart:async';
-// // import 'dart:math' as math;
-
-// // import 'package:flutter/foundation.dart';
-// // import 'package:flutter/gestures.dart';
-// // import 'package:flutter/material.dart';
-// // import 'package:flutter/rendering.dart';
-// // import 'package:flutter/scheduler.dart';
-// // import 'package:flutter/services.dart';
-// // import 'package:flutter/widgets.dart';
+// import 'package:flutter/foundation.dart';
+// import 'package:flutter/gestures.dart';
+// import 'package:flutter/material.dart';
+// import 'package:flutter/rendering.dart';
+// import 'package:flutter/scheduler.dart';
+// import 'package:flutter/services.dart';
+// import 'package:flutter/widgets.dart';
+// import 'package:inday/stela/stela.dart' as Stela;
+// import 'editor.dart';
 
 // /// An object that manages a pair of text selection handles.
 // ///
 // /// The selection handles are displayed in the [Overlay] that most closely
 // /// encloses the given [BuildContext].
-// class TextSelectionOverlay {
+// class EditorSelectionOverlay {
 //   /// Creates an object that manages overly entries for selection handles.
 //   ///
 //   /// The [context] must not be null and must have an [Overlay] as an ancestor.
-//   TextSelectionOverlay({
-//     @required TextEditingValue value,
+//   EditorSelectionOverlay({
+//     @required EditorEditingValue value,
 //     @required this.context,
 //     this.debugRequiredFor,
 //     @required this.toolbarLayerLink,
 //     @required this.startHandleLayerLink,
 //     @required this.endHandleLayerLink,
-//     @required this.renderObject,
 //     this.selectionControls,
 //     bool handlesVisible = false,
 //     this.selectionDelegate,
@@ -70,11 +67,6 @@
 //   /// location of end selection handle.
 //   final LayerLink endHandleLayerLink;
 
-//   // TODO(mpcomplete): what if the renderObject is removed or replaced, or
-//   // moves? Not sure what cases I need to handle, or how to handle them.
-//   /// The editable line in which the selected text is being displayed.
-//   final RenderEditable renderObject;
-
 //   /// Builds text selection handles and toolbar.
 //   final TextSelectionControls selectionControls;
 
@@ -115,9 +107,9 @@
 
 //   /// Retrieve current value.
 //   @visibleForTesting
-//   TextEditingValue get value => _value;
+//   EditorEditingValue get value => _value;
 
-//   TextEditingValue _value;
+//   EditorEditingValue _value;
 
 //   /// A pair of handles. If this is non-null, there are always 2, though the
 //   /// second is hidden when the selection is collapsed.
@@ -126,7 +118,7 @@
 //   /// A copy/paste toolbar.
 //   OverlayEntry _toolbar;
 
-//   TextSelection get _selection => _value.selection;
+//   Stela.Range get _selection => _value.selection;
 
 //   /// Whether selection handles are visible.
 //   ///
@@ -164,10 +156,10 @@
 //     _handles = <OverlayEntry>[
 //       OverlayEntry(
 //           builder: (BuildContext context) =>
-//               _buildHandle(context, _TextSelectionHandlePosition.start)),
+//               _buildHandle(context, _EditorSelectionHandlePosition.start)),
 //       OverlayEntry(
 //           builder: (BuildContext context) =>
-//               _buildHandle(context, _TextSelectionHandlePosition.end)),
+//               _buildHandle(context, _EditorSelectionHandlePosition.end)),
 //     ];
 
 //     Overlay.of(context, rootOverlay: true, debugRequiredFor: debugRequiredFor)
@@ -186,10 +178,10 @@
 //   /// Shows the toolbar by inserting it into the [context]'s overlay.
 //   void showToolbar() {
 //     assert(_toolbar == null);
-//     _toolbar = OverlayEntry(builder: _buildToolbar);
-//     Overlay.of(context, rootOverlay: true, debugRequiredFor: debugRequiredFor)
-//         .insert(_toolbar);
-//     _toolbarController.forward(from: 0.0);
+//     // _toolbar = OverlayEntry(builder: _buildToolbar);
+//     // Overlay.of(context, rootOverlay: true, debugRequiredFor: debugRequiredFor)
+//     //     .insert(_toolbar);
+//     // _toolbarController.forward(from: 0.0);
 //   }
 
 //   /// Updates the overlay after the selection has changed.
@@ -201,7 +193,7 @@
 //   /// synchronously. This means that it is safe to call during builds, but also
 //   /// that if you do call this during a build, the UI will not update until the
 //   /// next frame (i.e. many milliseconds later).
-//   void update(TextEditingValue newValue) {
+//   void update(EditorEditingValue newValue) {
 //     if (_value == newValue) return;
 //     _value = newValue;
 //     if (SchedulerBinding.instance.schedulerPhase ==
@@ -263,21 +255,20 @@
 //   }
 
 //   Widget _buildHandle(
-//       BuildContext context, _TextSelectionHandlePosition position) {
+//       BuildContext context, _EditorSelectionHandlePosition position) {
 //     if ((_selection.isCollapsed &&
-//             position == _TextSelectionHandlePosition.end) ||
+//             position == _EditorSelectionHandlePosition.end) ||
 //         selectionControls == null)
 //       return Container(); // hide the second handle when collapsed
 //     return Visibility(
 //         visible: handlesVisible,
-//         child: _TextSelectionHandleOverlay(
-//           onSelectionHandleChanged: (TextSelection newSelection) {
+//         child: _EditorSelectionHandleOverlay(
+//           onSelectionHandleChanged: (Stela.Range newSelection) {
 //             _handleSelectionHandleChanged(newSelection, position);
 //           },
 //           onSelectionHandleTapped: onSelectionHandleTapped,
 //           startHandleLayerLink: startHandleLayerLink,
 //           endHandleLayerLink: endHandleLayerLink,
-//           renderObject: renderObject,
 //           selection: _selection,
 //           selectionControls: selectionControls,
 //           position: position,
@@ -285,111 +276,93 @@
 //         ));
 //   }
 
-//   Widget _buildToolbar(BuildContext context) {
-//     if (selectionControls == null) return Container();
+//   // Widget _buildToolbar(BuildContext context) {
+//   //   if (selectionControls == null) return Container();
 
-//     // Find the horizontal midpoint, just above the selected text.
-//     final List<TextSelectionPoint> endpoints =
-//         renderObject.getEndpointsForSelection(_selection);
+//   //   // Find the horizontal midpoint, just above the selected text.
+//   //   final List<TextSelectionPoint> endpoints =
+//   //       renderObject.getEndpointsForSelection(_selection);
 
-//     final Rect editingRegion = Rect.fromPoints(
-//       renderObject.localToGlobal(Offset.zero),
-//       renderObject.localToGlobal(renderObject.size.bottomRight(Offset.zero)),
-//     );
+//   //   final Rect editingRegion = Rect.fromPoints(
+//   //     renderObject.localToGlobal(Offset.zero),
+//   //     renderObject.localToGlobal(renderObject.size.bottomRight(Offset.zero)),
+//   //   );
 
-//     final bool isMultiline =
-//         endpoints.last.point.dy - endpoints.first.point.dy >
-//             renderObject.preferredLineHeight / 2;
+//   //   final bool isMultiline =
+//   //       endpoints.last.point.dy - endpoints.first.point.dy >
+//   //           renderObject.preferredLineHeight / 2;
 
-//     // If the selected text spans more than 1 line, horizontally center the toolbar.
-//     // Derived from both iOS and Android.
-//     final double midX = isMultiline
-//         ? editingRegion.width / 2
-//         : (endpoints.first.point.dx + endpoints.last.point.dx) / 2;
+//   //   // If the selected text spans more than 1 line, horizontally center the toolbar.
+//   //   // Derived from both iOS and Android.
+//   //   final double midX = isMultiline
+//   //       ? editingRegion.width / 2
+//   //       : (endpoints.first.point.dx + endpoints.last.point.dx) / 2;
 
-//     final Offset midpoint = Offset(
-//       midX,
-//       // The y-coordinate won't be made use of most likely.
-//       endpoints[0].point.dy - renderObject.preferredLineHeight,
-//     );
+//   //   final Offset midpoint = Offset(
+//   //     midX,
+//   //     // The y-coordinate won't be made use of most likely.
+//   //     endpoints[0].point.dy - renderObject.preferredLineHeight,
+//   //   );
 
-//     return FadeTransition(
-//       opacity: _toolbarOpacity,
-//       child: CompositedTransformFollower(
-//         link: toolbarLayerLink,
-//         showWhenUnlinked: false,
-//         offset: -editingRegion.topLeft,
-//         child: selectionControls.buildToolbar(
-//           context,
-//           editingRegion,
-//           renderObject.preferredLineHeight,
-//           midpoint,
-//           endpoints,
-//           selectionDelegate,
-//         ),
-//       ),
-//     );
-//   }
-
-//   void _handleSelectionHandleChanged(
-//       TextSelection newSelection, _TextSelectionHandlePosition position) {
-//     TextPosition textPosition;
-//     switch (position) {
-//       case _TextSelectionHandlePosition.start:
-//         textPosition = newSelection.base;
-//         break;
-//       case _TextSelectionHandlePosition.end:
-//         textPosition = newSelection.extent;
-//         break;
-//     }
-//     selectionDelegate.textEditingValue =
-//         _value.copyWith(selection: newSelection, composing: TextRange.empty);
-//     selectionDelegate.bringIntoView(textPosition);
-//   }
+//   //   return FadeTransition(
+//   //     opacity: _toolbarOpacity,
+//   //     child: CompositedTransformFollower(
+//   //       link: toolbarLayerLink,
+//   //       showWhenUnlinked: false,
+//   //       offset: -editingRegion.topLeft,
+//   //       child: selectionControls.buildToolbar(
+//   //         context,
+//   //         editingRegion,
+//   //         renderObject.preferredLineHeight,
+//   //         midpoint,
+//   //         endpoints,
+//   //         selectionDelegate,
+//   //       ),
+//   //     ),
+//   //   );
+//   // }
 // }
 
 // /// This widget represents a single draggable text selection handle.
-// class _TextSelectionHandleOverlay extends StatefulWidget {
-//   const _TextSelectionHandleOverlay({
+// class _EditorSelectionHandleOverlay extends StatefulWidget {
+//   const _EditorSelectionHandleOverlay({
 //     Key key,
 //     @required this.selection,
 //     @required this.position,
 //     @required this.startHandleLayerLink,
 //     @required this.endHandleLayerLink,
-//     @required this.renderObject,
 //     @required this.onSelectionHandleChanged,
 //     @required this.onSelectionHandleTapped,
 //     @required this.selectionControls,
 //     this.dragStartBehavior = DragStartBehavior.start,
 //   }) : super(key: key);
 
-//   final TextSelection selection;
-//   final _TextSelectionHandlePosition position;
+//   final Stela.Range selection;
+//   final _EditorSelectionHandlePosition position;
 //   final LayerLink startHandleLayerLink;
 //   final LayerLink endHandleLayerLink;
-//   final RenderEditable renderObject;
-//   final ValueChanged<TextSelection> onSelectionHandleChanged;
+//   final ValueChanged<Stela.Range> onSelectionHandleChanged;
 //   final VoidCallback onSelectionHandleTapped;
 //   final TextSelectionControls selectionControls;
 //   final DragStartBehavior dragStartBehavior;
 
 //   @override
-//   _TextSelectionHandleOverlayState createState() =>
-//       _TextSelectionHandleOverlayState();
+//   _EditorSelectionHandleOverlayState createState() =>
+//       _EditorSelectionHandleOverlayState();
 
 //   ValueListenable<bool> get _visibility {
 //     switch (position) {
-//       case _TextSelectionHandlePosition.start:
+//       case _EditorSelectionHandlePosition.start:
 //         return renderObject.selectionStartInViewport;
-//       case _TextSelectionHandlePosition.end:
+//       case _EditorSelectionHandlePosition.end:
 //         return renderObject.selectionEndInViewport;
 //     }
 //     return null;
 //   }
 // }
 
-// class _TextSelectionHandleOverlayState
-//     extends State<_TextSelectionHandleOverlay>
+// class _EditorSelectionHandleOverlayState
+//     extends State<_EditorSelectionHandleOverlay>
 //     with SingleTickerProviderStateMixin {
 //   Offset _dragPosition;
 
@@ -401,7 +374,7 @@
 //     super.initState();
 
 //     _controller = AnimationController(
-//         duration: TextSelectionOverlay.fadeDuration, vsync: this);
+//         duration: EditorSelectionOverlay.fadeDuration, vsync: this);
 
 //     _handleVisibilityChanged();
 //     widget._visibility.addListener(_handleVisibilityChanged);
@@ -416,7 +389,7 @@
 //   }
 
 //   @override
-//   void didUpdateWidget(_TextSelectionHandleOverlay oldWidget) {
+//   void didUpdateWidget(_EditorSelectionHandleOverlay oldWidget) {
 //     super.didUpdateWidget(oldWidget);
 //     oldWidget._visibility.removeListener(_handleVisibilityChanged);
 //     _handleVisibilityChanged();
@@ -443,20 +416,20 @@
 //         widget.renderObject.getPositionForPoint(_dragPosition);
 
 //     if (widget.selection.isCollapsed) {
-//       widget.onSelectionHandleChanged(TextSelection.fromPosition(position));
+//       widget.onSelectionHandleChanged(Stela.Range.fromPosition(position));
 //       return;
 //     }
 
-//     TextSelection newSelection;
+//     Stela.Range newSelection;
 //     switch (widget.position) {
-//       case _TextSelectionHandlePosition.start:
-//         newSelection = TextSelection(
+//       case _EditorSelectionHandlePosition.start:
+//         newSelection = Stela.Range(
 //           baseOffset: position.offset,
 //           extentOffset: widget.selection.extentOffset,
 //         );
 //         break;
-//       case _TextSelectionHandlePosition.end:
-//         newSelection = TextSelection(
+//       case _EditorSelectionHandlePosition.end:
+//         newSelection = Stela.Range(
 //           baseOffset: widget.selection.baseOffset,
 //           extentOffset: position.offset,
 //         );
@@ -480,7 +453,7 @@
 //     TextSelectionHandleType type;
 
 //     switch (widget.position) {
-//       case _TextSelectionHandlePosition.start:
+//       case _EditorSelectionHandlePosition.start:
 //         layerLink = widget.startHandleLayerLink;
 //         type = _chooseType(
 //           widget.renderObject.textDirection,
@@ -488,7 +461,7 @@
 //           TextSelectionHandleType.right,
 //         );
 //         break;
-//       case _TextSelectionHandlePosition.end:
+//       case _EditorSelectionHandlePosition.end:
 //         // For collapsed selections, we shouldn't be building the [end] handle.
 //         assert(!widget.selection.isCollapsed);
 //         layerLink = widget.endHandleLayerLink;
@@ -579,3 +552,5 @@
 //     return null;
 //   }
 // }
+
+// enum _EditorSelectionHandlePosition { start, end }
