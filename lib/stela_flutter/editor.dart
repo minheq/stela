@@ -589,7 +589,7 @@ class _StelaEditorState extends State<StelaEditor>
       _editableKey.currentContext.findRenderObject() as RenderStelaEditable;
   // #endregion
 
-  RichText _buildRichText(Stela.Element node) {
+  StelaRichText _buildRichText(Stela.Element node) {
     ThemeData themeData = Theme.of(context);
     List<InlineSpan> children = [];
 
@@ -601,8 +601,12 @@ class _StelaEditorState extends State<StelaEditor>
       }
     }
 
-    return RichText(
+    return StelaRichText(
       text: TextSpan(children: children),
+      cursorColor: themeData.cursorColor,
+      selectionColor: themeData.textSelectionColor,
+      backgroundCursorColor: CupertinoColors.inactiveGray,
+      ignorePointer: false,
     );
   }
 
