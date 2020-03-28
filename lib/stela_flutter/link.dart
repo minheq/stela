@@ -19,10 +19,10 @@ class _StelaLinkState extends State<StelaLink> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-      onTap: () {
-        print('link tapped');
-      },
-      child: Column(children: widget.children),
-    );
+        behavior: HitTestBehavior.translucent,
+        onTapDown: (TapDownDetails details) {
+          print('link');
+        },
+        child: Column(children: widget.children));
   }
 }

@@ -589,7 +589,8 @@ class _StelaEditorState extends State<StelaEditor>
       _editableKey.currentContext.findRenderObject() as RenderStelaEditable;
   // #endregion
 
-  StelaRichText _buildRichText(Stela.Element node) {
+  RichText _buildRichText(Stela.Element node) {
+    ThemeData themeData = Theme.of(context);
     List<InlineSpan> children = [];
 
     for (Stela.Node child in node.children) {
@@ -600,7 +601,9 @@ class _StelaEditorState extends State<StelaEditor>
       }
     }
 
-    return StelaRichText(text: TextSpan(children: children));
+    return RichText(
+      text: TextSpan(children: children),
+    );
   }
 
   Widget _buildElement(Stela.Element node) {
@@ -667,10 +670,16 @@ class _StelaEditorState extends State<StelaEditor>
         break;
     }
 
-    return StelaEditable(
-      key: _editableKey,
-      children: _buildChildren(widget.controller.value.editor),
-    );
+    return GestureDetector(
+        behavior: HitTestBehavior.translucent,
+        onTapDown: (TapDownDetails details) {
+          print('tap');
+        },
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          textDirection: Directionality.of(context),
+          children: _buildChildren(widget.controller.value.editor),
+        ));
   }
 }
 
