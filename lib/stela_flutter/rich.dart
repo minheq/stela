@@ -94,6 +94,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       strutStyle: strutStyle,
       textWidthBasis: textWidthBasis,
       textHeightBehavior: textHeightBehavior,
+      locale: locale ?? Localizations.localeOf(context, nullOk: true),
       // overflow: overflow,
       // cursorColor: cursorColor,
       // ignorePointer: ignorePointer,
@@ -110,7 +111,6 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       // selectionHeightStyle: selectionHeightStyle,
       // selectionWidthStyle: selectionWidthStyle,
       // devicePixelRatio: devicePixelRatio,
-      locale: locale ?? Localizations.localeOf(context, nullOk: true),
     );
   }
 
@@ -128,23 +128,23 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       ..strutStyle = strutStyle
       ..textWidthBasis = textWidthBasis
       ..textHeightBehavior = textHeightBehavior
-      // ..overflow = overflow
-      // ..cursorColor = cursorColor
-      // ..backgroundCursorColor = backgroundCursorColor
-      // ..showCursor = showCursor
-      // ..hasFocus = hasFocus
-      // ..selection = selection
-      // ..ignorePointer = ignorePointer
-      // ..selectionColor = selectionColor
-      // ..onCaretChanged = onCaretChanged
-      // ..cursorWidth = cursorWidth
-      // ..cursorRadius = cursorRadius
-      // ..cursorOffset = cursorOffset
-      // ..paintCursorAboveText = paintCursorAboveText
-      // ..selectionHeightStyle = selectionHeightStyle
-      // ..selectionWidthStyle = selectionWidthStyle
-      // ..devicePixelRatio = devicePixelRatio
       ..locale = locale ?? Localizations.localeOf(context, nullOk: true);
+    // ..overflow = overflow
+    // ..cursorColor = cursorColor
+    // ..backgroundCursorColor = backgroundCursorColor
+    // ..showCursor = showCursor
+    // ..hasFocus = hasFocus
+    // ..selection = selection
+    // ..ignorePointer = ignorePointer
+    // ..selectionColor = selectionColor
+    // ..onCaretChanged = onCaretChanged
+    // ..cursorWidth = cursorWidth
+    // ..cursorRadius = cursorRadius
+    // ..cursorOffset = cursorOffset
+    // ..paintCursorAboveText = paintCursorAboveText
+    // ..selectionHeightStyle = selectionHeightStyle
+    // ..selectionWidthStyle = selectionWidthStyle
+    // ..devicePixelRatio = devicePixelRatio
   }
 
   @override
