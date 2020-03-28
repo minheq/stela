@@ -8,8 +8,6 @@ import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
-import 'package:inday/stela_flutter/editor.dart';
-import 'package:inday/stela_flutter/element.dart';
 
 const double _kCaretGap = 1.0; // pixels
 const double _kCaretHeightOffset = 2.0; // pixels
@@ -26,13 +24,12 @@ const double _kFloatingCaretRadius = 1.0;
 /// Used by [RenderEditable.onCaretChanged].
 typedef CaretChangedHandler = void Function(Rect caretRect);
 
-class StelaRichText extends StatefulWidget {
-  StelaRichText({
+class StelaBlockText extends StatefulWidget {
+  StelaBlockText({
     Key key,
-    @required this.text,
+    @required this.block,
     this.textAlign = TextAlign.start,
     this.textDirection,
-    this.node,
     this.softWrap = true,
     this.overflow = TextOverflow.clip,
     this.textScaleFactor = 1.0,
@@ -42,47 +39,45 @@ class StelaRichText extends StatefulWidget {
     this.textWidthBasis = TextWidthBasis.parent,
     this.textHeightBehavior,
     this.cursorColor,
+    this.ignorePointer,
+    this.forcePressEnabled,
+    this.selectionEnabled,
     this.selection,
     this.onCaretChanged,
     this.selectionColor,
-    this.scope,
     this.hasFocus,
     this.backgroundCursorColor,
     this.showCursor,
     this.cursorWidth = 2.0,
     this.cursorRadius,
-    this.textEntries,
     this.selectionHeightStyle = ui.BoxHeightStyle.tight,
     this.selectionWidthStyle = ui.BoxWidthStyle.tight,
     this.paintCursorAboveText = false,
     this.cursorOffset,
     this.devicePixelRatio = 1.0,
-  })  : assert(text != null),
-        assert(textAlign != null),
-        assert(softWrap != null),
-        assert(overflow != null),
-        assert(textScaleFactor != null),
-        assert(maxLines == null || maxLines > 0),
-        assert(textWidthBasis != null);
+    this.textBuilder,
+    this.onTapDown,
+    this.onSingleTapUp,
+  }) : super(key: key);
 
-  final Stela.Node node;
+  final Stela.Block block;
   final Color cursorColor;
   final Color backgroundCursorColor;
   final ValueNotifier<bool> showCursor;
   final bool hasFocus;
+  final bool selectionEnabled;
   final Color selectionColor;
   final TextSelection selection;
   final CaretChangedHandler onCaretChanged;
   final double cursorWidth;
+  final bool ignorePointer;
+  final bool forcePressEnabled;
   final Radius cursorRadius;
-  final List<TextNodeEntry> textEntries;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
-  final StelaEditorScope scope;
   final ui.BoxHeightStyle selectionHeightStyle;
   final ui.BoxWidthStyle selectionWidthStyle;
   final double devicePixelRatio;
-  final InlineSpan text;
   final TextAlign textAlign;
   final TextDirection textDirection;
   final bool softWrap;
@@ -93,43 +88,26 @@ class StelaRichText extends StatefulWidget {
   final StrutStyle strutStyle;
   final TextWidthBasis textWidthBasis;
   final ui.TextHeightBehavior textHeightBehavior;
+  final TextSpan Function(Stela.Text) textBuilder;
+  final void Function(GlobalKey, TapDownDetails) onTapDown;
+  final void Function(GlobalKey, TapUpDetails) onSingleTapUp;
 
   @override
-  _StelaRichTextState createState() => _StelaRichTextState();
+  _StelaBlockTextState createState() => _StelaBlockTextState();
 }
 
-class _StelaRichTextState extends State<StelaRichText> {
-  final GlobalKey _editableKey = GlobalKey();
-  RenderStelaRichText get renderRichText =>
-      _editableKey.currentContext.findRenderObject() as RenderStelaRichText;
-
-  /// Whether to show the selection toolbar.
-  ///
-  /// It is based on the signal source when a [onTapDown] is called. This getter
-  /// will return true if current [onTapDown] event is triggered by a touch or
-  /// a stylus.
-  bool get shouldShowSelectionToolbar => _shouldShowSelectionToolbar;
-  bool _shouldShowSelectionToolbar = true;
+class _StelaBlockTextState extends State<StelaBlockText> {
+  final GlobalKey _blockTextKey = GlobalKey();
 
   @protected
   void handleTapDown(TapDownDetails details) {
-    renderRichText.handleTapDown(details);
-    // The selection overlay should only be shown when the user is interacting
-    // through a touch screen (via either a finger or a stylus). A mouse shouldn't
-    // trigger the selection overlay.
-    // For backwards-compatibility, we treat a null kind the same as touch.
-    final PointerDeviceKind kind = details.kind;
-    _shouldShowSelectionToolbar = kind == null ||
-        kind == PointerDeviceKind.touch ||
-        kind == PointerDeviceKind.stylus;
+    widget.onTapDown(_blockTextKey, details);
   }
 
   @protected
   void onForcePressStart(ForcePressDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
-    assert(scope.forcePressEnabled);
-    _shouldShowSelectionToolbar = true;
-    if (scope.selectionEnabled) {
+    assert(widget.forcePressEnabled);
+    if (widget.selectionEnabled) {
       // renderEditable.selectWordsInRange(
       //   from: details.globalPosition,
       //   cause: SelectionChangedCause.forcePress,
@@ -139,42 +117,20 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void onForcePressEnd(ForcePressDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
-    assert(scope.forcePressEnabled);
+    assert(widget.forcePressEnabled);
     // renderEditable.selectWordsInRange(
     //   from: details.globalPosition,
     //   cause: SelectionChangedCause.forcePress,
     // );
-    if (shouldShowSelectionToolbar) {
-      // editableText.showToolbar();
-    }
-  }
-
-  TextNodeEntry _textNodeEntry(TextSelection selection) {
-    TextNodeEntry selected;
-
-    for (TextNodeEntry textEntry in widget.textEntries) {
-      if (selection.baseOffset >= textEntry.position.offset) {
-        selected = textEntry;
-        break;
-      }
-    }
-    return selected;
+    // if (shouldShowSelectionToolbar) {
+    //   // editableText.showToolbar();
+    // }
   }
 
   @protected
   void onSingleTapUp(TapUpDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.tap;
-    if (scope.selectionEnabled) {
-      scope.onTapUp(widget.node, details);
-
-      TextSelection selection = renderRichText.selectWordEdge(cause: cause);
-      TextNodeEntry selected = _textNodeEntry(selection);
-
-      scope.onSelectionChange(
-          Stela.NodeEntry(selected.node, selected.path), selection, cause);
-    }
+    widget.onSingleTapUp(_blockTextKey, details);
   }
 
   @protected
@@ -184,54 +140,47 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void handleSingleLongTapStart(LongPressStartDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.longPress;
 
-    if (scope.selectionEnabled) {
-      switch (Theme.of(context).platform) {
-        case TargetPlatform.iOS:
-        case TargetPlatform.macOS:
-          TextSelection selection = renderRichText.selectPositionAt(
-            from: details.globalPosition,
-            cause: SelectionChangedCause.longPress,
-          );
-          TextNodeEntry selected = _textNodeEntry(selection);
+    //  if (selectionEnabled) {
+    //    switch (Theme.of(context).platform) {
+    //      case TargetPlatform.iOS:
+    //      case TargetPlatform.macOS:
+    //        TextSelection selection = renderRichText.selectPositionAt(
+    //          from: details.globalPosition,
+    //          cause: SelectionChangedCause.longPress,
+    //        );
+    //        TextNodeEntry selected = _textNodeEntry(selection);
 
-          scope.onSelectionChange(
-              Stela.NodeEntry(selected.node, selected.path), selection, cause);
-          break;
-        case TargetPlatform.android:
-        case TargetPlatform.fuchsia:
-        case TargetPlatform.linux:
-        case TargetPlatform.windows:
-          TextSelection selection =
-              renderRichText.selectWord(cause: SelectionChangedCause.longPress);
-          TextNodeEntry selected = _textNodeEntry(selection);
+    //        onSelectionChange(
+    //            Stela.NodeEntry(selected.node, selected.path), selection, cause);
+    //        break;
+    //      case TargetPlatform.android:
+    //      case TargetPlatform.fuchsia:
+    //      case TargetPlatform.linux:
+    //      case TargetPlatform.windows:
+    //        TextSelection selection =
+    //            renderRichText.selectWord(cause: SelectionChangedCause.longPress);
+    //        TextNodeEntry selected = _textNodeEntry(selection);
 
-          scope.onSelectionChange(
-              Stela.NodeEntry(selected.node, selected.path), selection, cause);
+    //        onSelectionChange(
+    //            Stela.NodeEntry(selected.node, selected.path), selection, cause);
 
-          Feedback.forLongPress(context);
-          break;
-      }
-    }
+    //        Feedback.forLongPress(context);
+    //        break;
+    //    }
+    //  }
   }
 
-  // TODO: handle cross rich text moveupdate
   @protected
   void handleSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.longPress;
 
-    if (scope.selectionEnabled) {
-      TextSelection selection = renderRichText.selectPositionAt(
-        from: details.globalPosition,
-        cause: SelectionChangedCause.longPress,
-      );
-      TextNodeEntry selected = _textNodeEntry(selection);
-
-      scope.onSelectionChange(
-          Stela.NodeEntry(selected.node, selected.path), selection, cause);
+    if (widget.selectionEnabled) {
+      //  TextSelection selection = renderRichText.selectPositionAt(
+      //    from: details.globalPosition,
+      //    cause: SelectionChangedCause.longPress,
+      //  );
     }
   }
 
@@ -244,15 +193,12 @@ class _StelaRichTextState extends State<StelaRichText> {
 
   @protected
   void handleDoubleTapDown(TapDownDetails details) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
     SelectionChangedCause cause = SelectionChangedCause.tap;
 
-    if (scope.selectionEnabled) {
-      TextSelection selection = renderRichText.selectWord(cause: cause);
-      TextNodeEntry selected = _textNodeEntry(selection);
+    if (widget.selectionEnabled) {
+      //  TextSelection selection = renderRichText.selectWord(cause: cause);
+      //  TextNodeEntry selected = _textNodeEntry(selection);
 
-      scope.onSelectionChange(
-          Stela.NodeEntry(selected.node, selected.path), selection, cause);
       //   if (shouldShowSelectionToolbar)
       //     editableText.showToolbar();
     }
@@ -281,16 +227,28 @@ class _StelaRichTextState extends State<StelaRichText> {
     /* Subclass should override this method if needed. */
   }
 
+  TextSpan _buildText() {
+    List<InlineSpan> children = [];
+
+    for (Stela.Node node in widget.block.children) {
+      if (node is Stela.Text) {
+        children.add(widget.textBuilder(node));
+      } else {
+        throw Exception('only text nodes allowed');
+      }
+    }
+
+    return TextSpan(children: children);
+  }
+
   @override
   Widget build(BuildContext context) {
-    StelaEditorScope scope = StelaEditorScope.of(context);
-
     return TextSelectionGestureDetector(
       behavior: HitTestBehavior.translucent,
       onTapDown: handleTapDown,
       // onForcePressStart:
-      //     scope.forcePressEnabled ? onForcePressStart : null,
-      // onForcePressEnd: scope.forcePressEnabled ? onForcePressEnd : null,
+      //     forcePressEnabled ? onForcePressStart : null,
+      // onForcePressEnd: forcePressEnabled ? onForcePressEnd : null,
       // onSingleTapCancel: onSingleTapCancel,
       onSingleLongTapStart: handleSingleLongTapStart,
       onSingleLongTapMoveUpdate: handleSingleLongTapMoveUpdate,
@@ -300,8 +258,8 @@ class _StelaRichTextState extends State<StelaRichText> {
       // onDragSelectionUpdate: onDragSelectionUpdate,
       // onDragSelectionEnd: onDragSelectionEnd,
       onSingleTapUp: onSingleTapUp,
-      child: _StelaRichText(
-        key: _editableKey,
+      child: _StelaBlockText(
+        key: _blockTextKey,
         cursorColor: widget.cursorColor,
         backgroundCursorColor: widget.backgroundCursorColor,
         showCursor: widget.showCursor,
@@ -310,15 +268,14 @@ class _StelaRichTextState extends State<StelaRichText> {
         selection: widget.selection,
         onCaretChanged: widget.onCaretChanged,
         cursorWidth: widget.cursorWidth,
-        ignorePointer: scope.ignorePointer,
+        ignorePointer: widget.ignorePointer,
         cursorRadius: widget.cursorRadius,
         cursorOffset: widget.cursorOffset,
         paintCursorAboveText: widget.paintCursorAboveText,
-        scope: widget.scope,
         selectionHeightStyle: widget.selectionHeightStyle,
         selectionWidthStyle: widget.selectionWidthStyle,
         devicePixelRatio: widget.devicePixelRatio,
-        text: widget.text,
+        text: _buildText(),
         textAlign: widget.textAlign,
         textDirection: widget.textDirection,
         softWrap: widget.softWrap,
@@ -334,8 +291,8 @@ class _StelaRichTextState extends State<StelaRichText> {
   }
 }
 
-class _StelaRichText extends MultiChildRenderObjectWidget {
-  _StelaRichText({
+class _StelaBlockText extends MultiChildRenderObjectWidget {
+  _StelaBlockText({
     Key key,
     @required this.text,
     this.textAlign = TextAlign.start,
@@ -353,7 +310,6 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
     this.selection,
     this.onCaretChanged,
     this.selectionColor,
-    this.scope,
     this.hasFocus,
     this.backgroundCursorColor,
     this.showCursor,
@@ -391,7 +347,6 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
   final Radius cursorRadius;
   final Offset cursorOffset;
   final bool paintCursorAboveText;
-  final StelaEditorScope scope;
   final ui.BoxHeightStyle selectionHeightStyle;
   final ui.BoxWidthStyle selectionWidthStyle;
   final double devicePixelRatio;
@@ -408,9 +363,9 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
   final ui.TextHeightBehavior textHeightBehavior;
 
   @override
-  RenderStelaRichText createRenderObject(BuildContext context) {
+  RenderStelaBlockText createRenderObject(BuildContext context) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
-    return RenderStelaRichText(
+    return RenderStelaBlockText(
       text,
       textAlign: textAlign,
       textDirection: textDirection ?? Directionality.of(context),
@@ -442,7 +397,7 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, RenderStelaRichText renderObject) {
+      BuildContext context, RenderStelaBlockText renderObject) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
     renderObject
       ..text = text
@@ -499,8 +454,8 @@ class _StelaRichText extends MultiChildRenderObjectWidget {
 
 /// How overflowing text should be handled.
 ///
-/// A [TextOverflow] can be passed to [Text] and [StelaRichText] via their
-/// [Text.overflow] and [StelaRichText.overflow] properties respectively.
+/// A [TextOverflow] can be passed to [Text] and [StelaBlockText] via their
+/// [Text.overflow] and [StelaBlockText.overflow] properties respectively.
 enum TextOverflow {
   /// Clip the overflowing text to fix its container.
   clip,
@@ -517,7 +472,7 @@ enum TextOverflow {
 
 const String _kEllipsis = '\u2026';
 
-/// Parent data for use with [RenderStelaRichText].
+/// Parent data for use with [RenderStelaBlockText].
 class TextParentData extends ContainerBoxParentData<RenderBox> {
   /// The scaling of the text.
   double scale;
@@ -534,7 +489,7 @@ class TextParentData extends ContainerBoxParentData<RenderBox> {
 }
 
 /// A render object that displays a paragraph of text.
-class RenderStelaRichText extends RenderBox
+class RenderStelaBlockText extends RenderBox
     with
         ContainerRenderObjectMixin<RenderBox, TextParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, TextParentData>,
@@ -546,7 +501,7 @@ class RenderStelaRichText extends RenderBox
   ///
   /// The [maxLines] property may be null (and indeed defaults to null), but if
   /// it is not null, it must be greater than zero.
-  RenderStelaRichText(
+  RenderStelaBlockText(
     InlineSpan text, {
     TextAlign textAlign = TextAlign.start,
     @required TextDirection textDirection,

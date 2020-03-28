@@ -1,5 +1,4 @@
 import 'dart:async';
-import 'dart:ui' as ui;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -7,15 +6,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela/stela.dart' as Stela;
-import 'package:inday/stela_flutter/children.dart';
-import 'package:inday/stela_flutter/editor.dart';
-import 'package:inday/stela_flutter/element.dart';
-import 'package:inday/stela_flutter/children.dart';
-import 'package:flutter/gestures.dart';
+import 'package:inday/stela_flutter/bulleted_list.dart';
 import 'package:flutter/scheduler.dart';
-import 'package:inday/stela_flutter/element.dart';
-import 'package:inday/stela_flutter/selection.dart';
-import 'package:inday/stela_flutter/rich_text.dart' as KRichText;
+import 'package:inday/stela_flutter/image.dart';
+import 'package:inday/stela_flutter/link.dart';
+import 'package:inday/stela_flutter/list_item.dart';
+import 'package:inday/stela_flutter/paragraph.dart';
+import 'package:inday/stela_flutter/rich.dart';
 
 Map<Stela.Node, int> nodeToIndex = Map();
 Map<Stela.Node, Stela.Ancestor> nodeToParent = Map();
@@ -123,14 +120,16 @@ const Duration _kCursorBlinkHalfPeriod = Duration(milliseconds: 500);
 // transparent.
 const Duration _kCursorBlinkWaitForStart = Duration(milliseconds: 150);
 
+typedef ElementBuilder = Widget Function(Stela.Element, List<Widget>);
+
 class StelaEditor extends StatefulWidget {
   StelaEditor({
     Key key,
     @required this.focusNode,
     this.readOnly = false,
     this.autofocus = false,
-    this.elementBuilder = defaultElementBuilder,
     this.textBuilder = defaultTextBuilder,
+    this.elementBuilder = defaultElementBuilder,
     this.enableInteractiveSelection = true,
     this.cursorOpacityAnimates = false,
     bool showCursor,
@@ -166,9 +165,8 @@ class StelaEditor extends StatefulWidget {
   final bool paintCursorAboveText;
   final FocusNode focusNode;
   final bool readOnly;
-  final Widget Function(Stela.Element element, StelaChildren children)
-      elementBuilder;
-  final TextSpan Function(Stela.Text text) textBuilder;
+  final ElementBuilder elementBuilder;
+  final TextSpan Function(Stela.Text, Stela.Element) textBuilder;
 
   static bool debugDeterministicCursor = false;
 
@@ -441,6 +439,10 @@ class _StelaEditorState extends State<StelaEditor>
   void _startOrStopCursorTimerIfNeeded() {
     Stela.Range selection = widget.controller.selection;
 
+    if (selection == null) {
+      return;
+    }
+
     if (_cursorTimer == null && _hasFocus && selection.isCollapsed) {
       _startCursorTimer();
     } else if (_cursorTimer != null && (!_hasFocus || !selection.isCollapsed)) {
@@ -580,6 +582,53 @@ class _StelaEditorState extends State<StelaEditor>
   }
   // #endregion
 
+  // #region editable
+  final GlobalKey _editableKey = GlobalKey();
+
+  RenderStelaEditable get renderEditable =>
+      _editableKey.currentContext.findRenderObject() as RenderStelaEditable;
+  // #endregion
+
+  StelaRichText _buildRichText(Stela.Element node) {
+    List<InlineSpan> children = [];
+
+    for (Stela.Node child in node.children) {
+      if (child is Stela.Text) {
+        children.add(widget.textBuilder(child, node));
+      } else {
+        children.add(WidgetSpan(child: _buildElement(child)));
+      }
+    }
+
+    return StelaRichText(text: TextSpan(children: children));
+  }
+
+  Widget _buildElement(Stela.Element node) {
+    Widget element = widget.elementBuilder(node, _buildChildren(node));
+
+    return element;
+  }
+
+  List<Widget> _buildChildren(Stela.Ancestor node) {
+    List<Widget> children = [];
+
+    // We gather text and inline nodes in a single StelaRichText widget.
+    // Reason is we want to reuse [TextPainter]
+    bool isRichText = node.children.first is Stela.Text;
+
+    if (isRichText) {
+      children.add(_buildRichText(node));
+    } else {
+      for (Stela.Node child in node.children) {
+        if (child is Stela.Element) {
+          children.add(_buildElement(child));
+        }
+      }
+    }
+
+    return children;
+  }
+
   @override
   Widget build(BuildContext context) {
     _focusAttachment.reparent();
@@ -618,152 +667,143 @@ class _StelaEditorState extends State<StelaEditor>
         break;
     }
 
-    return StelaEditorProvider(
-      scope: StelaEditorScope(
-          controller: widget.controller,
-          onSelectionChange: _handleSelectionChange,
-          onTapUp: _handleTapUp,
-          focusNode: widget.focusNode,
-          showCursor: StelaEditor.debugDeterministicCursor
-              ? ValueNotifier<bool>(widget.showCursor)
-              : _cursorVisibilityNotifier,
-          cursorColor: _cursorColor ?? widget.cursorColor,
-          selectionColor: widget.selectionColor,
-          backgroundCursorColor: widget.backgroundCursorColor,
-          forcePressEnabled: forcePressEnabled,
-          selectionEnabled: selectionEnabled,
-          cursorWidth: widget.cursorWidth,
-          hasFocus: _hasFocus,
-          findPath: findPath,
-          cursorRadius: widget.cursorRadius),
-      child: StelaChildren(
-        node: widget.controller.editor,
-        elementBuilder: widget.elementBuilder,
-        textBuilder: widget.textBuilder,
-        selection: widget.controller.value.selection,
-      ),
+    return StelaEditable(
+      key: _editableKey,
+      children: _buildChildren(widget.controller.value.editor),
     );
   }
 }
 
-TextSpan defaultTextBuilder(Stela.Text text) {
+TextSpan defaultTextBuilder(Stela.Text text, Stela.Element parent) {
+  Color color = parent.type == 'link' ? Colors.blueAccent : Colors.black;
+
   return TextSpan(
-      text: text.text, style: TextStyle(color: Colors.black, fontSize: 16));
+      text: text.text, style: TextStyle(color: color, fontSize: 16));
 }
 
-Widget defaultElementBuilder(Stela.Element element, StelaChildren children) {
-  return DefaultElement(
-    element: element,
-    children: children,
-  );
-}
-
-class StelaEditorScope {
-  // StelaEditorScope({
-  //   this.onBlur,
-  //   this.onCompositionEnd,
-  //   this.onCompositionStart,
-  //   this.onCopy,
-  //   this.onCut,
-  //   this.onDragOver,
-  //   this.onDragStart,
-  //   this.onDrop,
-  //   this.onFocus,
-  //   this.onKeyDown,
-  //   this.onPaste,
-  //   this.onSelectionChange,
-  //   this.onTap,
-  //   this.ignorePointer = false,
-  // });
-
-  // void Function() onBlur;
-  // void Function() onCompositionEnd;
-  // void Function() onCompositionStart;
-  // void Function() onCopy;
-  // void Function() onCut;
-  // void Function() onDragOver;
-  // void Function() onDragStart;
-  // void Function() onDrop;
-  // void Function() onFocus;
-  // void Function() onKeyDown;
-  // void Function() onPaste;
-  // void Function() onSelectionChange;
-  // void Function() onTap;
-
-  StelaEditorScope({
-    this.onTapDown,
-    this.onForcePressStart,
-    this.controller,
-    this.onForcePressEnd,
-    this.onTapUp,
-    this.onSingleTapCancel,
-    this.onSingleLongTapStart,
-    this.onSingleLongTapMoveUpdate,
-    this.onSingleLongTapEnd,
-    this.onDoubleTapDown,
-    this.onDragSelectionStart,
-    this.onDragSelectionUpdate,
-    this.onDragSelectionEnd,
-    this.findPath,
-    this.onSelectionChange,
-    this.ignorePointer = false,
-    @required this.focusNode,
-    this.showCursor,
-    this.cursorColor,
-    this.selectionColor,
-    this.hasFocus,
-    this.backgroundCursorColor,
-    this.forcePressEnabled,
-    this.selectionEnabled,
-    this.cursorWidth,
-    this.cursorRadius,
-  });
-
-  final EditorEditingController controller;
-  void Function() onTapDown;
-  void Function() onForcePressStart;
-  void Function() onForcePressEnd;
-  void Function(Stela.Node node, TapUpDetails details) onTapUp;
-  void Function() onSingleTapCancel;
-  void Function() onSingleLongTapStart;
-  void Function() onSingleLongTapMoveUpdate;
-  void Function() onSingleLongTapEnd;
-  void Function() onDoubleTapDown;
-  void Function() onDragSelectionStart;
-  void Function() onDragSelectionUpdate;
-  void Function() onDragSelectionEnd;
-  Stela.Path Function(Stela.Node) findPath;
-  void Function(Stela.NodeEntry entry, TextSelection selection,
-      SelectionChangedCause cause) onSelectionChange;
-  bool ignorePointer;
-
-  FocusNode focusNode;
-  ValueNotifier<bool> showCursor;
-  Color cursorColor;
-  Color selectionColor;
-  bool hasFocus;
-  bool forcePressEnabled;
-  bool selectionEnabled;
-  Color backgroundCursorColor;
-  double cursorWidth;
-  Radius cursorRadius;
-
-  static StelaEditorScope of(BuildContext context) {
-    return context
-        .dependOnInheritedWidgetOfExactType<StelaEditorProvider>()
-        .scope;
+Widget defaultElementBuilder(Stela.Element element, List<Widget> children) {
+  switch (element.type) {
+    case 'paragraph':
+      return StelaParagraph(node: element, children: children);
+    case 'image':
+      return StelaImage(node: element);
+    case 'link':
+      return StelaLink(node: element, children: children);
+    case 'bulleted_list':
+      return StelaBulletedList(node: element, children: children);
+    case 'list_item':
+      return StelaListItem(node: element, children: children);
+    default:
+      return StelaParagraph(node: element, children: children);
   }
 }
 
-class StelaEditorProvider extends InheritedWidget {
-  final StelaEditorScope scope;
-
-  StelaEditorProvider({
+class StelaEditable extends MultiChildRenderObjectWidget {
+  StelaEditable({
     Key key,
-    @required this.scope,
-    @required Widget child,
-  }) : super(key: key, child: child);
+    List<Widget> children,
+  })  : assert(children != null),
+        super(key: key, children: children);
 
   @override
-  bool updateShouldNotify(StelaEditorProvider old) => true;
+  RenderStelaEditable createRenderObject(BuildContext context) {
+    return RenderStelaEditable();
+  }
+
+  @override
+  void updateRenderObject(
+      BuildContext context, RenderStelaEditable renderObject) {
+    // renderObject
+    //   ..text = text
+    //   ..textAlign = textAlign
+    //   ..textDirection = textDirection ?? Directionality.of(context)
+    //   ..softWrap = softWrap
+    //   ..overflow = overflow
+    //   ..textScaleFactor = textScaleFactor
+    //   ..maxLines = maxLines
+    //   ..strutStyle = strutStyle
+    //   ..textWidthBasis = textWidthBasis
+    //   ..textHeightBehavior = textHeightBehavior
+    //   ..locale = locale ?? Localizations.localeOf(context, nullOk: true);
+  }
+}
+
+class EditableParentData extends ContainerBoxParentData<RenderBox> {
+  @override
+  String toString() => '${super.toString()};';
+}
+
+class RenderStelaEditable extends RenderBox
+    with
+        ContainerRenderObjectMixin<RenderBox, EditableParentData>,
+        RenderBoxContainerDefaultsMixin<RenderBox, EditableParentData> {
+  RenderStelaEditable({
+    List<RenderBox> children,
+  }) {
+    addAll(children);
+  }
+
+  @override
+  void setupParentData(RenderBox child) {
+    if (child.parentData is! EditableParentData) {
+      child.parentData = EditableParentData();
+    }
+  }
+
+  @override
+  double computeDistanceToActualBaseline(TextBaseline baseline) {
+    return defaultComputeDistanceToFirstActualBaseline(baseline);
+  }
+
+  @override
+  void performLayout() {
+    RenderBox child = firstChild;
+
+    List<RenderBox> children = getChildrenAsList();
+
+    // Max width is the width of the widest child
+    double maxWidth = constraints.minWidth;
+    for (final RenderBox child in children) {
+      maxWidth = child.getMaxIntrinsicWidth(double.infinity);
+    }
+
+    // Max height is accumulation of children's height
+    double maxHeight = constraints.minHeight;
+    for (final RenderBox child in children) {
+      maxHeight += child.getMaxIntrinsicHeight(maxWidth);
+    }
+
+    // Place each child vertically, below one another
+    double start = 0.0;
+    while (child != null) {
+      final EditableParentData childParentData =
+          child.parentData as EditableParentData;
+      final Offset childOffset = Offset(0.0, start);
+
+      childParentData.offset = childOffset;
+      child.layout(constraints, parentUsesSize: true);
+
+      start += child.size.height;
+      child = childAfter(child);
+    }
+
+    size = Size(constraints.maxWidth, maxHeight);
+  }
+
+  @override
+  void paint(PaintingContext context, Offset offset) {
+    RenderBox child = firstChild;
+
+    while (child != null) {
+      final EditableParentData childParentData =
+          child.parentData as EditableParentData;
+      context.paintChild(child, childParentData.offset + offset);
+      child = childAfter(child);
+    }
+  }
+
+  @override
+  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
 }

@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:inday/stela/node.dart';
 import 'package:inday/stela/path.dart';
 
@@ -66,12 +67,17 @@ class ElementEntry {
 /// `Block` objects are a type of node that contain other element nodes or text nodes.
 /// They each appear separated by vertical space, and they never run into each other.
 class Block implements Element {
-  Block({List<Node> children, Map<String, dynamic> props, bool isVoid})
+  Block(
+      {@required List<Node> children,
+      Map<String, dynamic> props,
+      bool isVoid,
+      @required String type})
       : children = children ?? [],
         props = props ?? {},
+        type = type ?? 'block',
         isVoid = isVoid ?? false;
 
-  String type = 'block';
+  String type;
 
   List<Node> children;
 
@@ -96,12 +102,17 @@ class Block implements Element {
 /// `Inline` objects are a type of node that contain other text nodes.
 /// They live at the same level as text nodes and are useful for e.g. links.
 class Inline implements Element {
-  Inline({List<Node> children, Map<String, dynamic> props, bool isVoid})
+  Inline(
+      {@required List<Node> children,
+      Map<String, dynamic> props,
+      bool isVoid,
+      @required String type})
       : children = children ?? [],
         props = props ?? {},
+        type = type ?? 'inline',
         isVoid = isVoid ?? false;
 
-  String type = 'inline';
+  String type;
 
   List<Node> children;
 
