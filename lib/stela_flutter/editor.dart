@@ -305,25 +305,6 @@ class _StelaEditorState extends State<StelaEditor>
 
   bool get _hasFocus => widget.focusNode.hasFocus;
 
-  void _handleTapUp(Stela.Node node, TapUpDetails details) {
-    requestKeyboard();
-    // editableText.hideToolbar();
-    // if (delegate.selectionEnabled) {
-    //   switch (Theme.of(_state.context).platform) {
-    //     case TargetPlatform.iOS:
-    //     case TargetPlatform.macOS:
-    //       renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
-    //       break;
-    //     case TargetPlatform.android:
-    //     case TargetPlatform.fuchsia:
-    //     case TargetPlatform.linux:
-    //     case TargetPlatform.windows:
-    //       renderEditable.selectPosition(cause: SelectionChangedCause.tap);
-    //       break;
-    //   }
-    // }
-  }
-
   void requestKeyboard() {
     if (widget.focusNode.hasFocus) {
       // _openInputConnection();
@@ -595,7 +576,7 @@ class _StelaEditorState extends State<StelaEditor>
 
     for (Stela.Node child in node.children) {
       if (child is Stela.Text) {
-        children.add(widget.textBuilder(child, node));
+        children.add(_buildText(child, node));
       } else {
         children.add(WidgetSpan(child: _buildElement(child)));
       }
@@ -608,6 +589,12 @@ class _StelaEditorState extends State<StelaEditor>
       backgroundCursorColor: CupertinoColors.inactiveGray,
       ignorePointer: false,
     );
+  }
+
+  TextSpan _buildText(Stela.Text node, Stela.Element parent) {
+    TextSpan text = widget.textBuilder(node, parent);
+
+    return text;
   }
 
   Widget _buildElement(Stela.Element node) {
