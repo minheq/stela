@@ -18,14 +18,20 @@ class MyApp extends StatelessWidget {
         ]),
         Stela.Text(' elit.'),
       ]),
-      Stela.Block(type: 'image', props: {
+      Stela.Block(type: 'image', isVoid: true, props: {
         'url':
             'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'
       }, children: [
         Stela.Text('')
       ]),
       Stela.Block(type: 'paragraph', children: [
-        Stela.Text('Aliquam eu scelerisque dolor, in semper turpis.'),
+        Stela.Text('Aliquam eu scelerisque dolor, in '),
+        Stela.Inline(type: 'mention', isVoid: true, props: {
+          'name': 'semper'
+        }, children: [
+          Stela.Text(''),
+        ]),
+        Stela.Text(' turpis.'),
       ]),
       Stela.Block(type: 'bulleted_list', children: [
         Stela.Block(type: 'list_item', children: [Stela.Text('item 1')]),

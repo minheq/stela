@@ -3,7 +3,6 @@ import 'package:inday/stela/stela.dart' as Stela;
 
 class StelaLink extends StatefulWidget {
   StelaLink({
-    Key key,
     @required this.node,
     @required this.children,
   });

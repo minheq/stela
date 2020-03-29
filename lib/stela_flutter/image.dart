@@ -3,7 +3,6 @@ import 'package:inday/stela/stela.dart' as Stela;
 
 class StelaImage extends StatefulWidget {
   StelaImage({
-    Key key,
     @required this.node,
   });
 

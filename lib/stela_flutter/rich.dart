@@ -12,6 +12,7 @@ import 'package:flutter/widgets.dart';
 
 class StelaRichText extends MultiChildRenderObjectWidget {
   StelaRichText({
+    // RichText
     Key key,
     @required this.text,
     this.textAlign = TextAlign.start,
@@ -39,6 +40,10 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     this.paintCursorAboveText = false,
     this.cursorOffset,
     this.devicePixelRatio = 1.0,
+
+    // Custom
+    this.registerRenderObject,
+    this.deregisterRenderObject,
   }) : super(key: key, children: _extractChildren(text));
 
   // Traverses the InlineSpan tree and depth-first collects the list of
@@ -54,6 +59,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     return result;
   }
 
+  // RichText
   final Color cursorColor;
   final Color backgroundCursorColor;
   final ValueNotifier<bool> showCursor;
@@ -81,10 +87,15 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   final TextWidthBasis textWidthBasis;
   final ui.TextHeightBehavior textHeightBehavior;
 
+  // Custom
+  final void Function(RenderObject) registerRenderObject;
+  final void Function(RenderObject) deregisterRenderObject;
+
   @override
   RenderStelaRichText createRenderObject(BuildContext context) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
     return RenderStelaRichText(
+      // RichText
       text,
       textAlign: textAlign,
       textDirection: textDirection ?? Directionality.of(context),
@@ -95,7 +106,9 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       textWidthBasis: textWidthBasis,
       textHeightBehavior: textHeightBehavior,
       locale: locale ?? Localizations.localeOf(context, nullOk: true),
-      // overflow: overflow,
+      overflow: overflow,
+      registerRenderObject: registerRenderObject,
+      deregisterRenderObject: deregisterRenderObject,
       // cursorColor: cursorColor,
       // ignorePointer: ignorePointer,
       // backgroundCursorColor: backgroundCursorColor,
@@ -119,6 +132,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       BuildContext context, RenderStelaRichText renderObject) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
     renderObject
+      // RichText
       ..text = text
       ..textAlign = textAlign
       ..textDirection = textDirection ?? Directionality.of(context)
@@ -128,8 +142,10 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       ..strutStyle = strutStyle
       ..textWidthBasis = textWidthBasis
       ..textHeightBehavior = textHeightBehavior
-      ..locale = locale ?? Localizations.localeOf(context, nullOk: true);
-    // ..overflow = overflow
+      ..locale = locale ?? Localizations.localeOf(context, nullOk: true)
+      ..overflow = overflow
+      ..registerRenderObject = registerRenderObject
+      ..deregisterRenderObject = deregisterRenderObject;
     // ..cursorColor = cursorColor
     // ..backgroundCursorColor = backgroundCursorColor
     // ..showCursor = showCursor
@@ -209,14 +225,8 @@ class RenderStelaRichText extends RenderBox
         ContainerRenderObjectMixin<RenderBox, TextParentData>,
         RenderBoxContainerDefaultsMixin<RenderBox, TextParentData>,
         RelayoutWhenSystemFontsChangeMixin {
-  /// Creates a paragraph render object.
-  ///
-  /// The [text], [textAlign], [textDirection], [overflow], [softWrap], and
-  /// [textScaleFactor] arguments must not be null.
-  ///
-  /// The [maxLines] property may be null (and indeed defaults to null), but if
-  /// it is not null, it must be greater than zero.
   RenderStelaRichText(
+    // RichText
     InlineSpan text, {
     TextAlign textAlign = TextAlign.start,
     @required TextDirection textDirection,
@@ -229,6 +239,10 @@ class RenderStelaRichText extends RenderBox
     TextWidthBasis textWidthBasis = TextWidthBasis.parent,
     ui.TextHeightBehavior textHeightBehavior,
     List<RenderBox> children,
+
+    // Custom
+    this.registerRenderObject,
+    this.deregisterRenderObject,
   })  : assert(text != null),
         assert(text.debugAssertIsValid()),
         assert(textAlign != null),
@@ -254,6 +268,8 @@ class RenderStelaRichText extends RenderBox
     addAll(children);
     _extractPlaceholderSpans(text);
   }
+
+  // #region RichText
 
   @override
   void setupParentData(RenderBox child) {
@@ -1136,4 +1152,23 @@ class RenderStelaRichText extends RenderBox
     ));
     properties.add(IntProperty('maxLines', maxLines, ifNull: 'unlimited'));
   }
+
+  // #endregion
+
+  // #region Custom
+  void Function(RenderObject) registerRenderObject;
+  void Function(RenderObject) deregisterRenderObject;
+
+  // @override
+  // void attach(PipelineOwner owner) {
+  //   super.attach(owner);
+  //   registerRenderObject(this);
+  // }
+
+  // @override
+  // void detach() {
+  //   deregisterRenderObject(this);
+  //   super.detach();
+  // }
+  // #endregion
 }

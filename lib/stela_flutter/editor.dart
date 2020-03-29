@@ -11,6 +11,8 @@ import 'package:flutter/scheduler.dart';
 import 'package:inday/stela_flutter/image.dart';
 import 'package:inday/stela_flutter/link.dart';
 import 'package:inday/stela_flutter/list_item.dart';
+import 'package:inday/stela_flutter/mention.dart';
+import 'package:inday/stela_flutter/node.dart';
 import 'package:inday/stela_flutter/paragraph.dart';
 import 'package:inday/stela_flutter/rich.dart';
 
@@ -121,6 +123,13 @@ const Duration _kCursorBlinkHalfPeriod = Duration(milliseconds: 500);
 const Duration _kCursorBlinkWaitForStart = Duration(milliseconds: 150);
 
 typedef ElementBuilder = Widget Function(Stela.Element, List<Widget>);
+
+class NodeWidgetEntry {
+  NodeWidgetEntry({this.key, this.node});
+
+  final GlobalKey key;
+  final Stela.Node node;
+}
 
 class StelaEditor extends StatefulWidget {
   StelaEditor({
@@ -570,25 +579,44 @@ class _StelaEditorState extends State<StelaEditor>
       _editableKey.currentContext.findRenderObject() as _RenderStelaEditable;
   // #endregion
 
-  StelaRichText _buildRichText(Stela.Element node) {
+  Set<RenderStelaNode> boxes = Set();
+
+  Widget _buildRichText(Stela.Element node) {
     ThemeData themeData = Theme.of(context);
     List<InlineSpan> children = [];
 
     for (Stela.Node child in node.children) {
       if (child is Stela.Text) {
         children.add(_buildText(child, node));
-      } else {
+      } else if (child is Stela.Inline) {
         children.add(WidgetSpan(child: _buildElement(child)));
+      } else {
+        throw Exception(
+            'Element can only have either text and inlines or other blocks.');
       }
     }
 
-    return StelaRichText(
-      text: TextSpan(children: children),
-      cursorColor: themeData.cursorColor,
-      selectionColor: themeData.textSelectionColor,
-      backgroundCursorColor: CupertinoColors.inactiveGray,
-      ignorePointer: false,
+    return StelaNode(
+      child: StelaRichText(
+        text: TextSpan(children: children),
+        cursorColor: themeData.cursorColor,
+        selectionColor: themeData.textSelectionColor,
+        backgroundCursorColor: CupertinoColors.inactiveGray,
+        ignorePointer: false,
+        registerRenderObject: _registerRenderObject,
+        deregisterRenderObject: _deregisterRenderObject,
+      ),
+      registerRenderObject: _registerRenderObject,
+      deregisterRenderObject: _deregisterRenderObject,
     );
+  }
+
+  _registerRenderObject(RenderObject object) {
+    boxes.add(object);
+  }
+
+  _deregisterRenderObject(RenderObject object) {
+    boxes.remove(object);
   }
 
   TextSpan _buildText(Stela.Text node, Stela.Element parent) {
@@ -600,7 +628,11 @@ class _StelaEditorState extends State<StelaEditor>
   Widget _buildElement(Stela.Element node) {
     Widget element = widget.elementBuilder(node, _buildChildren(node));
 
-    return element;
+    return StelaNode(
+      child: element,
+      registerRenderObject: _registerRenderObject,
+      deregisterRenderObject: _deregisterRenderObject,
+    );
   }
 
   List<Widget> _buildChildren(Stela.Ancestor node) {
@@ -624,40 +656,44 @@ class _StelaEditorState extends State<StelaEditor>
   }
 
   void _handleSingleTapUp(TapUpDetails details) {
-    switch (Theme.of(context).platform) {
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
-        break;
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        renderEditable.selectPosition(cause: SelectionChangedCause.tap);
-        break;
-    }
+    print('tap up');
+    // print('tap up');
+    // switch (Theme.of(context).platform) {
+    //   case TargetPlatform.iOS:
+    //   case TargetPlatform.macOS:
+    //     renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
+    //     break;
+    //   case TargetPlatform.android:
+    //   case TargetPlatform.fuchsia:
+    //   case TargetPlatform.linux:
+    //   case TargetPlatform.windows:
+    //     renderEditable.selectPosition(cause: SelectionChangedCause.tap);
+    //     break;
+    // }
   }
 
   void _handleSingleLongTapStart(LongPressStartDetails details) {
-    switch (Theme.of(context).platform) {
-      case TargetPlatform.iOS:
-      case TargetPlatform.macOS:
-        renderEditable.selectPositionAt(
-          from: details.globalPosition,
-          cause: SelectionChangedCause.longPress,
-        );
-        break;
-      case TargetPlatform.android:
-      case TargetPlatform.fuchsia:
-      case TargetPlatform.linux:
-      case TargetPlatform.windows:
-        renderEditable.selectWord(cause: SelectionChangedCause.longPress);
-        Feedback.forLongPress(context);
-        break;
-    }
+    print('long tap');
+    // switch (Theme.of(context).platform) {
+    //   case TargetPlatform.iOS:
+    //   case TargetPlatform.macOS:
+    //     renderEditable.selectPositionAt(
+    //       from: details.globalPosition,
+    //       cause: SelectionChangedCause.longPress,
+    //     );
+    //     break;
+    //   case TargetPlatform.android:
+    //   case TargetPlatform.fuchsia:
+    //   case TargetPlatform.linux:
+    //   case TargetPlatform.windows:
+    //     renderEditable.selectWord(cause: SelectionChangedCause.longPress);
+    //     Feedback.forLongPress(context);
+    //     break;
+    // }
   }
 
   void _handleDoubleTapDown(TapDownDetails details) {
+    print('double tap');
     renderEditable.selectWord(cause: SelectionChangedCause.tap);
 
     // if (shouldShowSelectionToolbar) {
@@ -666,14 +702,25 @@ class _StelaEditorState extends State<StelaEditor>
   }
 
   void _handleSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
-    renderEditable.selectPositionAt(
-      from: details.globalPosition,
-      cause: SelectionChangedCause.longPress,
-    );
+    print('move');
+    // renderEditable.selectPositionAt(
+    //   from: details.globalPosition,
+    //   cause: SelectionChangedCause.longPress,
+    // );
   }
 
   void _handleTapDown(TapDownDetails details) {
-    renderEditable.handleTapDown(details);
+    print('tap down');
+    RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
+    print('hi');
+    // renderEditable.handleTapDown(details);
+  }
+
+  RenderStelaNode boxForGlobalPoint(Offset point) {
+    return boxes.firstWhere((p) {
+      Offset localPoint = p.globalToLocal(point);
+      return p.size.contains(localPoint);
+    }, orElse: null);
   }
 
   @override
@@ -721,7 +768,7 @@ class _StelaEditorState extends State<StelaEditor>
         onSingleLongTapMoveUpdate: _handleSingleLongTapMoveUpdate,
         onDoubleTapDown: _handleDoubleTapDown,
         onSingleTapUp: _handleSingleTapUp,
-        child: _StelaEditable(
+        child: Column(
           key: _editableKey,
           children: _buildChildren(widget.controller.value.editor),
         ));
@@ -743,6 +790,8 @@ Widget defaultElementBuilder(Stela.Element element, List<Widget> children) {
       return StelaImage(node: element);
     case 'link':
       return StelaLink(node: element, children: children);
+    case 'mention':
+      return StelaMention(node: element, children: children);
     case 'bulleted_list':
       return StelaBulletedList(node: element, children: children);
     case 'list_item':
@@ -841,6 +890,11 @@ class _RenderStelaEditable extends RenderBox
   }
 
   @override
+  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
+    return defaultHitTestChildren(result, position: position);
+  }
+
+  @override
   void performLayout() {
     RenderBox child = firstChild;
 
@@ -885,10 +939,5 @@ class _RenderStelaEditable extends RenderBox
       context.paintChild(child, childParentData.offset + offset);
       child = childAfter(child);
     }
-  }
-
-  @override
-  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
-    return defaultHitTestChildren(result, position: position);
   }
 }
