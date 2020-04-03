@@ -95,36 +95,34 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   RenderStelaRichText createRenderObject(BuildContext context) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
     return RenderStelaRichText(
-      // RichText
-      text,
-      textAlign: textAlign,
-      textDirection: textDirection ?? Directionality.of(context),
-      softWrap: softWrap,
-      textScaleFactor: textScaleFactor,
-      maxLines: maxLines,
-      strutStyle: strutStyle,
-      textWidthBasis: textWidthBasis,
-      textHeightBehavior: textHeightBehavior,
-      locale: locale ?? Localizations.localeOf(context, nullOk: true),
-      overflow: overflow,
-      registerRenderObject: registerRenderObject,
-      deregisterRenderObject: deregisterRenderObject,
-      // cursorColor: cursorColor,
-      // ignorePointer: ignorePointer,
-      // backgroundCursorColor: backgroundCursorColor,
-      // showCursor: showCursor,
-      // hasFocus: hasFocus,
-      // selection: selection,
-      // selectionColor: selectionColor,
-      // onCaretChanged: onCaretChanged,
-      // cursorWidth: cursorWidth,
-      // cursorRadius: cursorRadius,
-      // cursorOffset: cursorOffset,
-      // paintCursorAboveText: paintCursorAboveText,
-      // selectionHeightStyle: selectionHeightStyle,
-      // selectionWidthStyle: selectionWidthStyle,
-      // devicePixelRatio: devicePixelRatio,
-    );
+        // RichText
+        text,
+        textAlign: textAlign,
+        textDirection: textDirection ?? Directionality.of(context),
+        softWrap: softWrap,
+        textScaleFactor: textScaleFactor,
+        maxLines: maxLines,
+        strutStyle: strutStyle,
+        textWidthBasis: textWidthBasis,
+        textHeightBehavior: textHeightBehavior,
+        locale: locale ?? Localizations.localeOf(context, nullOk: true),
+        overflow: overflow
+        // cursorColor: cursorColor,
+        // ignorePointer: ignorePointer,
+        // backgroundCursorColor: backgroundCursorColor,
+        // showCursor: showCursor,
+        // hasFocus: hasFocus,
+        // selection: selection,
+        // selectionColor: selectionColor,
+        // onCaretChanged: onCaretChanged,
+        // cursorWidth: cursorWidth,
+        // cursorRadius: cursorRadius,
+        // cursorOffset: cursorOffset,
+        // paintCursorAboveText: paintCursorAboveText,
+        // selectionHeightStyle: selectionHeightStyle,
+        // selectionWidthStyle: selectionWidthStyle,
+        // devicePixelRatio: devicePixelRatio,
+        );
   }
 
   @override
@@ -143,9 +141,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       ..textWidthBasis = textWidthBasis
       ..textHeightBehavior = textHeightBehavior
       ..locale = locale ?? Localizations.localeOf(context, nullOk: true)
-      ..overflow = overflow
-      ..registerRenderObject = registerRenderObject
-      ..deregisterRenderObject = deregisterRenderObject;
+      ..overflow = overflow;
     // ..cursorColor = cursorColor
     // ..backgroundCursorColor = backgroundCursorColor
     // ..showCursor = showCursor
@@ -239,10 +235,6 @@ class RenderStelaRichText extends RenderBox
     TextWidthBasis textWidthBasis = TextWidthBasis.parent,
     ui.TextHeightBehavior textHeightBehavior,
     List<RenderBox> children,
-
-    // Custom
-    this.registerRenderObject,
-    this.deregisterRenderObject,
   })  : assert(text != null),
         assert(text.debugAssertIsValid()),
         assert(textAlign != null),
@@ -1153,22 +1145,5 @@ class RenderStelaRichText extends RenderBox
     properties.add(IntProperty('maxLines', maxLines, ifNull: 'unlimited'));
   }
 
-  // #endregion
-
-  // #region Custom
-  void Function(RenderObject) registerRenderObject;
-  void Function(RenderObject) deregisterRenderObject;
-
-  // @override
-  // void attach(PipelineOwner owner) {
-  //   super.attach(owner);
-  //   registerRenderObject(this);
-  // }
-
-  // @override
-  // void detach() {
-  //   deregisterRenderObject(this);
-  //   super.detach();
-  // }
   // #endregion
 }

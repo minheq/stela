@@ -572,13 +572,6 @@ class _StelaEditorState extends State<StelaEditor>
   }
   // #endregion
 
-  // #region editable
-  final GlobalKey _editableKey = GlobalKey();
-
-  _RenderStelaEditable get renderEditable =>
-      _editableKey.currentContext.findRenderObject() as _RenderStelaEditable;
-  // #endregion
-
   Set<RenderStelaNode> boxes = Set();
 
   Widget _buildRichText(Stela.Element node) {
@@ -597,25 +590,24 @@ class _StelaEditorState extends State<StelaEditor>
     }
 
     return StelaNode(
+      node: node,
+      addBox: _addBox,
+      removeBox: _removeBox,
       child: StelaRichText(
         text: TextSpan(children: children),
         cursorColor: themeData.cursorColor,
         selectionColor: themeData.textSelectionColor,
         backgroundCursorColor: CupertinoColors.inactiveGray,
         ignorePointer: false,
-        registerRenderObject: _registerRenderObject,
-        deregisterRenderObject: _deregisterRenderObject,
       ),
-      registerRenderObject: _registerRenderObject,
-      deregisterRenderObject: _deregisterRenderObject,
     );
   }
 
-  _registerRenderObject(RenderObject object) {
+  _addBox(RenderObject object) {
     boxes.add(object);
   }
 
-  _deregisterRenderObject(RenderObject object) {
+  _removeBox(RenderObject object) {
     boxes.remove(object);
   }
 
@@ -629,9 +621,10 @@ class _StelaEditorState extends State<StelaEditor>
     Widget element = widget.elementBuilder(node, _buildChildren(node));
 
     return StelaNode(
+      node: node,
       child: element,
-      registerRenderObject: _registerRenderObject,
-      deregisterRenderObject: _deregisterRenderObject,
+      addBox: _addBox,
+      removeBox: _removeBox,
     );
   }
 
@@ -694,7 +687,6 @@ class _StelaEditorState extends State<StelaEditor>
 
   void _handleDoubleTapDown(TapDownDetails details) {
     print('double tap');
-    renderEditable.selectWord(cause: SelectionChangedCause.tap);
 
     // if (shouldShowSelectionToolbar) {
     //   editableText.showToolbar();
@@ -703,6 +695,8 @@ class _StelaEditorState extends State<StelaEditor>
 
   void _handleSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
     print('move');
+    RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
+    print(box.node.toString());
     // renderEditable.selectPositionAt(
     //   from: details.globalPosition,
     //   cause: SelectionChangedCause.longPress,
@@ -712,12 +706,15 @@ class _StelaEditorState extends State<StelaEditor>
   void _handleTapDown(TapDownDetails details) {
     print('tap down');
     RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
-    print('hi');
+
+    if (box.child is RenderStelaRichText) {
+      RenderStelaRichText richText = box.child;
+    }
     // renderEditable.handleTapDown(details);
   }
 
   RenderStelaNode boxForGlobalPoint(Offset point) {
-    return boxes.firstWhere((p) {
+    return boxes.lastWhere((p) {
       Offset localPoint = p.globalToLocal(point);
       return p.size.contains(localPoint);
     }, orElse: null);
@@ -769,7 +766,6 @@ class _StelaEditorState extends State<StelaEditor>
         onDoubleTapDown: _handleDoubleTapDown,
         onSingleTapUp: _handleSingleTapUp,
         child: Column(
-          key: _editableKey,
           children: _buildChildren(widget.controller.value.editor),
         ));
   }
@@ -798,146 +794,5 @@ Widget defaultElementBuilder(Stela.Element element, List<Widget> children) {
       return StelaListItem(node: element, children: children);
     default:
       return StelaParagraph(node: element, children: children);
-  }
-}
-
-class _StelaEditable extends MultiChildRenderObjectWidget {
-  _StelaEditable({Key key, List<Widget> children})
-      : assert(children != null),
-        super(key: key, children: children);
-
-  @override
-  _RenderStelaEditable createRenderObject(BuildContext context) {
-    return _RenderStelaEditable();
-  }
-
-  @override
-  void updateRenderObject(
-      BuildContext context, _RenderStelaEditable renderObject) {
-    // renderObject
-    //   ..text = text
-    //   ..textAlign = textAlign
-    //   ..textDirection = textDirection ?? Directionality.of(context)
-    //   ..softWrap = softWrap
-    //   ..overflow = overflow
-    //   ..textScaleFactor = textScaleFactor
-    //   ..maxLines = maxLines
-    //   ..strutStyle = strutStyle
-    //   ..textWidthBasis = textWidthBasis
-    //   ..textHeightBehavior = textHeightBehavior
-    //   ..locale = locale ?? Localizations.localeOf(context, nullOk: true);
-  }
-}
-
-class EditableParentData extends ContainerBoxParentData<RenderBox> {
-  @override
-  String toString() => '${super.toString()};';
-}
-
-class _RenderStelaEditable extends RenderBox
-    with
-        ContainerRenderObjectMixin<RenderBox, EditableParentData>,
-        RenderBoxContainerDefaultsMixin<RenderBox, EditableParentData> {
-  _RenderStelaEditable({
-    List<RenderBox> children,
-  }) {
-    addAll(children);
-  }
-
-  Offset _lastTapDownPosition;
-
-  void handleTapDown(TapDownDetails details) {
-    _lastTapDownPosition = details.globalPosition;
-    // richTextForOffset(details.globalPosition);
-  }
-
-  void selectWordEdge({SelectionChangedCause cause}) {
-    // TODO
-  }
-
-  void selectWord({@required SelectionChangedCause cause}) {
-    selectWordsInRange(from: _lastTapDownPosition, cause: cause);
-  }
-
-  void selectWordsInRange(
-      {@required Offset from,
-      Offset to,
-      @required SelectionChangedCause cause}) {
-    // TODO
-  }
-
-  void selectPosition({SelectionChangedCause cause}) {
-    selectPositionAt(from: _lastTapDownPosition, cause: cause);
-  }
-
-  void selectPositionAt(
-      {@required Offset from,
-      Offset to,
-      @required SelectionChangedCause cause}) {
-    // TODO
-  }
-
-  @override
-  void setupParentData(RenderBox child) {
-    if (child.parentData is! EditableParentData) {
-      child.parentData = EditableParentData();
-    }
-  }
-
-  @override
-  double computeDistanceToActualBaseline(TextBaseline baseline) {
-    return defaultComputeDistanceToFirstActualBaseline(baseline);
-  }
-
-  @override
-  bool hitTestChildren(BoxHitTestResult result, {Offset position}) {
-    return defaultHitTestChildren(result, position: position);
-  }
-
-  @override
-  void performLayout() {
-    RenderBox child = firstChild;
-
-    List<RenderBox> children = getChildrenAsList();
-
-    // Max width is the width of the widest child
-    double maxWidth = constraints.minWidth;
-    for (RenderBox child in children) {
-      maxWidth = child.getMaxIntrinsicWidth(double.infinity);
-    }
-
-    // Max height is accumulation of children's height
-    double maxHeight = constraints.minHeight;
-    for (RenderBox child in children) {
-      maxHeight += child.getMaxIntrinsicHeight(maxWidth);
-    }
-
-    // Place each child vertically, below one another
-    double start = 0.0;
-    while (child != null) {
-      EditableParentData childParentData =
-          child.parentData as EditableParentData;
-      Offset childOffset = Offset(0.0, start);
-
-      childParentData.offset = childOffset;
-      child.layout(constraints, parentUsesSize: true);
-
-      start += child.size.height;
-      child = childAfter(child);
-    }
-
-    size = Size(constraints.maxWidth, maxHeight);
-  }
-
-  @override
-  void paint(PaintingContext context, Offset offset) {
-    RenderBox child = firstChild;
-
-    while (child != null) {
-      EditableParentData childParentData =
-          child.parentData as EditableParentData;
-      context.paintChild(child, childParentData.offset + offset);
-      child = childAfter(child);
-    }
   }
 }
