@@ -588,16 +588,20 @@ class _StelaEditorState extends State<StelaEditor>
   void _handleSelectionChanged(TextSelection selection,
       RenderStelaRichText renderObject, SelectionChangedCause cause) {
     TextNodeEntry selected;
+    int offset;
 
     for (int i = renderObject.textNodeEntries.length - 1; i >= 0; i--) {
       TextNodeEntry textEntry = renderObject.textNodeEntries[i];
 
       if (selection.baseOffset >= textEntry.position.offset) {
         selected = textEntry;
+        offset = selection.baseOffset - textEntry.position.offset;
         break;
       }
     }
 
+    Stela.Point anchor = Stela.Point(selected.path, offset);
+    Stela.Range range = Stela.Range(anchor, anchor);
     print(selected.path.toString());
     // // We return early if the selection is not valid. This can happen when the
     // // text of [EditableText] is updated at the same time as the selection is
