@@ -20,7 +20,7 @@ class Point implements Location {
 
   @override
   String toString() {
-    return "Point(${path.toString()}, $offset)";
+    return "(${path.toString()}, $offset)";
   }
 
   /// Compare a point to another, returning an integer indicating whether the

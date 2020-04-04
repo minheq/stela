@@ -37,7 +37,7 @@ class Path implements Location {
 
   @override
   String toString() {
-    return "Path([${_path.join(', ')}])";
+    return "[${_path.join(', ')}]";
   }
 
   /// Adds [position] to the start of the `Path`, extending the length by one.

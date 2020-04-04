@@ -216,6 +216,10 @@ class _StelaEditorState extends State<StelaEditor>
     widget.focusNode.addListener(_handleFocusChanged);
     // #endregion
 
+    // #region value
+    widget.controller.addListener(_didChangeTextEditingValue);
+    // #endregion
+
     // _scrollController = widget.scrollController ?? ScrollController();
     // _scrollController.addListener(() { _selectionOverlay?.updateForScroll(); });
     // _floatingCursorResetController = AnimationController(vsync: this);
@@ -238,11 +242,11 @@ class _StelaEditorState extends State<StelaEditor>
   @override
   void didUpdateWidget(StelaEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
-    // if (scope.controller != oldWidget.controller) {
-    //   oldWidget.controller.removeListener(_didChangeTextEditingValue);
-    //   scope.controller.addListener(_didChangeTextEditingValue);
-    //   _updateRemoteEditingValueIfNeeded();
-    // }
+    if (widget.controller != oldWidget.controller) {
+      oldWidget.controller.removeListener(_didChangeTextEditingValue);
+      widget.controller.addListener(_didChangeTextEditingValue);
+      // _updateRemoteEditingValueIfNeeded();
+    }
     // if (widget.controller.selection != oldWidget.controller.selection) {
     //   _selectionOverlay?.update(_value);
     // }
@@ -282,7 +286,7 @@ class _StelaEditorState extends State<StelaEditor>
     _cursorBlinkOpacityController.removeListener(_onCursorColorTick);
     // #endregion
 
-    // widget.controller.removeListener(_didChangeTextEditingValue);
+    widget.controller.removeListener(_didChangeTextEditingValue);
     // _floatingCursorResetController.removeListener(_onFloatingCursorResetTick);
     // _closeInputConnectionIfNeeded();
     // assert(!_hasInputConnection);
@@ -454,6 +458,18 @@ class _StelaEditorState extends State<StelaEditor>
   }
   // #endregion
 
+  // #region Value
+  void _didChangeTextEditingValue() {
+    // _updateRemoteEditingValueIfNeeded();
+    _startOrStopCursorTimerIfNeeded();
+    // _updateOrDisposeSelectionOverlayIfNeeded();
+    // _textChangedSinceLastCaretUpdate = true;
+    // TODO(abarth): Teach RenderEditable about ValueNotifier<TextEditingValue>
+    // to avoid this setState().
+    setState(() {/* We use widget.controller.value in build(). */});
+  }
+  // #endregion
+
   // #region Selection
   /// {@macro flutter.rendering.editable.selectionEnabled}
   bool get selectionEnabled => widget.enableInteractiveSelection;
@@ -489,102 +505,6 @@ class _StelaEditorState extends State<StelaEditor>
   //   return false;
   // }
 
-  _handleSelectionChange(Stela.NodeEntry entry, TextSelection selection,
-      SelectionChangedCause cause) {
-    // We return early if the selection is not valid. This can happen when the
-    // text of [EditableText] is updated at the same time as the selection is
-    // changed by a gesture event.
-    // if (!widget.controller.isSelectionWithinTextBounds(selection)) {
-    //   return;
-    // }
-    if (selection.isCollapsed) {
-      Stela.Point p = Stela.Point(entry.path, selection.baseOffset);
-      widget.controller.selection = Stela.Range(p, p);
-    } else {
-      Stela.Point a = Stela.Point(entry.path, selection.baseOffset);
-      Stela.Point f = Stela.Point(entry.path, selection.extentOffset);
-      widget.controller.selection = Stela.Range(a, f);
-    }
-
-    // This will show the keyboard for all selection changes on the
-    // EditableWidget, not just changes triggered by user gestures.
-    requestKeyboard();
-
-    // _selectionOverlay?.hide();
-    // _selectionOverlay = null;
-
-    // if (widget.selectionControls != null) {
-    //   _selectionOverlay = TextSelectionOverlay(
-    //     context: context,
-    //     value: _value,
-    //     debugRequiredFor: widget,
-    //     toolbarLayerLink: _toolbarLayerLink,
-    //     startHandleLayerLink: _startHandleLayerLink,
-    //     endHandleLayerLink: _endHandleLayerLink,
-    //     renderObject: renderObject,
-    //     selectionControls: widget.selectionControls,
-    //     selectionDelegate: this,
-    //     dragStartBehavior: widget.dragStartBehavior,
-    //     onSelectionHandleTapped: widget.onSelectionHandleTapped,
-    //   );
-    //   _selectionOverlay.handlesVisible = widget.showSelectionHandles;
-    //   _selectionOverlay.showHandles();
-    //   if (widget.onSelectionChanged != null)
-    //     widget.onSelectionChanged(selection, cause);
-    // }
-
-    // final bool willShowSelectionHandles = _shouldShowSelectionHandles(cause);
-    // if (willShowSelectionHandles != _showSelectionHandles) {
-    //   setState(() {
-    //     _showSelectionHandles = willShowSelectionHandles;
-    //   });
-    // }
-
-    // switch (Theme.of(context).platform) {
-    //   case TargetPlatform.iOS:
-    //   case TargetPlatform.macOS:
-    //     if (cause == SelectionChangedCause.longPress) {
-    //       _editableText?.bringIntoView(selection.base);
-    //     }
-    //     return;
-    //   case TargetPlatform.android:
-    //   case TargetPlatform.fuchsia:
-    //   case TargetPlatform.linux:
-    //   case TargetPlatform.windows:
-    //     // Do nothing.
-    // }
-  }
-
-  // #region Stela functions
-  Stela.Path findPath(Stela.Node node) {
-    Stela.Path path = Stela.Path([]);
-    Stela.Node child = node;
-
-    while (true) {
-      Stela.Node parent = nodeToParent[child];
-
-      if (parent == null) {
-        if (child is Stela.Editor) {
-          return path;
-        } else {
-          break;
-        }
-      }
-
-      int i = nodeToIndex[child];
-
-      if (i == null) {
-        break;
-      }
-
-      path.prepend(i);
-      child = parent;
-    }
-
-    throw Exception("Unable to find the path for node: ${node.toString()}");
-  }
-  // #endregion
-
   void _handleSelectionChanged(TextSelection selection,
       RenderStelaRichText renderObject, SelectionChangedCause cause) {
     TextNodeEntry selected;
@@ -605,14 +525,13 @@ class _StelaEditorState extends State<StelaEditor>
     Stela.Point anchor = Stela.Point(selected.path, anchorOffset);
     Stela.Point focus = Stela.Point(selected.path, focusOffset);
     Stela.Range range = Stela.Range(anchor, focus);
-    print(selected.path.toString());
     // // We return early if the selection is not valid. This can happen when the
     // // text of [EditableText] is updated at the same time as the selection is
     // // changed by a gesture event.
     // if (!widget.controller.isSelectionWithinTextBounds(selection))
     //   return;
 
-    // widget.controller.selection = selection;
+    widget.controller.selection = range;
 
     // // This will show the keyboard for all selection changes on the
     // // EditableWidget, not just changes triggered by user gestures.
@@ -644,7 +563,9 @@ class _StelaEditorState extends State<StelaEditor>
 
   Set<RenderStelaNode> boxes = Set();
 
-  Widget _buildRichText(Stela.Element node, Stela.Path path) {
+  Widget _buildRichText(
+      Stela.Element node, Stela.Path path, Stela.Range selection) {
+    ThemeData themeData = Theme.of(context);
     List<InlineSpan> children = [];
     List<TextNodeEntry> textNodeEntries = [];
     TextPosition position = TextPosition(offset: 0);
@@ -665,11 +586,25 @@ class _StelaEditorState extends State<StelaEditor>
 
         position = TextPosition(offset: position.offset + child.text.length);
       } else if (child is Stela.Inline) {
-        children
-            .add(WidgetSpan(child: _buildElement(child, path.copyAndAdd(i))));
+        children.add(WidgetSpan(
+            child: _buildElement(child, path.copyAndAdd(i), selection)));
       } else {
         throw Exception(
             'Element can only have either text and inlines or other blocks.');
+      }
+    }
+
+    TextSelection textSelection;
+
+    if (selection != null) {
+      for (TextNodeEntry textNodeEntry in textNodeEntries) {
+        if (selection.includes(textNodeEntry.path)) {
+          textSelection = TextSelection(
+              baseOffset:
+                  textNodeEntry.position.offset + selection.anchor.offset,
+              extentOffset:
+                  textNodeEntry.position.offset + selection.focus.offset);
+        }
       }
     }
 
@@ -684,6 +619,11 @@ class _StelaEditorState extends State<StelaEditor>
         onSelectionChanged: _handleSelectionChanged,
         hasFocus: true,
         textNodeEntries: textNodeEntries,
+        selection: textSelection,
+        selectionColor: themeData.textSelectionColor,
+        backgroundCursorColor: CupertinoColors.inactiveGray,
+        showCursor: _cursorVisibilityNotifier,
+        cursorColor: themeData.cursorColor,
       ),
     );
   }
@@ -702,8 +642,10 @@ class _StelaEditorState extends State<StelaEditor>
     return text;
   }
 
-  Widget _buildElement(Stela.Element node, Stela.Path path) {
-    Widget element = widget.elementBuilder(node, _buildChildren(node, path));
+  Widget _buildElement(
+      Stela.Element node, Stela.Path path, Stela.Range selection) {
+    Widget element =
+        widget.elementBuilder(node, _buildChildren(node, path, selection));
 
     return StelaNode(
       node: node,
@@ -714,21 +656,29 @@ class _StelaEditorState extends State<StelaEditor>
     );
   }
 
-  List<Widget> _buildChildren(Stela.Ancestor node, Stela.Path path) {
+  List<Widget> _buildChildren(
+      Stela.Ancestor node, Stela.Path path, Stela.Range selection) {
     List<Widget> children = [];
+    Stela.Editor editor = widget.controller.value.editor;
+    Stela.Range range = editor.range(path, null);
+
+    Stela.Range sel;
+    if (selection != null) {
+      sel = range.intersection(selection);
+    }
 
     // We gather text and inline nodes in a single StelaRichText widget.
     // Reason is we want to reuse [TextPainter]
     bool isRichText = node.children.first is Stela.Text;
 
     if (isRichText) {
-      children.add(_buildRichText(node, path));
+      children.add(_buildRichText(node, path, sel));
     } else {
       for (int i = 0; i < node.children.length; i++) {
         Stela.Node child = node.children[i];
 
         if (child is Stela.Element) {
-          children.add(_buildElement(child, path.copyAndAdd(i)));
+          children.add(_buildElement(child, path.copyAndAdd(i), sel));
         }
       }
     }
@@ -872,9 +822,11 @@ class _StelaEditorState extends State<StelaEditor>
         onDoubleTapDown: _handleDoubleTapDown,
         onSingleTapUp: _handleSingleTapUp,
         child: Column(
-          children:
-              _buildChildren(widget.controller.value.editor, Stela.Path([])),
-        ));
+            children: _buildChildren(
+          widget.controller.value.editor,
+          Stela.Path([]),
+          widget.controller.selection,
+        )));
   }
 }
 

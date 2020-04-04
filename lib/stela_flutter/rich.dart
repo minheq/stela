@@ -12,6 +12,16 @@ import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
 import 'package:inday/stela_flutter/editor.dart';
 
+const double _kCaretGap = 1.0; // pixels
+const double _kCaretHeightOffset = 2.0; // pixels
+
+// The additional size on the x and y axis with which to expand the prototype
+// cursor to render the floating cursor in pixels.
+const Offset _kFloatingCaretSizeIncrease = Offset(0.5, 1.0);
+
+// The corner radius of the floating cursor in pixels.
+const double _kFloatingCaretRadius = 1.0;
+
 typedef SelectionChangedHandler = void Function(TextSelection selection,
     RenderStelaRichText renderObject, SelectionChangedCause cause);
 
@@ -33,10 +43,22 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     this.textHeightBehavior,
 
     // Editable
+    this.backgroundCursorColor,
+    this.cursorColor,
+    this.cursorOffset,
+    this.cursorRadius,
+    this.cursorWidth = 1.0,
+    this.devicePixelRatio = 1.0,
     this.hasFocus,
     this.ignorePointer = false,
+    this.onCaretChanged,
     this.onSelectionChanged,
+    this.paintCursorAboveText = false,
     this.selection,
+    this.selectionColor,
+    this.selectionHeightStyle = ui.BoxHeightStyle.tight,
+    this.selectionWidthStyle = ui.BoxWidthStyle.tight,
+    this.showCursor,
   }) : super(key: key, children: _extractChildren(text));
 
   // Traverses the InlineSpan tree and depth-first collects the list of
@@ -66,10 +88,22 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   final ui.TextHeightBehavior textHeightBehavior;
 
   // Editable
+  final Color backgroundCursorColor;
+  final Color cursorColor;
+  final Offset cursorOffset;
+  final Radius cursorRadius;
+  final double cursorWidth;
+  final double devicePixelRatio;
   final bool hasFocus;
   final bool ignorePointer;
+  final CaretChangedHandler onCaretChanged;
   final SelectionChangedHandler onSelectionChanged;
+  final bool paintCursorAboveText;
   final TextSelection selection;
+  final Color selectionColor;
+  final ui.BoxHeightStyle selectionHeightStyle;
+  final ui.BoxWidthStyle selectionWidthStyle;
+  final ValueNotifier<bool> showCursor;
 
   // Custom
   final List<TextNodeEntry> textNodeEntries;
@@ -92,10 +126,22 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       overflow: overflow,
 
       // Editable
+      backgroundCursorColor: backgroundCursorColor,
+      cursorColor: cursorColor,
+      cursorOffset: cursorOffset,
+      cursorRadius: cursorRadius,
+      cursorWidth: cursorWidth,
+      devicePixelRatio: devicePixelRatio,
       hasFocus: hasFocus,
       ignorePointer: ignorePointer,
+      onCaretChanged: onCaretChanged,
       onSelectionChanged: onSelectionChanged,
+      paintCursorAboveText: paintCursorAboveText,
       selection: selection,
+      selectionColor: selectionColor,
+      selectionHeightStyle: selectionHeightStyle,
+      selectionWidthStyle: selectionWidthStyle,
+      showCursor: showCursor,
 
       // Custom
       textNodeEntries: textNodeEntries,
@@ -133,25 +179,25 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       ..overflow = overflow
 
       // Editable
+      ..backgroundCursorColor = backgroundCursorColor
+      ..cursorColor = cursorColor
+      ..cursorOffset = cursorOffset
+      ..cursorRadius = cursorRadius
+      ..cursorWidth = cursorWidth
+      ..devicePixelRatio = devicePixelRatio
       ..hasFocus = hasFocus
       ..ignorePointer = ignorePointer
+      ..onCaretChanged = onCaretChanged
       ..onSelectionChanged = onSelectionChanged
+      ..paintCursorAboveText = paintCursorAboveText
       ..selection = selection
+      ..selectionColor = selectionColor
+      ..selectionHeightStyle = selectionHeightStyle
+      ..selectionWidthStyle = selectionWidthStyle
+      ..showCursor = showCursor
 
       // Custom
       ..textNodeEntries = textNodeEntries;
-    // ..cursorColor = cursorColor
-    // ..backgroundCursorColor = backgroundCursorColor
-    // ..showCursor = showCursor
-    // ..selectionColor = selectionColor
-    // ..onCaretChanged = onCaretChanged
-    // ..cursorWidth = cursorWidth
-    // ..cursorRadius = cursorRadius
-    // ..cursorOffset = cursorOffset
-    // ..paintCursorAboveText = paintCursorAboveText
-    // ..selectionHeightStyle = selectionHeightStyle
-    // ..selectionWidthStyle = selectionWidthStyle
-    // ..devicePixelRatio = devicePixelRatio
   }
 
   @override
@@ -232,10 +278,22 @@ class RenderStelaRichText extends RenderBox
     List<RenderBox> children,
 
     // Editable
-    TextSelection selection,
+    Color backgroundCursorColor,
+    Color cursorColor,
+    double cursorWidth = 1.0,
+    Radius cursorRadius,
+    Offset cursorOffset,
+    double devicePixelRatio = 1.0,
     bool hasFocus,
     this.ignorePointer = false,
+    this.onCaretChanged,
     this.onSelectionChanged,
+    bool paintCursorAboveText = false,
+    TextSelection selection,
+    Color selectionColor,
+    ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
+    ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
+    ValueNotifier<bool> showCursor,
 
     // Custom
     @required this.textNodeEntries,
@@ -253,6 +311,12 @@ class RenderStelaRichText extends RenderBox
 
         // Editable
         assert(ignorePointer != null),
+        assert(selectionColor != null),
+        assert(maxLines == null || maxLines > 0),
+        assert(textWidthBasis != null),
+        assert(paintCursorAboveText != null),
+        assert(selectionHeightStyle != null),
+        assert(selectionWidthStyle != null),
 
         // RichText
         _softWrap = softWrap,
@@ -269,12 +333,25 @@ class RenderStelaRichText extends RenderBox
             textWidthBasis: textWidthBasis,
             textHeightBehavior: textHeightBehavior),
         // Editable
-        _selection = selection {
+        _cursorColor = cursorColor,
+        _backgroundCursorColor = backgroundCursorColor,
+        _showCursor = showCursor ?? ValueNotifier<bool>(false),
+        _selectionColor = selectionColor,
+        _selection = selection,
+        _cursorWidth = cursorWidth,
+        _cursorRadius = cursorRadius,
+        _paintCursorOnTop = paintCursorAboveText,
+        _cursorOffset = cursorOffset,
+        _devicePixelRatio = devicePixelRatio,
+        _selectionHeightStyle = selectionHeightStyle,
+        _selectionWidthStyle = selectionWidthStyle {
     // RichText
     addAll(children);
     _extractPlaceholderSpans(text);
 
     // Editable
+    assert(_showCursor != null);
+    assert(!_showCursor.value || cursorColor != null);
     this.hasFocus = hasFocus ?? false;
   }
 
@@ -755,6 +832,7 @@ class RenderStelaRichText extends RenderBox
 
   @override
   void performLayout() {
+    // RichText
     final BoxConstraints constraints = this.constraints;
     _layoutChildren(constraints);
     _layoutTextWithConstraints(constraints);
@@ -830,10 +908,19 @@ class RenderStelaRichText extends RenderBox
       _needsClipping = false;
       _overflowShader = null;
     }
+
+    // Editable
+    _caretPrototype = _getCaretPrototype;
+    _selectionRects = null;
   }
 
   @override
   void paint(PaintingContext context, Offset offset) {
+    // assert(
+    //     _textLayoutLastMaxWidth == constraints.maxWidth &&
+    //         _textLayoutLastMinWidth == constraints.minWidth,
+    //     'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    final Offset effectiveOffset = offset;
     // Ideally we could compute the min/max intrinsic width/height with a
     // non-destructive operation. However, currently, computing these values
     // will destroy state inside the painter. If that happens, we need to get
@@ -845,6 +932,26 @@ class RenderStelaRichText extends RenderBox
     // If you remove this call, make sure that changing the textAlign still
     // works properly.
     _layoutTextWithConstraints(constraints);
+
+    bool showSelection = false;
+    bool showCaret = false;
+
+    if (_selection != null && !_floatingCursorOn) {
+      if (_selection.isCollapsed && _showCursor.value && cursorColor != null) {
+        showCaret = true;
+      } else if (!_selection.isCollapsed && _selectionColor != null) {
+        showSelection = true;
+      }
+
+      // _updateSelectionExtentsVisibility(effectiveOffset);
+    }
+
+    if (showSelection) {
+      _selectionRects ??= _textPainter.getBoxesForSelection(_selection,
+          boxHeightStyle: _selectionHeightStyle,
+          boxWidthStyle: _selectionWidthStyle);
+      _paintSelection(context.canvas, effectiveOffset);
+    }
 
     assert(() {
       if (debugRepaintTextRainbowEnabled) {
@@ -865,7 +972,26 @@ class RenderStelaRichText extends RenderBox
       }
       context.canvas.clipRect(bounds);
     }
-    _textPainter.paint(context.canvas, offset);
+
+    // On iOS, the cursor is painted over the text, on Android, it's painted
+    // under it.
+    if (paintCursorAboveText) {
+      _textPainter.paint(context.canvas, effectiveOffset);
+    }
+
+    if (showCaret) {
+      _paintCaret(context.canvas, effectiveOffset, _selection.extent);
+    }
+
+    if (!paintCursorAboveText) {
+      _textPainter.paint(context.canvas, effectiveOffset);
+    }
+
+    // if (_floatingCursorOn) {
+    //   if (_resetFloatingCursorAnimationValue == null)
+    //     _paintCaret(context.canvas, effectiveOffset, _floatingCursorTextPosition);
+    //   _paintFloatingCaret(context.canvas, _floatingCursorOffset);
+    // }
 
     RenderBox child = firstChild;
     int childIndex = 0;
@@ -1166,38 +1292,30 @@ class RenderStelaRichText extends RenderBox
 
   // #region Editable
 
-  /// The region of text that is selected, if any.
-  List<ui.TextBox> _selectionRects;
-  TextSelection get selection => _selection;
-  TextSelection _selection;
-  set selection(TextSelection value) {
-    if (_selection == value) return;
-    _selection = value;
-    _selectionRects = null;
-    markNeedsPaint();
-    markNeedsSemanticsUpdate();
+  TapGestureRecognizer _tap;
+  LongPressGestureRecognizer _longPress;
+
+  @override
+  void attach(PipelineOwner owner) {
+    super.attach(owner);
+    _tap = TapGestureRecognizer(debugOwner: this)
+      ..onTapDown = _handleTapDown
+      ..onTap = _handleTap;
+    _longPress = LongPressGestureRecognizer(debugOwner: this)
+      ..onLongPress = _handleLongPress;
+    // _offset.addListener(markNeedsPaint);
+    _showCursor.addListener(markNeedsPaint);
   }
 
-  /// Whether the editable is currently focused.
-  bool get hasFocus => _hasFocus;
-  bool _hasFocus = false;
-  bool _listenerAttached = false;
-  set hasFocus(bool value) {
-    assert(value != null);
-    if (_hasFocus == value) return;
-    _hasFocus = value;
-    if (_hasFocus) {
-      assert(!_listenerAttached);
-      // TODO
-      // RawKeyboard.instance.addListener(_handleKeyEvent);
-      _listenerAttached = true;
-    } else {
-      assert(_listenerAttached);
-      // TODO
-      // RawKeyboard.instance.removeListener(_handleKeyEvent);
-      _listenerAttached = false;
-    }
-    markNeedsSemanticsUpdate();
+  @override
+  void detach() {
+    _showCursor.removeListener(markNeedsPaint);
+    _tap.dispose();
+    _longPress.dispose();
+    // _offset.removeListener(markNeedsPaint);
+    // if (_listenerAttached)
+    //   RawKeyboard.instance.removeListener(_handleKeyEvent);
+    super.detach();
   }
 
   /// Called when the selection changes.
@@ -1421,6 +1539,309 @@ class RenderStelaRichText extends RenderBox
 
     return TextSelection(baseOffset: line.start, extentOffset: line.end);
   }
+
+  List<ui.TextBox> _selectionRects;
+
+  /// The region of text that is selected, if any.
+  TextSelection get selection => _selection;
+  TextSelection _selection;
+  set selection(TextSelection value) {
+    if (_selection == value) return;
+    _selection = value;
+    _selectionRects = null;
+    markNeedsPaint();
+    markNeedsSemanticsUpdate();
+  }
+
+  /// The color to use when painting the cursor.
+  Color get cursorColor => _cursorColor;
+  Color _cursorColor;
+  set cursorColor(Color value) {
+    if (_cursorColor == value) return;
+    _cursorColor = value;
+    markNeedsPaint();
+  }
+
+  /// The color to use when painting the cursor aligned to the text while
+  /// rendering the floating cursor.
+  ///
+  /// The default is light grey.
+  Color get backgroundCursorColor => _backgroundCursorColor;
+  Color _backgroundCursorColor;
+  set backgroundCursorColor(Color value) {
+    if (backgroundCursorColor == value) return;
+    _backgroundCursorColor = value;
+    markNeedsPaint();
+  }
+
+  /// Whether to paint the cursor.
+  ValueNotifier<bool> get showCursor => _showCursor;
+  ValueNotifier<bool> _showCursor;
+  set showCursor(ValueNotifier<bool> value) {
+    assert(value != null);
+    if (_showCursor == value) return;
+    if (attached) _showCursor.removeListener(markNeedsPaint);
+    _showCursor = value;
+    if (attached) _showCursor.addListener(markNeedsPaint);
+    markNeedsPaint();
+  }
+
+  /// Controls how tall the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxHeightStyle] for details on available styles.
+  ui.BoxHeightStyle get selectionHeightStyle => _selectionHeightStyle;
+  ui.BoxHeightStyle _selectionHeightStyle;
+  set selectionHeightStyle(ui.BoxHeightStyle value) {
+    assert(value != null);
+    if (_selectionHeightStyle == value) return;
+    _selectionHeightStyle = value;
+    markNeedsPaint();
+  }
+
+  /// Controls how wide the selection highlight boxes are computed to be.
+  ///
+  /// See [ui.BoxWidthStyle] for details on available styles.
+  ui.BoxWidthStyle get selectionWidthStyle => _selectionWidthStyle;
+  ui.BoxWidthStyle _selectionWidthStyle;
+  set selectionWidthStyle(ui.BoxWidthStyle value) {
+    assert(value != null);
+    if (_selectionWidthStyle == value) return;
+    _selectionWidthStyle = value;
+    markNeedsPaint();
+  }
+
+  /// The color to use when painting the selection.
+  Color get selectionColor => _selectionColor;
+  Color _selectionColor;
+  set selectionColor(Color value) {
+    if (_selectionColor == value) return;
+    _selectionColor = value;
+    markNeedsPaint();
+  }
+
+  /// {@template flutter.rendering.editable.paintCursorOnTop}
+  /// If the cursor should be painted on top of the text or underneath it.
+  ///
+  /// By default, the cursor should be painted on top for iOS platforms and
+  /// underneath for Android platforms.
+  /// {@endtemplate}
+  bool get paintCursorAboveText => _paintCursorOnTop;
+  bool _paintCursorOnTop;
+  set paintCursorAboveText(bool value) {
+    if (_paintCursorOnTop == value) return;
+    _paintCursorOnTop = value;
+    markNeedsLayout();
+  }
+
+  /// {@template flutter.rendering.editable.cursorOffset}
+  /// The offset that is used, in pixels, when painting the cursor on screen.
+  ///
+  /// By default, the cursor position should be set to an offset of
+  /// (-[cursorWidth] * 0.5, 0.0) on iOS platforms and (0, 0) on Android
+  /// platforms. The origin from where the offset is applied to is the arbitrary
+  /// location where the cursor ends up being rendered from by default.
+  /// {@endtemplate}
+  Offset get cursorOffset => _cursorOffset;
+  Offset _cursorOffset;
+  set cursorOffset(Offset value) {
+    if (_cursorOffset == value) return;
+    _cursorOffset = value;
+    markNeedsLayout();
+  }
+
+  /// How rounded the corners of the cursor should be.
+  Radius get cursorRadius => _cursorRadius;
+  Radius _cursorRadius;
+  set cursorRadius(Radius value) {
+    if (_cursorRadius == value) return;
+    _cursorRadius = value;
+    markNeedsPaint();
+  }
+
+  /// How thick the cursor will be.
+  double get cursorWidth => _cursorWidth;
+  double _cursorWidth = 1.0;
+  set cursorWidth(double value) {
+    if (_cursorWidth == value) return;
+    _cursorWidth = value;
+    markNeedsLayout();
+  }
+
+  /// The pixel ratio of the current device.
+  ///
+  /// Should be obtained by querying MediaQuery for the devicePixelRatio.
+  double get devicePixelRatio => _devicePixelRatio;
+  double _devicePixelRatio;
+  set devicePixelRatio(double value) {
+    if (devicePixelRatio == value) return;
+    _devicePixelRatio = value;
+    markNeedsTextLayout();
+  }
+
+  double _textLayoutLastMaxWidth;
+  double _textLayoutLastMinWidth;
+
+  /// Marks the render object as needing to be laid out again and have its text
+  /// metrics recomputed.
+  ///
+  /// Implies [markNeedsTextLayout].
+  @protected
+  void markNeedsTextLayout() {
+    _textLayoutLastMaxWidth = null;
+    _textLayoutLastMinWidth = null;
+    markNeedsTextLayout();
+  }
+
+  /// Whether the editable is currently focused.
+  bool get hasFocus => _hasFocus;
+  bool _hasFocus = false;
+  bool _listenerAttached = false;
+  set hasFocus(bool value) {
+    assert(value != null);
+    if (_hasFocus == value) return;
+    _hasFocus = value;
+    if (_hasFocus) {
+      assert(!_listenerAttached);
+      // TODO: Add keyboard support
+      // RawKeyboard.instance.addListener(_handleKeyEvent);
+      _listenerAttached = true;
+    } else {
+      assert(_listenerAttached);
+      // TODO: Add keyboard support
+      // RawKeyboard.instance.removeListener(_handleKeyEvent);
+      _listenerAttached = false;
+    }
+    markNeedsSemanticsUpdate();
+  }
+
+  Rect _caretPrototype;
+  Rect _lastCaretRect;
+
+  bool _floatingCursorOn = false;
+  Offset _floatingCursorOffset;
+  TextPosition _floatingCursorTextPosition;
+
+  /// Called during the paint phase when the caret location changes.
+  CaretChangedHandler onCaretChanged;
+
+  Offset _getPixelPerfectCursorOffset(Rect caretRect) {
+    final Offset caretPosition = localToGlobal(caretRect.topLeft);
+    final double pixelMultiple = 1.0 / _devicePixelRatio;
+    final int quotientX = (caretPosition.dx / pixelMultiple).round();
+    final int quotientY = (caretPosition.dy / pixelMultiple).round();
+    final double pixelPerfectOffsetX =
+        quotientX * pixelMultiple - caretPosition.dx;
+    final double pixelPerfectOffsetY =
+        quotientY * pixelMultiple - caretPosition.dy;
+    return Offset(pixelPerfectOffsetX, pixelPerfectOffsetY);
+  }
+
+  /// An estimate of the height of a line in the text. See [TextPainter.preferredLineHeight].
+  /// This does not required the layout to be updated.
+  double get preferredLineHeight => _textPainter.preferredLineHeight;
+
+  // TODO(garyq): This is no longer producing the highest-fidelity caret
+  // heights for Android, especially when non-alphabetic languages
+  // are involved. The current implementation overrides the height set
+  // here with the full measured height of the text on Android which looks
+  // superior (subjectively and in terms of fidelity) in _paintCaret. We
+  // should rework this properly to once again match the platform. The constant
+  // _kCaretHeightOffset scales poorly for small font sizes.
+  //
+  /// On iOS, the cursor is taller than the cursor on Android. The height
+  /// of the cursor for iOS is approximate and obtained through an eyeball
+  /// comparison.
+  Rect get _getCaretPrototype {
+    assert(defaultTargetPlatform != null);
+    switch (defaultTargetPlatform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return Rect.fromLTWH(0.0, 0.0, cursorWidth, preferredLineHeight + 2);
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        return Rect.fromLTWH(0.0, _kCaretHeightOffset, cursorWidth,
+            preferredLineHeight - 2.0 * _kCaretHeightOffset);
+    }
+    return null;
+  }
+
+  void _paintSelection(Canvas canvas, Offset effectiveOffset) {
+    // assert(
+    //     _textLayoutLastMaxWidth == constraints.maxWidth &&
+    //         _textLayoutLastMinWidth == constraints.minWidth,
+    //     'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+    assert(_selectionRects != null);
+    final Paint paint = Paint()..color = _selectionColor;
+    for (final ui.TextBox box in _selectionRects)
+      canvas.drawRect(box.toRect().shift(effectiveOffset), paint);
+  }
+
+  void _paintCaret(
+      Canvas canvas, Offset effectiveOffset, TextPosition textPosition) {
+    // assert(
+    //     _textLayoutLastMaxWidth == constraints.maxWidth &&
+    //         _textLayoutLastMinWidth == constraints.minWidth,
+    //     'Last width ($_textLayoutLastMinWidth, $_textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
+
+    // If the floating cursor is enabled, the text cursor's color is [backgroundCursorColor] while
+    // the floating cursor's color is _cursorColor;
+    final Paint paint = Paint()
+      ..color = _floatingCursorOn ? backgroundCursorColor : _cursorColor;
+    final Offset caretOffset =
+        _textPainter.getOffsetForCaret(textPosition, _caretPrototype) +
+            effectiveOffset;
+    Rect caretRect = _caretPrototype.shift(caretOffset);
+    if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
+
+    final double caretHeight =
+        _textPainter.getFullHeightForCaret(textPosition, _caretPrototype);
+    if (caretHeight != null) {
+      switch (defaultTargetPlatform) {
+        case TargetPlatform.iOS:
+        case TargetPlatform.macOS:
+          final double heightDiff = caretHeight - caretRect.height;
+          // Center the caret vertically along the text.
+          caretRect = Rect.fromLTWH(
+            caretRect.left,
+            caretRect.top + heightDiff / 2,
+            caretRect.width,
+            caretRect.height,
+          );
+          break;
+        case TargetPlatform.android:
+        case TargetPlatform.fuchsia:
+        case TargetPlatform.linux:
+        case TargetPlatform.windows:
+          // Override the height to take the full height of the glyph at the TextPosition
+          // when not on iOS. iOS has special handling that creates a taller caret.
+          // TODO(garyq): See the TODO for _getCaretPrototype.
+          caretRect = Rect.fromLTWH(
+            caretRect.left,
+            caretRect.top - _kCaretHeightOffset,
+            caretRect.width,
+            caretHeight,
+          );
+          break;
+      }
+    }
+
+    caretRect = caretRect.shift(_getPixelPerfectCursorOffset(caretRect));
+
+    if (cursorRadius == null) {
+      canvas.drawRect(caretRect, paint);
+    } else {
+      final RRect caretRRect = RRect.fromRectAndRadius(caretRect, cursorRadius);
+      canvas.drawRRect(caretRRect, paint);
+    }
+
+    if (caretRect != _lastCaretRect) {
+      _lastCaretRect = caretRect;
+      if (onCaretChanged != null) onCaretChanged(caretRect);
+    }
+  }
+
   // #endregion
 
   // #region Custom

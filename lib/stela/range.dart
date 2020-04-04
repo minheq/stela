@@ -18,7 +18,7 @@ class Range implements Location {
 
   @override
   String toString() {
-    return "Range(${anchor.toString()}, ${focus.toString()})";
+    return "(${anchor.toString()}, ${focus.toString()})";
   }
 
   /// Get the start and end points of a range, in the order in which they appear
