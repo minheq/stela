@@ -19,6 +19,19 @@ import 'package:inday/stela_flutter/rich.dart';
 Map<Stela.Node, int> nodeToIndex = Map();
 Map<Stela.Node, Stela.Ancestor> nodeToParent = Map();
 
+class TextNodeEntry {
+  TextNodeEntry({
+    this.position,
+    this.length,
+    this.path,
+    this.node,
+  });
+  TextPosition position;
+  int length;
+  Stela.Path path;
+  Stela.Text node;
+}
+
 class EditorEditingValue {
   EditorEditingValue(
       {List<Stela.Node> children,
@@ -574,6 +587,15 @@ class _StelaEditorState extends State<StelaEditor>
 
   void _handleSelectionChanged(TextSelection selection,
       RenderStelaRichText renderObject, SelectionChangedCause cause) {
+    TextNodeEntry selected;
+
+    for (TextNodeEntry textEntry in renderObject.textNodeEntries) {
+      if (selection.baseOffset >= textEntry.position.offset) {
+        selected = textEntry;
+        break;
+      }
+    }
+    print(selected.path.toString());
     // // We return early if the selection is not valid. This can happen when the
     // // text of [EditableText] is updated at the same time as the selection is
     // // changed by a gesture event.
@@ -612,14 +634,29 @@ class _StelaEditorState extends State<StelaEditor>
 
   Set<RenderStelaNode> boxes = Set();
 
-  Widget _buildRichText(Stela.Element node) {
+  Widget _buildRichText(Stela.Element node, Stela.Path path) {
     List<InlineSpan> children = [];
+    List<TextNodeEntry> textNodeEntries = [];
+    TextPosition position = TextPosition(offset: 0);
 
-    for (Stela.Node child in node.children) {
+    for (int i = 0; i < node.children.length; i++) {
+      Stela.Node child = node.children[i];
+
       if (child is Stela.Text) {
+        TextNodeEntry entry = TextNodeEntry(
+          length: child.text.length,
+          position: position,
+          path: path.copyAndAdd(i),
+          node: child,
+        );
+
+        textNodeEntries.add(entry);
         children.add(_buildText(child, node));
+
+        position = TextPosition(offset: position.offset + child.text.length);
       } else if (child is Stela.Inline) {
-        children.add(WidgetSpan(child: _buildElement(child)));
+        children
+            .add(WidgetSpan(child: _buildElement(child, path.copyAndAdd(i))));
       } else {
         throw Exception(
             'Element can only have either text and inlines or other blocks.');
@@ -630,11 +667,13 @@ class _StelaEditorState extends State<StelaEditor>
       node: node,
       addBox: _addBox,
       removeBox: _removeBox,
+      path: path,
       child: StelaRichText(
         text: TextSpan(children: children),
         ignorePointer: false,
         onSelectionChanged: _handleSelectionChanged,
         hasFocus: true,
+        textNodeEntries: textNodeEntries,
       ),
     );
   }
@@ -653,18 +692,19 @@ class _StelaEditorState extends State<StelaEditor>
     return text;
   }
 
-  Widget _buildElement(Stela.Element node) {
-    Widget element = widget.elementBuilder(node, _buildChildren(node));
+  Widget _buildElement(Stela.Element node, Stela.Path path) {
+    Widget element = widget.elementBuilder(node, _buildChildren(node, path));
 
     return StelaNode(
       node: node,
       child: element,
       addBox: _addBox,
       removeBox: _removeBox,
+      path: path,
     );
   }
 
-  List<Widget> _buildChildren(Stela.Ancestor node) {
+  List<Widget> _buildChildren(Stela.Ancestor node, Stela.Path path) {
     List<Widget> children = [];
 
     // We gather text and inline nodes in a single StelaRichText widget.
@@ -672,11 +712,13 @@ class _StelaEditorState extends State<StelaEditor>
     bool isRichText = node.children.first is Stela.Text;
 
     if (isRichText) {
-      children.add(_buildRichText(node));
+      children.add(_buildRichText(node, path));
     } else {
-      for (Stela.Node child in node.children) {
+      for (int i = 0; i < node.children.length; i++) {
+        Stela.Node child = node.children[i];
+
         if (child is Stela.Element) {
-          children.add(_buildElement(child));
+          children.add(_buildElement(child, path.copyAndAdd(i)));
         }
       }
     }
@@ -809,7 +851,8 @@ class _StelaEditorState extends State<StelaEditor>
         onDoubleTapDown: _handleDoubleTapDown,
         onSingleTapUp: _handleSingleTapUp,
         child: Column(
-          children: _buildChildren(widget.controller.value.editor),
+          children:
+              _buildChildren(widget.controller.value.editor, Stela.Path([])),
         ));
   }
 }

@@ -1,6 +1,7 @@
 import 'dart:collection';
 import 'dart:math' as math;
 import 'dart:ui' as ui;
+import 'package:inday/stela/stela.dart' as Stela;
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/foundation.dart';
@@ -9,6 +10,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter/widgets.dart';
+import 'package:inday/stela_flutter/editor.dart';
 
 typedef SelectionChangedHandler = void Function(TextSelection selection,
     RenderStelaRichText renderObject, SelectionChangedCause cause);
@@ -18,6 +20,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     // RichText
     Key key,
     @required this.text,
+    @required this.textNodeEntries,
     this.textAlign = TextAlign.start,
     this.textDirection,
     this.softWrap = true,
@@ -68,6 +71,9 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   final SelectionChangedHandler onSelectionChanged;
   final TextSelection selection;
 
+  // Custom
+  final List<TextNodeEntry> textNodeEntries;
+
   @override
   RenderStelaRichText createRenderObject(BuildContext context) {
     assert(textDirection != null || debugCheckHasDirectionality(context));
@@ -90,6 +96,9 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       ignorePointer: ignorePointer,
       onSelectionChanged: onSelectionChanged,
       selection: selection,
+
+      // Custom
+      textNodeEntries: textNodeEntries,
       // backgroundCursorColor: backgroundCursorColor,
       // showCursor: showCursor,
       // selection: selection,
@@ -127,7 +136,10 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       ..hasFocus = hasFocus
       ..ignorePointer = ignorePointer
       ..onSelectionChanged = onSelectionChanged
-      ..selection = selection;
+      ..selection = selection
+
+      // Custom
+      ..textNodeEntries = textNodeEntries;
     // ..cursorColor = cursorColor
     // ..backgroundCursorColor = backgroundCursorColor
     // ..showCursor = showCursor
@@ -224,6 +236,9 @@ class RenderStelaRichText extends RenderBox
     bool hasFocus,
     this.ignorePointer = false,
     this.onSelectionChanged,
+
+    // Custom
+    @required this.textNodeEntries,
   })  :
         // RichText
         assert(text != null),
@@ -1407,4 +1422,7 @@ class RenderStelaRichText extends RenderBox
     return TextSelection(baseOffset: line.start, extentOffset: line.end);
   }
   // #endregion
+
+  // #region Custom
+  List<TextNodeEntry> textNodeEntries;
 }
