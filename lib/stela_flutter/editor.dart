@@ -589,12 +589,15 @@ class _StelaEditorState extends State<StelaEditor>
       RenderStelaRichText renderObject, SelectionChangedCause cause) {
     TextNodeEntry selected;
 
-    for (TextNodeEntry textEntry in renderObject.textNodeEntries) {
+    for (int i = renderObject.textNodeEntries.length - 1; i >= 0; i--) {
+      TextNodeEntry textEntry = renderObject.textNodeEntries[i];
+
       if (selection.baseOffset >= textEntry.position.offset) {
         selected = textEntry;
         break;
       }
     }
+
     print(selected.path.toString());
     // // We return early if the selection is not valid. This can happen when the
     // // text of [EditableText] is updated at the same time as the selection is
