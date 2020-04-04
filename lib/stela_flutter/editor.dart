@@ -588,20 +588,23 @@ class _StelaEditorState extends State<StelaEditor>
   void _handleSelectionChanged(TextSelection selection,
       RenderStelaRichText renderObject, SelectionChangedCause cause) {
     TextNodeEntry selected;
-    int offset;
+    int anchorOffset;
+    int focusOffset;
 
     for (int i = renderObject.textNodeEntries.length - 1; i >= 0; i--) {
       TextNodeEntry textEntry = renderObject.textNodeEntries[i];
 
       if (selection.baseOffset >= textEntry.position.offset) {
         selected = textEntry;
-        offset = selection.baseOffset - textEntry.position.offset;
+        anchorOffset = selection.baseOffset - textEntry.position.offset;
+        focusOffset = selection.extentOffset - textEntry.position.offset;
         break;
       }
     }
 
-    Stela.Point anchor = Stela.Point(selected.path, offset);
-    Stela.Range range = Stela.Range(anchor, anchor);
+    Stela.Point anchor = Stela.Point(selected.path, anchorOffset);
+    Stela.Point focus = Stela.Point(selected.path, focusOffset);
+    Stela.Range range = Stela.Range(anchor, focus);
     print(selected.path.toString());
     // // We return early if the selection is not valid. This can happen when the
     // // text of [EditableText] is updated at the same time as the selection is
@@ -758,30 +761,41 @@ class _StelaEditorState extends State<StelaEditor>
 
   void _handleSingleLongTapStart(LongPressStartDetails details) {
     print('long tap');
-    // switch (Theme.of(context).platform) {
-    //   case TargetPlatform.iOS:
-    //   case TargetPlatform.macOS:
-    //     renderEditable.selectPositionAt(
-    //       from: details.globalPosition,
-    //       cause: SelectionChangedCause.longPress,
-    //     );
-    //     break;
-    //   case TargetPlatform.android:
-    //   case TargetPlatform.fuchsia:
-    //   case TargetPlatform.linux:
-    //   case TargetPlatform.windows:
-    //     renderEditable.selectWord(cause: SelectionChangedCause.longPress);
-    //     Feedback.forLongPress(context);
-    //     break;
-    // }
+    RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
+
+    if (box.child is RenderStelaRichText) {
+      RenderStelaRichText renderRichText = box.child;
+
+      switch (Theme.of(context).platform) {
+        case TargetPlatform.iOS:
+        case TargetPlatform.macOS:
+          renderRichText.selectPositionAt(
+            from: details.globalPosition,
+            cause: SelectionChangedCause.longPress,
+          );
+          break;
+        case TargetPlatform.android:
+        case TargetPlatform.fuchsia:
+        case TargetPlatform.linux:
+        case TargetPlatform.windows:
+          renderRichText.selectWord(cause: SelectionChangedCause.longPress);
+          Feedback.forLongPress(context);
+          break;
+      }
+    }
   }
 
   void _handleDoubleTapDown(TapDownDetails details) {
     print('double tap');
 
-    // if (shouldShowSelectionToolbar) {
-    //   editableText.showToolbar();
-    // }
+    RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
+
+    if (box.child is RenderStelaRichText) {
+      RenderStelaRichText renderRichText = box.child;
+      renderRichText.selectWord(cause: SelectionChangedCause.tap);
+      // if (shouldShowSelectionToolbar)
+      //   editableText.showToolbar();
+    }
   }
 
   void _handleSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
