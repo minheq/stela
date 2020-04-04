@@ -572,10 +572,47 @@ class _StelaEditorState extends State<StelaEditor>
   }
   // #endregion
 
+  void _handleSelectionChanged(TextSelection selection,
+      RenderStelaRichText renderObject, SelectionChangedCause cause) {
+    // // We return early if the selection is not valid. This can happen when the
+    // // text of [EditableText] is updated at the same time as the selection is
+    // // changed by a gesture event.
+    // if (!widget.controller.isSelectionWithinTextBounds(selection))
+    //   return;
+
+    // widget.controller.selection = selection;
+
+    // // This will show the keyboard for all selection changes on the
+    // // EditableWidget, not just changes triggered by user gestures.
+    // requestKeyboard();
+
+    // _selectionOverlay?.hide();
+    // _selectionOverlay = null;
+
+    // if (widget.selectionControls != null) {
+    //   _selectionOverlay = TextSelectionOverlay(
+    //     context: context,
+    //     value: _value,
+    //     debugRequiredFor: widget,
+    //     toolbarLayerLink: _toolbarLayerLink,
+    //     startHandleLayerLink: _startHandleLayerLink,
+    //     endHandleLayerLink: _endHandleLayerLink,
+    //     renderObject: renderObject,
+    //     selectionControls: widget.selectionControls,
+    //     selectionDelegate: this,
+    //     dragStartBehavior: widget.dragStartBehavior,
+    //     onSelectionHandleTapped: widget.onSelectionHandleTapped,
+    //   );
+    //   _selectionOverlay.handlesVisible = widget.showSelectionHandles;
+    //   _selectionOverlay.showHandles();
+    //   if (widget.onSelectionChanged != null)
+    //     widget.onSelectionChanged(selection, cause);
+    // }
+  }
+
   Set<RenderStelaNode> boxes = Set();
 
   Widget _buildRichText(Stela.Element node) {
-    ThemeData themeData = Theme.of(context);
     List<InlineSpan> children = [];
 
     for (Stela.Node child in node.children) {
@@ -595,10 +632,9 @@ class _StelaEditorState extends State<StelaEditor>
       removeBox: _removeBox,
       child: StelaRichText(
         text: TextSpan(children: children),
-        cursorColor: themeData.cursorColor,
-        selectionColor: themeData.textSelectionColor,
-        backgroundCursorColor: CupertinoColors.inactiveGray,
         ignorePointer: false,
+        onSelectionChanged: _handleSelectionChanged,
+        hasFocus: true,
       ),
     );
   }
@@ -650,19 +686,25 @@ class _StelaEditorState extends State<StelaEditor>
 
   void _handleSingleTapUp(TapUpDetails details) {
     print('tap up');
-    // print('tap up');
-    // switch (Theme.of(context).platform) {
-    //   case TargetPlatform.iOS:
-    //   case TargetPlatform.macOS:
-    //     renderEditable.selectWordEdge(cause: SelectionChangedCause.tap);
-    //     break;
-    //   case TargetPlatform.android:
-    //   case TargetPlatform.fuchsia:
-    //   case TargetPlatform.linux:
-    //   case TargetPlatform.windows:
-    //     renderEditable.selectPosition(cause: SelectionChangedCause.tap);
-    //     break;
-    // }
+
+    RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
+
+    if (box.child is RenderStelaRichText) {
+      RenderStelaRichText renderRichText = box.child;
+
+      switch (Theme.of(context).platform) {
+        case TargetPlatform.iOS:
+        case TargetPlatform.macOS:
+          renderRichText.selectWordEdge(cause: SelectionChangedCause.tap);
+          break;
+        case TargetPlatform.android:
+        case TargetPlatform.fuchsia:
+        case TargetPlatform.linux:
+        case TargetPlatform.windows:
+          renderRichText.selectPosition(cause: SelectionChangedCause.tap);
+          break;
+      }
+    }
   }
 
   void _handleSingleLongTapStart(LongPressStartDetails details) {
@@ -708,9 +750,10 @@ class _StelaEditorState extends State<StelaEditor>
     RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
 
     if (box.child is RenderStelaRichText) {
-      RenderStelaRichText richText = box.child;
+      RenderStelaRichText renderRichText = box.child;
+
+      renderRichText.handleTapDown(details);
     }
-    // renderEditable.handleTapDown(details);
   }
 
   RenderStelaNode boxForGlobalPoint(Offset point) {
