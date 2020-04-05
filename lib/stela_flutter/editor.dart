@@ -591,6 +591,7 @@ class _StelaEditorState extends State<StelaEditor>
       } else if (child is Stela.Inline) {
         children.add(WidgetSpan(
             child: _buildElement(child, path.copyAndAdd(i), selection)));
+        position = TextPosition(offset: position.offset + 1);
       } else {
         throw Exception(
             'Element can only have either text and inlines or other blocks.');
@@ -604,9 +605,9 @@ class _StelaEditorState extends State<StelaEditor>
         if (selection.includes(textNodeEntry.path)) {
           textSelection = TextSelection(
               baseOffset:
-                  textNodeEntry.position.offset + selection.anchor.offset,
+                  textNodeEntry.position.offset + selection.anchor.offset - 1,
               extentOffset:
-                  textNodeEntry.position.offset + selection.focus.offset);
+                  textNodeEntry.position.offset + selection.focus.offset - 1);
         }
       }
     }

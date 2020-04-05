@@ -1800,9 +1800,9 @@ class RenderStelaRichText extends RenderBox
     // the floating cursor's color is _cursorColor;
     final Paint paint = Paint()
       ..color = _floatingCursorOn ? backgroundCursorColor : _cursorColor;
-    final Offset caretOffset =
-        _textPainter.getOffsetForCaret(textPosition, _caretPrototype) +
-            effectiveOffset;
+    final Offset offsetForCaret =
+        _textPainter.getOffsetForCaret(textPosition, _caretPrototype);
+    final Offset caretOffset = offsetForCaret + effectiveOffset;
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
