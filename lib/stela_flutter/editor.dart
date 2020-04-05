@@ -605,9 +605,9 @@ class _StelaEditorState extends State<StelaEditor>
         if (selection.includes(textNodeEntry.path)) {
           textSelection = TextSelection(
               baseOffset:
-                  textNodeEntry.position.offset + selection.anchor.offset - 1,
+                  textNodeEntry.position.offset + selection.anchor.offset,
               extentOffset:
-                  textNodeEntry.position.offset + selection.focus.offset - 1);
+                  textNodeEntry.position.offset + selection.focus.offset);
         }
       }
     }
