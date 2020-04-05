@@ -24,8 +24,6 @@ class StelaParagraph extends StatefulWidget {
 class _StelaParagraphState extends State<StelaParagraph> {
   @override
   Widget build(BuildContext context) {
-    return Padding(
-        padding: EdgeInsets.symmetric(vertical: 16),
-        child: Column(children: widget.children));
+    return ListBody(children: widget.children);
   }
 }

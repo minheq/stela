@@ -24,10 +24,15 @@ class _StelaBulletedListState extends State<StelaBulletedList> {
       Widget child = widget.children[i];
 
       children.add(Row(
-        children: <Widget>[Text('${i + 1}. '), child],
+        children: <Widget>[
+          SizedBox(width: 24, child: Text('${i + 1}.')),
+          Expanded(
+            child: child,
+          )
+        ],
       ));
     }
 
-    return Column(children: children);
+    return ListBody(children: children);
   }
 }

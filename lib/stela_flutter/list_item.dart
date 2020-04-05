@@ -18,6 +18,6 @@ class StelaListItem extends StatefulWidget {
 class _StelaListItemState extends State<StelaListItem> {
   @override
   Widget build(BuildContext context) {
-    return Column(children: widget.children);
+    return ListBody(children: widget.children);
   }
 }

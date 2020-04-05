@@ -71,7 +71,7 @@ class Block implements Element {
       {@required List<Node> children,
       Map<String, dynamic> props,
       bool isVoid,
-      @required String type})
+      String type})
       : children = children ?? [],
         props = props ?? {},
         type = type ?? 'block',
@@ -106,7 +106,7 @@ class Inline implements Element {
       {@required List<Node> children,
       Map<String, dynamic> props,
       bool isVoid,
-      @required String type})
+      String type})
       : children = children ?? [],
         props = props ?? {},
         type = type ?? 'inline',

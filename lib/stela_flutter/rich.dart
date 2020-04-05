@@ -30,7 +30,6 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     // RichText
     Key key,
     @required this.text,
-    @required this.textNodeEntries,
     this.textAlign = TextAlign.start,
     this.textDirection,
     this.softWrap = true,
@@ -59,6 +58,10 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     this.selectionHeightStyle = ui.BoxHeightStyle.tight,
     this.selectionWidthStyle = ui.BoxWidthStyle.tight,
     this.showCursor,
+
+    // Custom
+    @required this.textNodeEntries,
+    @required this.node,
   }) : super(key: key, children: _extractChildren(text));
 
   // Traverses the InlineSpan tree and depth-first collects the list of
@@ -107,6 +110,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
 
   // Custom
   final List<TextNodeEntry> textNodeEntries;
+  final Stela.Element node;
 
   @override
   RenderStelaRichText createRenderObject(BuildContext context) {
@@ -145,6 +149,7 @@ class StelaRichText extends MultiChildRenderObjectWidget {
 
       // Custom
       textNodeEntries: textNodeEntries,
+      node: node,
       // backgroundCursorColor: backgroundCursorColor,
       // showCursor: showCursor,
       // selection: selection,
@@ -197,7 +202,8 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       ..showCursor = showCursor
 
       // Custom
-      ..textNodeEntries = textNodeEntries;
+      ..textNodeEntries = textNodeEntries
+      ..node = node;
   }
 
   @override
@@ -297,6 +303,7 @@ class RenderStelaRichText extends RenderBox
 
     // Custom
     @required this.textNodeEntries,
+    @required this.node,
   })  :
         // RichText
         assert(text != null),
@@ -317,6 +324,10 @@ class RenderStelaRichText extends RenderBox
         assert(paintCursorAboveText != null),
         assert(selectionHeightStyle != null),
         assert(selectionWidthStyle != null),
+
+        // Custom
+        assert(textNodeEntries != null),
+        assert(node != null),
 
         // RichText
         _softWrap = softWrap,
@@ -1846,4 +1857,5 @@ class RenderStelaRichText extends RenderBox
 
   // #region Custom
   List<TextNodeEntry> textNodeEntries;
+  Stela.Element node;
 }

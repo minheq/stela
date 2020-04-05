@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/gestures.dart';
@@ -516,6 +517,8 @@ class _StelaEditorState extends State<StelaEditor>
 
       if (selection.baseOffset >= textEntry.position.offset) {
         selected = textEntry;
+
+        // We need to min to handle end of text cursor
         anchorOffset = selection.baseOffset - textEntry.position.offset;
         focusOffset = selection.extentOffset - textEntry.position.offset;
         break;
@@ -614,6 +617,7 @@ class _StelaEditorState extends State<StelaEditor>
       removeBox: _removeBox,
       path: path,
       child: StelaRichText(
+        node: node,
         text: TextSpan(children: children),
         ignorePointer: false,
         onSelectionChanged: _handleSelectionChanged,
@@ -687,8 +691,6 @@ class _StelaEditorState extends State<StelaEditor>
   }
 
   void _handleSingleTapUp(TapUpDetails details) {
-    print('tap up');
-
     RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
 
     if (box.child is RenderStelaRichText) {
@@ -710,7 +712,6 @@ class _StelaEditorState extends State<StelaEditor>
   }
 
   void _handleSingleLongTapStart(LongPressStartDetails details) {
-    print('long tap');
     RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
 
     if (box.child is RenderStelaRichText) {
@@ -736,8 +737,6 @@ class _StelaEditorState extends State<StelaEditor>
   }
 
   void _handleDoubleTapDown(TapDownDetails details) {
-    print('double tap');
-
     RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
 
     if (box.child is RenderStelaRichText) {
@@ -749,17 +748,18 @@ class _StelaEditorState extends State<StelaEditor>
   }
 
   void _handleSingleLongTapMoveUpdate(LongPressMoveUpdateDetails details) {
-    print('move');
     RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
-    print(box.node.toString());
-    // renderEditable.selectPositionAt(
-    //   from: details.globalPosition,
-    //   cause: SelectionChangedCause.longPress,
-    // );
+
+    if (box.child is RenderStelaRichText) {
+      RenderStelaRichText renderRichText = box.child;
+      renderRichText.selectPositionAt(
+        from: details.globalPosition,
+        cause: SelectionChangedCause.longPress,
+      );
+    }
   }
 
   void _handleTapDown(TapDownDetails details) {
-    print('tap down');
     RenderStelaNode box = boxForGlobalPoint(details.globalPosition);
 
     if (box.child is RenderStelaRichText) {
@@ -821,7 +821,7 @@ class _StelaEditorState extends State<StelaEditor>
         onSingleLongTapMoveUpdate: _handleSingleLongTapMoveUpdate,
         onDoubleTapDown: _handleDoubleTapDown,
         onSingleTapUp: _handleSingleTapUp,
-        child: Column(
+        child: ListBody(
             children: _buildChildren(
           widget.controller.value.editor,
           Stela.Path([]),

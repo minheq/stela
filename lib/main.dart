@@ -37,6 +37,13 @@ class MyApp extends StatelessWidget {
         Stela.Block(type: 'list_item', children: [Stela.Text('item 1')]),
         Stela.Block(type: 'list_item', children: [Stela.Text('item 2')]),
       ]),
+      Stela.Block(type: 'paragraph', children: [
+        Stela.Text(
+            'Nam hendrerit sem purus, sit amet finibus quam tincidunt ac.'),
+      ]),
+      Stela.Block(type: 'paragraph', children: [
+        Stela.Text('tenword12.'),
+      ]),
     ]);
 
     return MaterialApp(
