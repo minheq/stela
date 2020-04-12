@@ -1,7 +1,7 @@
 import 'dart:async';
-import 'dart:math';
 
 import 'package:flutter/cupertino.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/rendering.dart';
@@ -16,6 +16,7 @@ import 'package:inday/stela_flutter/mention.dart';
 import 'package:inday/stela_flutter/node.dart';
 import 'package:inday/stela_flutter/paragraph.dart';
 import 'package:inday/stela_flutter/rich.dart';
+import 'package:inday/stela_flutter/selection.dart';
 
 Map<Stela.Node, int> nodeToIndex = Map();
 Map<Stela.Node, Stela.Ancestor> nodeToParent = Map();
@@ -57,6 +58,10 @@ class EditorEditingValue {
   Map<String, dynamic> get props => _editor.props;
 
   static EditorEditingValue empty = EditorEditingValue(children: []);
+
+  get isNotEmpty {
+    return _editor.children.isNotEmpty;
+  }
 
   factory EditorEditingValue.fromJSON(Map<String, dynamic> encoded) {
     return EditorEditingValue(
@@ -157,12 +162,14 @@ class StelaEditor extends StatefulWidget {
     this.cursorOpacityAnimates = false,
     bool showCursor,
     this.cursorOffset,
+    this.dragStartBehavior = DragStartBehavior.start,
     @required this.controller,
     @required this.cursorColor,
     @required this.selectionColor,
     @required this.backgroundCursorColor,
     this.cursorWidth = 2.0,
     this.cursorRadius,
+    this.textDirection = TextDirection.ltr,
     this.paintCursorAboveText = false,
   })  : assert(focusNode != null),
         assert(autofocus != null),
@@ -174,6 +181,7 @@ class StelaEditor extends StatefulWidget {
         showCursor = showCursor ?? !readOnly,
         super(key: key);
 
+  final TextDirection textDirection;
   final EditorEditingController controller;
   final bool showCursor;
   final Color cursorColor;
@@ -185,6 +193,7 @@ class StelaEditor extends StatefulWidget {
   final bool cursorOpacityAnimates;
   final bool enableInteractiveSelection;
   final Offset cursorOffset;
+  final DragStartBehavior dragStartBehavior;
   final bool paintCursorAboveText;
   final FocusNode focusNode;
   final bool readOnly;
@@ -201,6 +210,11 @@ class _StelaEditorState extends State<StelaEditor>
     with
         AutomaticKeepAliveClientMixin<StelaEditor>,
         TickerProviderStateMixin<StelaEditor> {
+  EditorEditingValue get _value => widget.controller.value;
+  set _value(EditorEditingValue value) {
+    widget.controller.value = value;
+  }
+
   // #region State lifecycle
   @override
   void initState() {
@@ -218,7 +232,7 @@ class _StelaEditorState extends State<StelaEditor>
     // #endregion
 
     // #region value
-    widget.controller.addListener(_didChangeTextEditingValue);
+    widget.controller.addListener(_didChangeEditorEditingValue);
     // #endregion
 
     // _scrollController = widget.scrollController ?? ScrollController();
@@ -244,14 +258,14 @@ class _StelaEditorState extends State<StelaEditor>
   void didUpdateWidget(StelaEditor oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.controller != oldWidget.controller) {
-      oldWidget.controller.removeListener(_didChangeTextEditingValue);
-      widget.controller.addListener(_didChangeTextEditingValue);
+      oldWidget.controller.removeListener(_didChangeEditorEditingValue);
+      widget.controller.addListener(_didChangeEditorEditingValue);
       // _updateRemoteEditingValueIfNeeded();
     }
-    // if (widget.controller.selection != oldWidget.controller.selection) {
-    //   _selectionOverlay?.update(_value);
-    // }
-    // _selectionOverlay?.handlesVisible = widget.showSelectionHandles;
+    if (widget.controller.selection != oldWidget.controller.selection) {
+      _selectionOverlay?.update(_value);
+    }
+    _selectionOverlay?.handlesVisible = _showSelectionHandles;
     if (widget.focusNode != oldWidget.focusNode) {
       oldWidget.focusNode.removeListener(_handleFocusChanged);
       _focusAttachment?.detach();
@@ -287,14 +301,14 @@ class _StelaEditorState extends State<StelaEditor>
     _cursorBlinkOpacityController.removeListener(_onCursorColorTick);
     // #endregion
 
-    widget.controller.removeListener(_didChangeTextEditingValue);
+    widget.controller.removeListener(_didChangeEditorEditingValue);
     // _floatingCursorResetController.removeListener(_onFloatingCursorResetTick);
     // _closeInputConnectionIfNeeded();
     // assert(!_hasInputConnection);
-    // _stopCursorTimer();
+    _stopCursorTimer();
     assert(_cursorTimer == null);
-    // _selectionOverlay?.dispose();
-    // _selectionOverlay = null;
+    _selectionOverlay?.dispose();
+    _selectionOverlay = null;
     _focusAttachment.detach();
     widget.focusNode.removeListener(_handleFocusChanged);
     super.dispose();
@@ -305,25 +319,6 @@ class _StelaEditorState extends State<StelaEditor>
   // #region AutomaticKeepAliveClientMixin
   @override
   bool get wantKeepAlive => _hasFocus;
-  // #endregion
-
-  @override
-  void hideToolbar() {
-    // TODO
-  }
-
-  @override
-  bool get cutEnabled => true;
-
-  @override
-  bool get copyEnabled => true;
-
-  @override
-  bool get pasteEnabled => true;
-
-  @override
-  bool get selectAllEnabled => true;
-
   // #endregion
 
   // #region Focus
@@ -343,7 +338,7 @@ class _StelaEditorState extends State<StelaEditor>
   void _handleFocusChanged() {
     // _openOrCloseInputConnectionIfNeeded();
     _startOrStopCursorTimerIfNeeded();
-    // _updateOrDisposeSelectionOverlayIfNeeded();
+    _updateOrDisposeSelectionOverlayIfNeeded();
     if (_hasFocus) {
       // Listen for changing viewInsets, which indicates keyboard showing up.
       // WidgetsBinding.instance.addObserver(this);
@@ -356,7 +351,7 @@ class _StelaEditorState extends State<StelaEditor>
     } else {
       // WidgetsBinding.instance.removeObserver(this);
       // Clear the selection and composition state if this widget lost focus.
-      // _value = TextEditingValue(text: _value.text);
+      // _value = EditorEditingValue(text: _value.text);
     }
     updateKeepAlive();
   }
@@ -387,7 +382,7 @@ class _StelaEditorState extends State<StelaEditor>
   Duration get cursorBlinkInterval => _kCursorBlinkHalfPeriod;
 
   void _onCursorColorTick() {
-    // TODO: Perf. change the cursor color directly in the render object
+    // TODO:
     // renderEditable.cursorColor = widget.cursorColor.withOpacity(_cursorBlinkOpacityController.value);
     setState(() {
       _cursorColor =
@@ -460,57 +455,145 @@ class _StelaEditorState extends State<StelaEditor>
   // #endregion
 
   // #region Value
-  void _didChangeTextEditingValue() {
+  void _didChangeEditorEditingValue() {
+    // TODO
     // _updateRemoteEditingValueIfNeeded();
     _startOrStopCursorTimerIfNeeded();
-    // _updateOrDisposeSelectionOverlayIfNeeded();
+    _updateOrDisposeSelectionOverlayIfNeeded();
     // _textChangedSinceLastCaretUpdate = true;
-    // TODO(abarth): Teach RenderEditable about ValueNotifier<TextEditingValue>
+    // TODO(abarth): Teach RenderEditable about ValueNotifier<EditorEditingValue>
     // to avoid this setState().
     setState(() {/* We use widget.controller.value in build(). */});
   }
   // #endregion
 
-  // #region Selection
+  // #region SelectionOverlay
+
+  final LayerLink _toolbarLayerLink = LayerLink();
+  final LayerLink _startHandleLayerLink = LayerLink();
+  final LayerLink _endHandleLayerLink = LayerLink();
+
   /// {@macro flutter.rendering.editable.selectionEnabled}
   bool get selectionEnabled => widget.enableInteractiveSelection;
+
+  EditorSelectionOverlay _selectionOverlay;
+  bool _showSelectionHandles = false;
+
+  void _updateOrDisposeSelectionOverlayIfNeeded() {
+    if (_selectionOverlay != null) {
+      if (_hasFocus) {
+        _selectionOverlay.update(_value);
+      } else {
+        _selectionOverlay.dispose();
+        _selectionOverlay = null;
+      }
+    }
+  }
+
+  /// Shows the selection toolbar at the location of the current cursor.
+  ///
+  /// Returns `false` if a toolbar couldn't be shown, such as when the toolbar
+  /// is already shown, or when no text selection currently exists.
+  bool showToolbar() {
+    // Web is using native dom elements to enable clipboard functionality of the
+    // toolbar: copy, paste, select, cut. It might also provide additional
+    // functionality depending on the browser (such as translate). Due to this
+    // we should not show a Flutter toolbar for the editable text elements.
+    if (kIsWeb) {
+      return false;
+    }
+
+    if (_selectionOverlay == null || _selectionOverlay.toolbarIsVisible) {
+      return false;
+    }
+
+    // TODO
+    // _selectionOverlay.showToolbar();
+    return true;
+  }
+
+  @override
+  void hideToolbar() {
+    _selectionOverlay?.hide();
+  }
+
+  /// Toggles the visibility of the toolbar.
+  void toggleToolbar() {
+    assert(_selectionOverlay != null);
+    if (_selectionOverlay.toolbarIsVisible) {
+      hideToolbar();
+    } else {
+      showToolbar();
+    }
+  }
   // #endregion
 
   // #region Gestures
   /// {@macro flutter.rendering.editable.selectionEnabled}
   bool forcePressEnabled;
+
+  TextSelectionControls _getSelectionControls() {
+    final ThemeData themeData = Theme.of(context);
+
+    switch (themeData.platform) {
+      case TargetPlatform.iOS:
+      case TargetPlatform.macOS:
+        return cupertinoTextSelectionControls;
+
+      case TargetPlatform.android:
+      case TargetPlatform.fuchsia:
+      case TargetPlatform.linux:
+      case TargetPlatform.windows:
+        return materialTextSelectionControls;
+    }
+
+    return null;
+  }
   // #endregion
 
+  // TODO
   // void _requestKeyboard() {
   //   _editableText?.requestKeyboard();
   // }
 
-  // bool _shouldShowSelectionHandles(SelectionChangedCause cause) {
-  //   // When the text field is activated by something that doesn't trigger the
-  //   // selection overlay, we shouldn't show the handles either.
-  //   if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
-  //     return false;
+  bool _shouldShowSelectionHandles(SelectionChangedCause cause) {
+    // When the text field is activated by something that doesn't trigger the
+    // selection overlay, we shouldn't show the handles either.
+    // TODO
+    // if (!_selectionGestureDetectorBuilder.shouldShowSelectionToolbar)
+    //   return false;
 
-  //   if (cause == SelectionChangedCause.keyboard)
-  //     return false;
+    if (cause == SelectionChangedCause.keyboard) return false;
 
-  //   if (widget.readOnly && _effectiveController.selection.isCollapsed)
-  //     return false;
+    if (widget.readOnly && widget.controller.selection.isCollapsed)
+      return false;
 
-  //   if (cause == SelectionChangedCause.longPress)
-  //     return true;
+    if (cause == SelectionChangedCause.longPress) return true;
 
-  //   if (_effectiveController.text.isNotEmpty)
-  //     return true;
+    if (widget.controller.value.isNotEmpty) return true;
 
-  //   return false;
-  // }
+    return false;
+  }
 
   void _handleSelectionChanged(TextSelection selection,
       RenderStelaRichText renderObject, SelectionChangedCause cause) {
     TextNodeEntry selected;
     int anchorOffset;
     int focusOffset;
+
+    // TODO
+    // switch (Theme.of(context).platform) {
+    //   case TargetPlatform.iOS:
+    //   case TargetPlatform.macOS:
+    //     if (cause == SelectionChangedCause.longPress) {
+    //       // _editableText?.bringIntoView(selection.base);
+    //     }
+    //   case TargetPlatform.android:
+    //   case TargetPlatform.fuchsia:
+    //   case TargetPlatform.linux:
+    //   case TargetPlatform.windows:
+    //   // Do nothing.
+    // }
 
     for (int i = renderObject.textNodeEntries.length - 1; i >= 0; i--) {
       TextNodeEntry textEntry = renderObject.textNodeEntries[i];
@@ -528,40 +611,42 @@ class _StelaEditorState extends State<StelaEditor>
     Stela.Point anchor = Stela.Point(selected.path, anchorOffset);
     Stela.Point focus = Stela.Point(selected.path, focusOffset);
     Stela.Range range = Stela.Range(anchor, focus);
-    // // We return early if the selection is not valid. This can happen when the
-    // // text of [EditableText] is updated at the same time as the selection is
-    // // changed by a gesture event.
+    // We return early if the selection is not valid. This can happen when the
+    // text of [EditableText] is updated at the same time as the selection is
+    // changed by a gesture event.
+    // TODO
     // if (!widget.controller.isSelectionWithinTextBounds(selection))
     //   return;
 
     widget.controller.selection = range;
 
-    // // This will show the keyboard for all selection changes on the
-    // // EditableWidget, not just changes triggered by user gestures.
+    // This will show the keyboard for all selection changes on the
+    // EditableWidget, not just changes triggered by user gestures.
+    // TODO
     // requestKeyboard();
 
-    // _selectionOverlay?.hide();
-    // _selectionOverlay = null;
+    _selectionOverlay?.hide();
+    _selectionOverlay = null;
 
-    // if (widget.selectionControls != null) {
-    //   _selectionOverlay = TextSelectionOverlay(
-    //     context: context,
-    //     value: _value,
-    //     debugRequiredFor: widget,
-    //     toolbarLayerLink: _toolbarLayerLink,
-    //     startHandleLayerLink: _startHandleLayerLink,
-    //     endHandleLayerLink: _endHandleLayerLink,
-    //     renderObject: renderObject,
-    //     selectionControls: widget.selectionControls,
-    //     selectionDelegate: this,
-    //     dragStartBehavior: widget.dragStartBehavior,
-    //     onSelectionHandleTapped: widget.onSelectionHandleTapped,
-    //   );
-    //   _selectionOverlay.handlesVisible = widget.showSelectionHandles;
-    //   _selectionOverlay.showHandles();
-    //   if (widget.onSelectionChanged != null)
-    //     widget.onSelectionChanged(selection, cause);
-    // }
+    _selectionOverlay = EditorSelectionOverlay(
+      context: context,
+      value: _value,
+      debugRequiredFor: widget,
+      toolbarLayerLink: _toolbarLayerLink,
+      startHandleLayerLink: _startHandleLayerLink,
+      endHandleLayerLink: _endHandleLayerLink,
+      selectionControls: _getSelectionControls(),
+      // selectionDelegate: this, // TODO
+      dragStartBehavior: widget.dragStartBehavior,
+      textDirection: widget.textDirection,
+      onSelectionHandleTapped: toggleToolbar,
+      preferredLineHeight: 17, // TODO
+    );
+    _selectionOverlay.handlesVisible = _shouldShowSelectionHandles(cause);
+    _selectionOverlay.showHandles();
+    // TODO
+    // if (widget.onSelectionChanged != null)
+    //   widget.onSelectionChanged(selection, cause);
   }
 
   Set<RenderStelaNode> boxes = Set();
@@ -629,6 +714,8 @@ class _StelaEditorState extends State<StelaEditor>
         backgroundCursorColor: CupertinoColors.inactiveGray,
         showCursor: _cursorVisibilityNotifier,
         cursorColor: themeData.cursorColor,
+        startHandleLayerLink: _startHandleLayerLink,
+        endHandleLayerLink: _endHandleLayerLink,
       ),
     );
   }
@@ -822,12 +909,15 @@ class _StelaEditorState extends State<StelaEditor>
         onSingleLongTapMoveUpdate: _handleSingleLongTapMoveUpdate,
         onDoubleTapDown: _handleDoubleTapDown,
         onSingleTapUp: _handleSingleTapUp,
-        child: ListBody(
-            children: _buildChildren(
-          widget.controller.value.editor,
-          Stela.Path([]),
-          widget.controller.selection,
-        )));
+        child: CompositedTransformTarget(
+          link: _toolbarLayerLink,
+          child: ListBody(
+              children: _buildChildren(
+            widget.controller.value.editor,
+            Stela.Path([]),
+            widget.controller.selection,
+          )),
+        ));
   }
 }
 

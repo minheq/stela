@@ -11,32 +11,26 @@ class MyApp extends StatelessWidget {
     final ThemeData themeData = Theme.of(context);
 
     Stela.Editor editor = Stela.Editor(children: [
-      Stela.Block(type: 'paragraph', children: [
-        Stela.Text('Lorem ipsum dolor sit amet, consectetur '),
-        Stela.Inline(type: 'link', children: [
-          Stela.Text('adipiscing'),
-        ]),
-        Stela.Text(' elit.'),
-      ]),
-      Stela.Block(type: 'image', isVoid: true, props: {
-        'url':
-            'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'
-      }, children: [
-        Stela.Text('')
-      ]),
+      // Stela.Block(type: 'paragraph', children: [
+      //   Stela.Text('Lorem ipsum dolor sit amet, consectetur '),
+      //   Stela.Inline(type: 'link', children: [
+      //     Stela.Text('adipiscing'),
+      //   ]),
+      //   Stela.Text(' elit.'),
+      // ]),
+      // Stela.Block(type: 'image', isVoid: true, props: {
+      //   'url':
+      //       'https://flutter.github.io/assets-for-api-docs/assets/widgets/owl.jpg'
+      // }, children: [
+      //   Stela.Text('')
+      // ]),
       Stela.Block(type: 'paragraph', children: [
         Stela.Text('Aliquam eu scelerisque dolor, in '),
-        Stela.Inline(type: 'mention', isVoid: true, props: {
-          'name': 'semper'
-        }, children: [
-          Stela.Text(''),
-        ]),
-        Stela.Text(' turpis.'),
       ]),
-      Stela.Block(type: 'bulleted_list', children: [
-        Stela.Block(type: 'list_item', children: [Stela.Text('item 1')]),
-        Stela.Block(type: 'list_item', children: [Stela.Text('item 2')]),
-      ]),
+      // Stela.Block(type: 'bulleted_list', children: [
+      //   Stela.Block(type: 'list_item', children: [Stela.Text('item 1')]),
+      //   Stela.Block(type: 'list_item', children: [Stela.Text('item 2')]),
+      // ]),
       Stela.Block(type: 'paragraph', children: [
         Stela.Text(
             'Nam hendrerit sem purus, sit amet finibus quam tincidunt ac.'),
@@ -57,11 +51,11 @@ class MyApp extends StatelessWidget {
               cursorOpacityAnimates: true,
               focusNode: FocusNode(),
             ),
-            // TextFormField(
-            //   initialValue:
-            //       'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
-            //   maxLines: null,
-            // ),
+            TextFormField(
+              initialValue:
+                  'Lorem ipsum dolor sit amet, consectetur adipiscing elit. Aliquam eu scelerisque dolor, in semper turpis.',
+              maxLines: null,
+            ),
             // GestureDetector(
             //   behavior: HitTestBehavior.translucent,
             //   onTapUp: (TapUpDetails details) {

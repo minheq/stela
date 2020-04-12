@@ -58,6 +58,8 @@ class StelaRichText extends MultiChildRenderObjectWidget {
     this.selectionHeightStyle = ui.BoxHeightStyle.tight,
     this.selectionWidthStyle = ui.BoxWidthStyle.tight,
     this.showCursor,
+    this.startHandleLayerLink,
+    this.endHandleLayerLink,
 
     // Custom
     @required this.textNodeEntries,
@@ -107,6 +109,8 @@ class StelaRichText extends MultiChildRenderObjectWidget {
   final ui.BoxHeightStyle selectionHeightStyle;
   final ui.BoxWidthStyle selectionWidthStyle;
   final ValueNotifier<bool> showCursor;
+  final LayerLink startHandleLayerLink;
+  final LayerLink endHandleLayerLink;
 
   // Custom
   final List<TextNodeEntry> textNodeEntries;
@@ -146,6 +150,8 @@ class StelaRichText extends MultiChildRenderObjectWidget {
       selectionHeightStyle: selectionHeightStyle,
       selectionWidthStyle: selectionWidthStyle,
       showCursor: showCursor,
+      startHandleLayerLink: startHandleLayerLink,
+      endHandleLayerLink: endHandleLayerLink,
 
       // Custom
       textNodeEntries: textNodeEntries,
@@ -300,6 +306,8 @@ class RenderStelaRichText extends RenderBox
     ui.BoxHeightStyle selectionHeightStyle = ui.BoxHeightStyle.tight,
     ui.BoxWidthStyle selectionWidthStyle = ui.BoxWidthStyle.tight,
     ValueNotifier<bool> showCursor,
+    @required LayerLink startHandleLayerLink,
+    @required LayerLink endHandleLayerLink,
 
     // Custom
     @required this.textNodeEntries,
@@ -324,6 +332,8 @@ class RenderStelaRichText extends RenderBox
         assert(paintCursorAboveText != null),
         assert(selectionHeightStyle != null),
         assert(selectionWidthStyle != null),
+        assert(startHandleLayerLink != null),
+        assert(endHandleLayerLink != null),
 
         // Custom
         assert(textNodeEntries != null),
@@ -355,7 +365,9 @@ class RenderStelaRichText extends RenderBox
         _cursorOffset = cursorOffset,
         _devicePixelRatio = devicePixelRatio,
         _selectionHeightStyle = selectionHeightStyle,
-        _selectionWidthStyle = selectionWidthStyle {
+        _selectionWidthStyle = selectionWidthStyle,
+        _startHandleLayerLink = startHandleLayerLink,
+        _endHandleLayerLink = endHandleLayerLink {
     // RichText
     addAll(children);
     _extractPlaceholderSpans(text);
@@ -1038,6 +1050,32 @@ class RenderStelaRichText extends RenderBox
         context.canvas.drawRect(Offset.zero & size, paint);
       }
       context.canvas.restore();
+    }
+
+    if (selection != null) {
+      _paintHandleLayers(context, getEndpointsForSelection(selection));
+    }
+  }
+
+  List<TextSelectionPoint> getEndpointsForSelection(TextSelection selection) {
+    assert(constraints != null);
+    _layoutText(minWidth: constraints.minWidth, maxWidth: constraints.maxWidth);
+
+    if (selection.isCollapsed) {
+      // TODO(mpcomplete): This doesn't work well at an RTL/LTR boundary.
+      final Offset caretOffset =
+          _textPainter.getOffsetForCaret(selection.extent, _caretPrototype);
+      final Offset start = Offset(0.0, preferredLineHeight) + caretOffset;
+      return <TextSelectionPoint>[TextSelectionPoint(start, null)];
+    } else {
+      final List<ui.TextBox> boxes =
+          _textPainter.getBoxesForSelection(selection);
+      final Offset start = Offset(boxes.first.start, boxes.first.bottom);
+      final Offset end = Offset(boxes.last.end, boxes.last.bottom);
+      return <TextSelectionPoint>[
+        TextSelectionPoint(start, boxes.first.direction),
+        TextSelectionPoint(end, boxes.last.direction),
+      ];
     }
   }
 
@@ -1851,6 +1889,56 @@ class RenderStelaRichText extends RenderBox
       _lastCaretRect = caretRect;
       if (onCaretChanged != null) onCaretChanged(caretRect);
     }
+  }
+
+  void _paintHandleLayers(
+      PaintingContext context, List<TextSelectionPoint> endpoints) {
+    Offset startPoint = endpoints[0].point;
+    startPoint = Offset(
+      startPoint.dx.clamp(0.0, size.width) as double,
+      startPoint.dy.clamp(0.0, size.height) as double,
+    );
+    context.pushLayer(
+      LeaderLayer(link: startHandleLayerLink, offset: startPoint),
+      super.paint,
+      Offset.zero,
+    );
+    if (endpoints.length == 2) {
+      Offset endPoint = endpoints[1].point;
+      endPoint = Offset(
+        endPoint.dx.clamp(0.0, size.width) as double,
+        endPoint.dy.clamp(0.0, size.height) as double,
+      );
+      context.pushLayer(
+        LeaderLayer(link: endHandleLayerLink, offset: endPoint),
+        super.paint,
+        Offset.zero,
+      );
+    }
+  }
+
+  /// The [LayerLink] of start selection handle.
+  ///
+  /// [RenderEditable] is responsible for calculating the [Offset] of this
+  /// [LayerLink], which will be used as [CompositedTransformTarget] of start handle.
+  LayerLink get startHandleLayerLink => _startHandleLayerLink;
+  LayerLink _startHandleLayerLink;
+  set startHandleLayerLink(LayerLink value) {
+    if (_startHandleLayerLink == value) return;
+    _startHandleLayerLink = value;
+    markNeedsPaint();
+  }
+
+  /// The [LayerLink] of end selection handle.
+  ///
+  /// [RenderEditable] is responsible for calculating the [Offset] of this
+  /// [LayerLink], which will be used as [CompositedTransformTarget] of end handle.
+  LayerLink get endHandleLayerLink => _endHandleLayerLink;
+  LayerLink _endHandleLayerLink;
+  set endHandleLayerLink(LayerLink value) {
+    if (_endHandleLayerLink == value) return;
+    _endHandleLayerLink = value;
+    markNeedsPaint();
   }
 
   // #endregion
