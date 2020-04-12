@@ -41,9 +41,6 @@ class MyApp extends StatelessWidget {
         Stela.Text(
             'Nam hendrerit sem purus, sit amet finibus quam tincidunt ac.'),
       ]),
-      Stela.Block(type: 'paragraph', children: [
-        Stela.Text('tenword12.'),
-      ]),
     ]);
 
     return MaterialApp(
